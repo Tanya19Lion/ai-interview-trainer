@@ -1,0 +1,21 @@
+/*
+ * Self-hosted шрифти через @fontsource — кожен ваговий файл вже містить
+ * усі unicode-range підмножини (latin, cyrillic, ...), браузер довантажує
+ * лише той @font-face блок, символи якого реально зустрічаються в тексті.
+ *
+ * Onest замінює Sora: Sora не має кириличного підмножини в Google Fonts,
+ * а весь інтерфейс — українською.
+ */
+@import '@fontsource/onest/500.css';
+@import '@fontsource/onest/600.css';
+@import '@fontsource/onest/700.css';
+@import '@fontsource/onest/800.css';
+
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/400-italic.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';

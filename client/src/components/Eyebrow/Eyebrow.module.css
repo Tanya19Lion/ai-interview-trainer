@@ -1,0 +1,22 @@
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+	color: var(--amber);
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	margin-bottom: var(--space-2);
+}
+.eyebrow::before {
+	content: '';
+	width: 0.55em;
+	height: 0.55em;
+	background: currentColor;
+	border-radius: 1px;
+	display: inline-block;
+}
+
+.centered {
+	justify-content: center;
+}

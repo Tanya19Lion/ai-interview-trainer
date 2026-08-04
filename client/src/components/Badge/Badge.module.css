@@ -1,0 +1,66 @@
+/* ---------- Badge: статистична пігулка на темному тлі, напр. "точність: 78%" ---------- */
+.badge {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	padding: 0.4rem 0.75rem;
+	border-radius: 999px;
+	background: var(--ink-2);
+	border: 1px solid var(--line);
+	color: var(--off-white);
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+.key {
+	color: var(--slate-2);
+}
+.good {
+	border-color: rgba(76, 154, 93, 0.4);
+}
+.good .value {
+	color: var(--green);
+}
+.amber .value {
+	color: var(--amber);
+}
+
+/* ---------- Chip: простий одиночний тег на темному тлі, напр. "#react" ---------- */
+.chip {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	padding: 0.32rem 0.7rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	color: var(--slate);
+	background: var(--ink-2);
+}
+
+/* ---------- ScoreChip / LevelChip: пігулки всередині EditorWindow (світле тло) ---------- */
+.scoreChip {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	font-weight: 600;
+	padding: 0.3rem 0.65rem;
+	border-radius: 999px;
+}
+.scoreGood {
+	color: #2e6b3b;
+	background: var(--green-soft);
+}
+.scoreMid {
+	color: #8a660f;
+	background: var(--amber-soft);
+}
+.scoreLow {
+	color: #8f3f2b;
+	background: var(--rust-soft);
+}
+
+.levelChip {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	color: var(--paper-ink-soft);
+	border: 1px solid rgba(35, 38, 47, 0.15);
+	padding: 0.28rem 0.6rem;
+	border-radius: 999px;
+}

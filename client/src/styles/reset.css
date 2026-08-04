@@ -1,0 +1,72 @@
+/*
+ * Базовий reset і глобальні стилі, спільні для всіх трьох макетів
+ * (landing/login/app-screens): box-sizing, типографіка body за замовчуванням,
+ * focus-visible, виділення тексту, повага до prefers-reduced-motion.
+ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+body {
+	margin: 0;
+	background: var(--ink);
+	color: var(--off-white);
+	font-family: var(--font-body);
+	font-size: 16px;
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+	display: block;
+	max-width: 100%;
+}
+
+a {
+	color: inherit;
+}
+
+button {
+	font-family: inherit;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	margin: 0;
+}
+
+::selection {
+	background: var(--amber-soft);
+	color: var(--off-white);
+}
+
+:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: 3px;
+	border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition: none !important;
+		animation: none !important;
+	}
+}

@@ -1,0 +1,60 @@
+/* signature-компонент продукту: картка у вигляді вікна код-редактора */
+.editorWindow {
+	background: var(--paper);
+	border-radius: var(--radius-l);
+	box-shadow:
+		0 30px 60px -20px rgba(0, 0, 0, 0.55),
+		0 0 0 1px rgba(0, 0, 0, 0.04);
+	overflow: hidden;
+	color: var(--paper-ink);
+}
+
+.titlebar {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.7rem 0.9rem;
+	background: var(--paper-2);
+	border-bottom: 1px solid rgba(35, 38, 47, 0.08);
+}
+
+.dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+}
+.dot1 {
+	background: var(--rust);
+}
+.dot2 {
+	background: var(--amber);
+}
+.dot3 {
+	background: var(--green);
+}
+
+.titlebarName {
+	font-family: var(--font-mono);
+	font-size: 0.76rem;
+	color: var(--paper-ink-soft);
+	margin-left: 0.4rem;
+}
+.titlebarName b {
+	color: var(--paper-ink);
+	font-weight: 600;
+}
+
+.body {
+	font-family: var(--font-mono);
+	font-size: 0.84rem;
+	line-height: 1.75;
+}
+
+.footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.8rem 0.9rem 1rem 0.9rem;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}

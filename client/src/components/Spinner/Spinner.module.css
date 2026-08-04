@@ -1,0 +1,25 @@
+.spinner {
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	border: 2px solid rgba(227, 227, 227, 0.3);
+	border-top-color: #e3e3e3;
+	flex-shrink: 0;
+	display: inline-block;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.spinner {
+		animation: spin 0.7s linear infinite;
+	}
+}
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* всередині .btn-primary (бурштиновий фон) — темніший спінер замість світлого */
+.onPrimary {
+	border-color: rgba(26, 21, 3, 0.3);
+	border-top-color: #1a1503;
+}
