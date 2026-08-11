@@ -28,6 +28,7 @@
 			"Bash(make build)",
 			"Bash(make clean)",
 			"Read",
+			"Read(.env.example)",
 			"Glob",
 			"Grep"
 		],

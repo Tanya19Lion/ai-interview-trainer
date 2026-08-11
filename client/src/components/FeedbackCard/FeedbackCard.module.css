@@ -1,0 +1,19 @@
+.commentBlock {
+	margin: 0.7rem 0.9rem 0.9rem 0.9rem;
+	padding: 0.75rem 0.85rem;
+	background: var(--amber-soft);
+	border-left: 3px solid var(--amber);
+	border-radius: 0 var(--radius-s) var(--radius-s) 0;
+	font-family: var(--font-body);
+	font-size: 0.82rem;
+	color: #4a3a12;
+}
+.who {
+	font-family: var(--font-mono);
+	font-weight: 600;
+	font-size: 0.72rem;
+	color: #8a660f;
+	display: block;
+	margin-bottom: 0.25rem;
+	letter-spacing: 0.02em;
+}

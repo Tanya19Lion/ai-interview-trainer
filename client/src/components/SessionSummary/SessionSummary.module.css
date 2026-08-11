@@ -1,0 +1,62 @@
+.summary {
+	display: grid;
+	gap: var(--space-3);
+}
+
+.score {
+	display: flex;
+	align-items: baseline;
+	gap: 0.7rem;
+}
+.big {
+	font-family: var(--font-display);
+	font-size: 3rem;
+	font-weight: 700;
+	color: var(--off-white);
+	line-height: 1;
+}
+.lbl {
+	font-family: var(--font-mono);
+	color: var(--slate);
+	font-size: 0.9rem;
+}
+
+.list {
+	border-top: 1px solid var(--line);
+	display: grid;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.8rem;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--line-soft);
+}
+
+.question {
+	color: var(--off-white);
+	font-size: 0.88rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.weak {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.weakLabel {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--slate);
+}
+
+.actions {
+	display: flex;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}

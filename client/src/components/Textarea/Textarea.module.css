@@ -1,0 +1,20 @@
+.textarea {
+	display: block;
+	width: 100%;
+	min-height: 150px;
+	background: transparent;
+	border: none;
+	resize: vertical;
+	font-family: var(--font-mono);
+	font-size: 0.9rem;
+	line-height: 1.7;
+	color: var(--paper-ink);
+	padding: 1rem 1.1rem;
+	outline: none;
+}
+.textarea::placeholder {
+	color: rgba(35, 38, 47, 0.4);
+}
+.textarea:disabled {
+	color: rgba(35, 38, 47, 0.6);
+}

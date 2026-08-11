@@ -1,0 +1,162 @@
+import { useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+	AnswerForm,
+	Button,
+	Eyebrow,
+	FeedbackCard,
+	ProgressSegments,
+	QuestionCard,
+	SessionSummary,
+} from '../components';
+import type { SessionResult } from '../components';
+import { useSubmitAnswer } from '../hooks/useSubmitAnswer';
+import type { Level, Topic } from '../types/interview';
+
+interface SessionBootstrap {
+	topic: Topic;
+	level: Level;
+	question: string;
+	questionIndex: number;
+	totalQuestions: number;
+}
+
+interface CurrentReview {
+	userAnswer: string;
+	skipped: boolean;
+	correctAnswer: string;
+	feedback: string;
+	score: number;
+	done: boolean;
+	nextQuestion?: string;
+	nextQuestionIndex?: number;
+	averageScore?: number;
+}
+
+export function InterviewSessionPage() {
+	const { sessionId } = useParams<{ sessionId: string }>();
+	const location = useLocation();
+	const navigate = useNavigate();
+	const bootstrap = location.state as SessionBootstrap | null;
+
+	const [question, setQuestion] = useState(bootstrap?.question ?? '');
+	const [questionIndex, setQuestionIndex] = useState(bootstrap?.questionIndex ?? 0);
+	const [answer, setAnswer] = useState('');
+	const [review, setReview] = useState<CurrentReview | null>(null);
+	const [results, setResults] = useState<SessionResult[]>([]);
+	const [finalAverageScore, setFinalAverageScore] = useState<number | null>(null);
+
+	const submitAnswer = useSubmitAnswer(sessionId ?? '');
+
+	if (!bootstrap || !sessionId) {
+		return (
+			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
+				<p style={{ color: 'var(--slate)' }}>
+					Ця сесія недоступна після перезавантаження сторінки — почни нову.
+				</p>
+				<Button variant="primary" onClick={() => navigate('/interview/new')}>
+					Нова сесія
+				</Button>
+			</div>
+		);
+	}
+
+	const { topic, level, totalQuestions } = bootstrap;
+
+	function submit(currentAnswer: string, skipped: boolean) {
+		submitAnswer.mutate(
+			{ question, answer: currentAnswer },
+			{
+				onSuccess: (response) => {
+					setReview({
+						userAnswer: currentAnswer,
+						skipped,
+						correctAnswer: response.review.correctAnswer,
+						feedback: response.review.feedback,
+						score: response.review.score,
+						done: response.done,
+						nextQuestion: response.question,
+						nextQuestionIndex: response.questionIndex,
+						averageScore: response.averageScore,
+					});
+					setResults((prev) => [
+						...prev,
+						{
+							question,
+							score: response.review.score,
+							skipped,
+							weakTopics: response.review.weakTopics,
+						},
+					]);
+				},
+			},
+		);
+	}
+
+	function handleContinue() {
+		if (!review) return;
+		if (review.done) {
+			setFinalAverageScore(review.averageScore ?? 0);
+			return;
+		}
+		setQuestion(review.nextQuestion ?? '');
+		setQuestionIndex(review.nextQuestionIndex ?? questionIndex + 1);
+		setReview(null);
+		setAnswer('');
+	}
+
+	if (finalAverageScore !== null) {
+		return (
+			<SessionSummary
+				topic={topic}
+				level={level}
+				averageScore={finalAverageScore}
+				results={results}
+				onRestart={() => navigate('/interview/new')}
+				onHome={() => navigate('/interview/new')}
+			/>
+		);
+	}
+
+	return (
+		<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 760, marginInline: 'auto' }}>
+			<Eyebrow>
+				питання {questionIndex + 1} з {totalQuestions}
+			</Eyebrow>
+			<ProgressSegments total={totalQuestions} currentIndex={questionIndex} />
+
+			<QuestionCard topic={topic} level={level} questionIndex={questionIndex} question={question} />
+
+			{!review ? (
+				<AnswerForm
+					value={answer}
+					onChange={setAnswer}
+					onSubmit={() => submit(answer, false)}
+					onSkip={() => submit('', true)}
+					pending={submitAnswer.isPending}
+				/>
+			) : (
+				<>
+					<FeedbackCard
+						topic={topic}
+						level={level}
+						userAnswer={review.userAnswer}
+						skipped={review.skipped}
+						correctAnswer={review.correctAnswer}
+						feedback={review.feedback}
+						score={review.score}
+					/>
+					<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+						<Button variant="primary" onClick={handleContinue}>
+							{review.done ? 'Переглянути підсумок →' : 'Наступне питання →'}
+						</Button>
+					</div>
+				</>
+			)}
+
+			{submitAnswer.isError && (
+				<p style={{ color: 'var(--rust)' }}>Не вдалося перевірити відповідь. Спробуй ще раз.</p>
+			)}
+		</div>
+	);
+}
