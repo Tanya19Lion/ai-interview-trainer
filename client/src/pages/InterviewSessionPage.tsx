@@ -1,16 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import {
-	AnswerForm,
-	Button,
-	Eyebrow,
-	FeedbackCard,
-	ProgressSegments,
-	QuestionCard,
-	SessionSummary,
-} from '../components';
+import { AnswerForm, Button, FeedbackCard, QuestionCard, SessionSummary } from '../components';
 import type { SessionResult } from '../components';
 import { useSubmitAnswer } from '../hooks/useSubmitAnswer';
+import { useInterviewFocus } from '../lib/interviewFocus';
 import type { Level, Topic } from '../types/interview';
 
 interface SessionBootstrap {
@@ -47,6 +40,26 @@ export function InterviewSessionPage() {
 	const [finalAverageScore, setFinalAverageScore] = useState<number | null>(null);
 
 	const submitAnswer = useSubmitAnswer(sessionId ?? '');
+	const { setFocus } = useInterviewFocus();
+
+	useEffect(() => {
+		if (!bootstrap || finalAverageScore !== null) {
+			setFocus(null);
+			return;
+		}
+		setFocus({
+			questionIndex,
+			totalQuestions: bootstrap.totalQuestions,
+			branch: `${bootstrap.topic}/${bootstrap.level}`,
+			onExit: () => {
+				if (window.confirm('Завершити сесію достроково? Прогрес по поточному питанню не збережеться.')) {
+					navigate('/interview/new');
+				}
+			},
+		});
+		return () => setFocus(null);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [bootstrap, questionIndex, finalAverageScore]);
 
 	if (!bootstrap || !sessionId) {
 		return (
@@ -61,7 +74,7 @@ export function InterviewSessionPage() {
 		);
 	}
 
-	const { topic, level, totalQuestions } = bootstrap;
+	const { topic, level } = bootstrap;
 
 	function submit(currentAnswer: string, skipped: boolean) {
 		submitAnswer.mutate(
@@ -120,11 +133,6 @@ export function InterviewSessionPage() {
 
 	return (
 		<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 760, marginInline: 'auto' }}>
-			<Eyebrow>
-				питання {questionIndex + 1} з {totalQuestions}
-			</Eyebrow>
-			<ProgressSegments total={totalQuestions} currentIndex={questionIndex} />
-
 			<QuestionCard topic={topic} level={level} questionIndex={questionIndex} question={question} />
 
 			{!review ? (

@@ -33,6 +33,30 @@ export async function startSession(req: AuthedRequest, res: Response): Promise<v
 	});
 }
 
+export async function getActiveSession(req: AuthedRequest, res: Response): Promise<void> {
+	const session = await InterviewSessionModel.findOne({
+		userId: req.userId,
+		status: 'in_progress',
+	}).sort({ createdAt: -1 });
+
+	if (!session) {
+		res.status(204).end();
+		return;
+	}
+
+	const askedQuestions = session.questions.map((q) => q.question);
+	const { question } = await generateQuestion(session.topic, session.level, askedQuestions);
+
+	res.json({
+		sessionId: session.id,
+		topic: session.topic,
+		level: session.level,
+		questionIndex: session.questions.length,
+		totalQuestions: QUESTIONS_PER_SESSION,
+		question,
+	});
+}
+
 export async function submitAnswer(req: AuthedRequest, res: Response): Promise<void> {
 	const { sessionId } = req.params;
 	const { question, answer } = req.body as { question?: string; answer?: string };

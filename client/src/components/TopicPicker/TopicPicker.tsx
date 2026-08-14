@@ -6,7 +6,9 @@ const TOPIC_META: Record<Topic, { tag: string; desc: string }> = {
 	javascript: { tag: '#javascript', desc: 'Замикання, асинхронність, прототипи' },
 	nodejs: { tag: '#node.js', desc: 'Event Loop, потоки, npm-екосистема' },
 	typescript: { tag: '#typescript', desc: 'Типи, дженерики, строгість' },
+	nextjs: { tag: '#next.js', desc: 'SSR/SSG, роутинг, серверні компоненти' },
 	css: { tag: '#css', desc: 'Каскад, флекс/ґрід, специфічність' },
+	html: { tag: '#html', desc: 'Семантика, доступність, форми' },
 	sql: { tag: '#sql', desc: 'Джойни, індекси, нормалізація' },
 };
 

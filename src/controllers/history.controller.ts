@@ -21,3 +21,25 @@ export async function getHistory(req: AuthedRequest, res: Response): Promise<voi
 		})),
 	});
 }
+
+export async function getSessionDetail(req: AuthedRequest, res: Response): Promise<void> {
+	const session = await InterviewSessionModel.findOne({
+		_id: req.params.id,
+		userId: req.userId,
+	});
+
+	if (!session) {
+		res.status(404).json({ error: 'Session not found' });
+		return;
+	}
+
+	res.json({
+		id: session.id,
+		topic: session.topic,
+		level: session.level,
+		status: session.status,
+		averageScore: session.averageScore,
+		completedAt: session.completedAt,
+		questions: session.questions,
+	});
+}

@@ -1,9 +1,9 @@
 import { CodeDiffLine } from '../CodeDiffLine/CodeDiffLine';
+import { EditorComment } from '../EditorComment/EditorComment';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
 import { LevelChip, ScoreChip } from '../Badge/Badge';
 import { scoreTone } from '../../lib/scoreTone';
 import type { Level, Topic } from '../../types/interview';
-import styles from './FeedbackCard.module.css';
 
 export interface FeedbackCardProps {
 	topic: Topic;
@@ -42,12 +42,11 @@ export function FeedbackCard({
 			<CodeDiffLine gutter="+" variant="added">
 				{correctAnswer}
 			</CodeDiffLine>
-			<div className={styles.commentBlock}>
-				<span className={styles.who}>AI reviewer</span>
+			<EditorComment>
 				{skipped
 					? 'Нічого страшного — ось як варто відповісти. Повернись до цієї теми пізніше.'
 					: feedback}
-			</div>
+			</EditorComment>
 		</EditorWindow>
 	);
 }

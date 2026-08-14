@@ -1,0 +1,216 @@
+.shell {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.main {
+	flex: 1;
+	max-width: var(--container);
+	width: 100%;
+	margin-inline: auto;
+	padding: var(--space-4) var(--space-3);
+}
+
+/* ---------- звичайна навігація ---------- */
+
+.nav {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background: var(--ink-2);
+	border-bottom: 1px solid var(--line);
+}
+
+.navInner {
+	max-width: var(--container);
+	margin-inline: auto;
+	padding: 0.7rem var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.logo {
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: var(--off-white);
+	white-space: nowrap;
+}
+.cursor {
+	display: inline-block;
+	width: 2px;
+	height: 1em;
+	margin-left: 2px;
+	background: var(--amber);
+	vertical-align: middle;
+	animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+.tabs {
+	display: flex;
+	gap: 0.2rem;
+	flex: 1;
+}
+
+.tab {
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	color: var(--slate);
+	text-decoration: none;
+	padding: 0.5rem 0.85rem;
+	border-radius: var(--radius-s);
+}
+.tab:hover {
+	color: var(--off-white);
+}
+.tabActive {
+	color: var(--off-white);
+	background: var(--ink-3);
+}
+
+.right {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+}
+
+.avatarBtn {
+	appearance: none;
+	border: none;
+	padding: 0;
+	background: transparent;
+	cursor: pointer;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.avatarImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.avatarFallback {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--ink-3);
+	color: var(--off-white);
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+}
+
+.menu {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	right: 0;
+	min-width: 200px;
+	background: var(--ink-3);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-m);
+	box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.6);
+	overflow: hidden;
+}
+.menuUser {
+	padding: 0.7rem 0.9rem;
+	border-bottom: 1px solid var(--line);
+}
+.menuName {
+	color: var(--off-white);
+	font-size: 0.86rem;
+}
+.menuEmail {
+	color: var(--slate);
+	font-size: 0.76rem;
+}
+.menuItem {
+	display: block;
+	width: 100%;
+	text-align: left;
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--rust);
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	padding: 0.7rem 0.9rem;
+	cursor: pointer;
+}
+.menuItem:hover {
+	background: var(--ink-2);
+}
+
+@media (max-width: 700px) {
+	.tabs {
+		display: none;
+	}
+}
+
+/* ---------- focus-bar активної співбесіди ---------- */
+
+.focusBar {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background: var(--ink-2);
+	border-bottom: 1px solid var(--line);
+}
+
+.focusInner {
+	max-width: var(--container);
+	margin-inline: auto;
+	padding: 0.7rem var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.focusBranch {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--amber);
+	white-space: nowrap;
+}
+
+.focusProgress {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+
+.focusCounter {
+	font-family: var(--font-mono);
+	font-size: 0.76rem;
+	color: var(--slate);
+	white-space: nowrap;
+}
+
+.focusExit {
+	appearance: none;
+	border: 1px solid var(--line);
+	background: transparent;
+	color: var(--slate);
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	padding: 0.45rem 0.8rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	white-space: nowrap;
+}
+.focusExit:hover {
+	color: var(--rust);
+	border-color: var(--rust);
+}

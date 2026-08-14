@@ -1,15 +1,44 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { devLogin, fetchMe } from '../api/auth';
+import {
+	fetchMe,
+	googleLogin,
+	loginWithPassword,
+	logout,
+	registerWithPassword,
+} from '../api/auth';
 
 export function useMe() {
 	return useQuery({ queryKey: ['me'], queryFn: fetchMe, retry: false });
 }
 
-/** TEMPORARY — доки не підключено реальний Google OAuth на клієнті. */
-export function useDevLogin() {
+export function useGoogleLogin() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: ({ email, name }: { email: string; name?: string }) => devLogin(email, name),
+		mutationFn: (idToken: string) => googleLogin(idToken),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+	});
+}
+
+export function useRegister() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: registerWithPassword,
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+	});
+}
+
+export function useLoginWithPassword() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: loginWithPassword,
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+	});
+}
+
+export function useLogout() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: logout,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
 	});
 }

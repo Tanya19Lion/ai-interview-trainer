@@ -1,0 +1,32 @@
+.tabs {
+	display: inline-flex;
+	padding: 0.25rem;
+	background: var(--ink-2);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-m);
+	gap: 0.2rem;
+}
+
+.tab {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--slate);
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	padding: 0.5rem 0.95rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+}
+
+.tab:hover {
+	color: var(--off-white);
+}
+
+.active {
+	background: var(--ink-3);
+	color: var(--off-white);
+}

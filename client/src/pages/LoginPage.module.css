@@ -1,0 +1,100 @@
+.page {
+	display: grid;
+	grid-template-columns: minmax(0, 420px) minmax(0, 420px);
+	justify-content: center;
+	align-items: start;
+	gap: var(--space-5);
+	max-width: var(--container);
+	margin-inline: auto;
+	padding-block: var(--space-4);
+}
+
+@media (max-width: 860px) {
+	.page {
+		grid-template-columns: minmax(0, 420px);
+	}
+}
+
+.card {
+	background: var(--ink-2);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-l);
+	padding: var(--space-4);
+	display: grid;
+	gap: var(--space-2);
+}
+
+.h1 {
+	margin: 0.3rem 0 0 0;
+	font-family: var(--font-display);
+	font-size: 1.9rem;
+	color: var(--off-white);
+}
+
+.subtitle {
+	margin: 0;
+	color: var(--slate);
+	font-size: 0.92rem;
+}
+
+.googleWrap {
+	display: flex;
+	justify-content: center;
+	margin-top: var(--space-1);
+}
+
+.divider {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	color: var(--slate-2);
+	font-family: var(--font-mono);
+	font-size: 0.76rem;
+}
+.divider::before,
+.divider::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: var(--line);
+}
+
+.form {
+	display: grid;
+	gap: var(--space-2);
+	margin-top: 0.2rem;
+}
+
+.error {
+	margin: 0;
+	color: var(--rust);
+	font-size: 0.85rem;
+}
+
+.switchLine {
+	margin: var(--space-1) 0 0 0;
+	text-align: center;
+	color: var(--slate);
+	font-size: 0.85rem;
+}
+
+.switchLink {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--amber);
+	font: inherit;
+	cursor: pointer;
+	padding: 0;
+	text-decoration: underline;
+}
+
+.ambient {
+	align-self: start;
+}
+
+@media (max-width: 860px) {
+	.ambient {
+		display: none;
+	}
+}

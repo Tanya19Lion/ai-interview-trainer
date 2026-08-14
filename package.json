@@ -12,16 +12,18 @@
 		"test": "vitest run --passWithNoTests"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.32.1",
+		"bcryptjs": "^3.0.3",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.21.2",
 		"google-auth-library": "^9.15.0",
 		"jsonwebtoken": "^9.0.2",
-		"mongoose": "^8.9.5",
-		"@anthropic-ai/sdk": "^0.32.1"
+		"mongoose": "^8.9.5"
 	},
 	"devDependencies": {
+		"@types/bcryptjs": "^2.4.6",
 		"@types/cookie-parser": "^1.4.8",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",

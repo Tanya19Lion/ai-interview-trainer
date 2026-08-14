@@ -80,5 +80,9 @@ updated in each one individually if a global visual change is wanted:
   vs. `src/models/InterviewSession.ts`'s Mongoose schemas) — there's no shared package, so a
   field/enum change on one side (e.g. adding a `TOPICS`/`LEVELS` value) must be applied to both
   by hand.
-- If auth-related work surfaces a 404 on `/api/auth/dev-login`, that's the known gap described
-  in `.claude/rules/backend/auth.md`, not a regression to chase.
+- Auth is real end-to-end: `POST /api/auth/google` (Google OAuth), `POST /api/auth/register` /
+  `POST /api/auth/login` (email+password, `bcryptjs`-hashed). The old client-side `devLogin` /
+  `/api/auth/dev-login` stub described in earlier docs has been removed — don't reintroduce it.
+- **`PROGRESS.md`** (repo root) tracks in-flight work on the `client/` ↔ HTML-mockup parity
+  effort — which of the 10 planned steps are done, what's next, and known task dependencies.
+  Check it before starting new work in this area so you don't duplicate or skip a step.
