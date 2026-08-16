@@ -1,4 +1,4 @@
-.PHONY: help verify verify-syntax verify-devcontainer verify-whitelist verify-sandbox verify-firewall test build rebuild clean clean-artifacts
+.PHONY: help dev dev-client migrate verify verify-syntax verify-devcontainer verify-whitelist verify-sandbox verify-firewall test build rebuild clean clean-artifacts
 
 PROJECT_NAME := ai-interview-trainer
 TEST_CMD := npm test
@@ -6,17 +6,30 @@ CLEAN_PATHS := node_modules dist
 
 help:
 	@echo "Targets:"
+	@echo "  dev                 Запустити сервер у dev-режимі (tsx watch src/index.ts)"
+	@echo "  dev-client          Запустити client (Vite dev server) з client/"
+	@echo "  migrate             Пояснення міграцій схеми (Mongoose — формальних міграцій немає)"
 	@echo "  verify              Запустити всі security перевірки"
 	@echo "  verify-syntax       JSON, bash syntax, devcontainer runArgs, whitelist consistency"
 	@echo "  verify-devcontainer Перевірити devcontainer.json runArgs і postStartCommand"
 	@echo "  verify-whitelist    Перевірити консистентність sandbox і init-firewall whitelists"
 	@echo "  verify-sandbox      Перевірити що sandbox блокує cat .env (потребує Docker)"
 	@echo "  verify-firewall     Перевірити firewall у devcontainer (тільки всередині контейнера)"
-	@echo "  test                Запустити unit тести"
+	@echo "  test                Запустити unit тести (сервер)"
 	@echo "  build               Зібрати Docker image"
 	@echo "  rebuild             Перезібрати без cache"
 	@echo "  clean               Прибрати containers і volumes (build artifacts: 'make clean-artifacts')"
 	@echo "  clean-artifacts     Видалити локальні build/dependency артефакти ($(CLEAN_PATHS))"
+
+dev:
+	@npm run dev
+
+dev-client:
+	@cd client && npm run dev
+
+migrate:
+	@echo "Схема даних керується Mongoose (schema-on-write), формального migration tool немає."
+	@echo "Якщо потрібна разова зміна форми документів — додай one-off script у src/ і задокументуй у docs/adr/."
 
 verify: verify-syntax
 	@echo ""

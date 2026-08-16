@@ -86,3 +86,12 @@ updated in each one individually if a global visual change is wanted:
 - **`PROGRESS.md`** (repo root) tracks in-flight work on the `client/` ↔ HTML-mockup parity
   effort — which of the 10 planned steps are done, what's next, and known task dependencies.
   Check it before starting new work in this area so you don't duplicate or skip a step.
+- **Project-level docs** (repo root): `SPEC.md` (goals/non-goals/technical decisions/acceptance
+  criteria), `ARCHITECTURE.md` (layered-backend pattern and the `routes → controllers → services
+  → models` dependency rule), `docs/adr/` (architecture decision records, starting with
+  `0001-initial-setup.md`). Read these before proposing an architectural change — a new ADR
+  should follow when a decision recorded there is revisited.
+- **Root `Makefile`** now also exposes app-level targets alongside the existing sandbox/firewall
+  verification ones: `make dev` (server, `tsx watch`), `make dev-client` (client Vite dev
+  server), `make test` (server unit tests), `make migrate` (currently a documentation stub — see
+  `docs/adr/0001-initial-setup.md` for why there's no formal migration tool yet).
