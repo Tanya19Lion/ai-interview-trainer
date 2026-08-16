@@ -63,3 +63,17 @@ export type { FeedbackCardProps } from './FeedbackCard/FeedbackCard';
 
 export { SessionSummary } from './SessionSummary/SessionSummary';
 export type { SessionSummaryProps, SessionResult } from './SessionSummary/SessionSummary';
+
+export { HistoryTable } from './HistoryTable/HistoryTable';
+export type { HistoryTableProps } from './HistoryTable/HistoryTable';
+
+export { Heatmap } from './Heatmap/Heatmap';
+export type { HeatmapProps } from './Heatmap/Heatmap';
+
+export { LangOverlay } from './LangOverlay/LangOverlay';
+
+export { Reveal } from './Reveal/Reveal';
+export type { RevealProps } from './Reveal/Reveal';
+
+export { ReviewModal } from './ReviewModal/ReviewModal';
+export type { ReviewModalProps } from './ReviewModal/ReviewModal';

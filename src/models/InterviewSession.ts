@@ -9,6 +9,7 @@ const questionAttemptSchema = new Schema(
 		answer: { type: String, required: true },
 		score: { type: Number, required: true, min: 0, max: 10 },
 		feedback: { type: String, required: true },
+		correctAnswer: { type: String, required: true },
 		weakTopics: { type: [String], default: [] },
 	},
 	{ _id: false },

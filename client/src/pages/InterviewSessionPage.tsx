@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { AnswerForm, Button, FeedbackCard, QuestionCard, SessionSummary } from '../components';
+import { AnswerForm, Button, FeedbackCard, QuestionCard, SessionSummary, Spinner } from '../components';
 import type { SessionResult } from '../components';
+import { useActiveSession } from '../hooks/useActiveSession';
+import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useSubmitAnswer } from '../hooks/useSubmitAnswer';
 import { useInterviewFocus } from '../lib/interviewFocus';
 import type { Level, Topic } from '../types/interview';
@@ -30,7 +32,26 @@ export function InterviewSessionPage() {
 	const { sessionId } = useParams<{ sessionId: string }>();
 	const location = useLocation();
 	const navigate = useNavigate();
-	const bootstrap = location.state as SessionBootstrap | null;
+	const bootstrapFromState = location.state as SessionBootstrap | null;
+
+	// location.state is lost on a hard reload / direct link — reload fallback re-derives it from
+	// the server instead of dead-ending on "session unavailable".
+	const needsFetch = !bootstrapFromState && !!sessionId;
+	const sessionDetail = useSessionDetail(needsFetch ? sessionId! : null);
+	const needsActiveQuestion = needsFetch && sessionDetail.data?.status === 'in_progress';
+	const activeSession = useActiveSession(needsActiveQuestion);
+
+	const fetchedBootstrap: SessionBootstrap | null =
+		needsActiveQuestion && activeSession.data && activeSession.data.sessionId === sessionId
+			? {
+					topic: activeSession.data.topic,
+					level: activeSession.data.level,
+					question: activeSession.data.question,
+					questionIndex: activeSession.data.questionIndex,
+					totalQuestions: activeSession.data.totalQuestions,
+				}
+			: null;
+	const bootstrap = bootstrapFromState ?? fetchedBootstrap;
 
 	const [question, setQuestion] = useState(bootstrap?.question ?? '');
 	const [questionIndex, setQuestionIndex] = useState(bootstrap?.questionIndex ?? 0);
@@ -41,6 +62,15 @@ export function InterviewSessionPage() {
 
 	const submitAnswer = useSubmitAnswer(sessionId ?? '');
 	const { setFocus } = useInterviewFocus();
+
+	const hydratedFromFetch = useRef(false);
+	useEffect(() => {
+		if (bootstrapFromState || hydratedFromFetch.current || !fetchedBootstrap) return;
+		hydratedFromFetch.current = true;
+		setQuestion(fetchedBootstrap.question);
+		setQuestionIndex(fetchedBootstrap.questionIndex);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [fetchedBootstrap]);
 
 	useEffect(() => {
 		if (!bootstrap || finalAverageScore !== null) {
@@ -61,11 +91,51 @@ export function InterviewSessionPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [bootstrap, questionIndex, finalAverageScore]);
 
-	if (!bootstrap || !sessionId) {
+	if (!sessionId) {
+		return (
+			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
+				<p style={{ color: 'var(--slate)' }}>Сесія не знайдена — почни нову.</p>
+				<Button variant="primary" onClick={() => navigate('/interview/new')}>
+					Нова сесія
+				</Button>
+			</div>
+		);
+	}
+
+	// Reload fallback: the session already finished before the page loaded — render its
+	// persisted summary directly instead of trying to resume live answering.
+	if (!bootstrap && needsFetch && sessionDetail.data?.status === 'completed') {
+		const detail = sessionDetail.data;
+		return (
+			<SessionSummary
+				topic={detail.topic}
+				level={detail.level}
+				averageScore={detail.averageScore ?? 0}
+				results={detail.questions.map((q) => ({
+					question: q.question,
+					score: q.score,
+					skipped: q.answer === '',
+					weakTopics: q.weakTopics,
+				}))}
+				onRestart={() => navigate('/interview/new')}
+				onHome={() => navigate('/')}
+			/>
+		);
+	}
+
+	if (!bootstrap && needsFetch && (sessionDetail.isLoading || activeSession.isLoading)) {
+		return (
+			<div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-6) 0' }}>
+				<Spinner />
+			</div>
+		);
+	}
+
+	if (!bootstrap) {
 		return (
 			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
 				<p style={{ color: 'var(--slate)' }}>
-					Ця сесія недоступна після перезавантаження сторінки — почни нову.
+					Ця сесія недоступна — можливо, вона вже неактивна. Почни нову.
 				</p>
 				<Button variant="primary" onClick={() => navigate('/interview/new')}>
 					Нова сесія
@@ -126,7 +196,7 @@ export function InterviewSessionPage() {
 				averageScore={finalAverageScore}
 				results={results}
 				onRestart={() => navigate('/interview/new')}
-				onHome={() => navigate('/interview/new')}
+				onHome={() => navigate('/')}
 			/>
 		);
 	}

@@ -1,0 +1,86 @@
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	background: rgba(10, 11, 15, 0.78);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.5rem;
+	opacity: 1;
+	transition: opacity 0.25s ease;
+}
+.leaving {
+	opacity: 0;
+}
+
+.card {
+	max-width: 380px;
+	width: 100%;
+	text-align: center;
+	background: var(--ink-2);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-l);
+	padding: 2.2rem 1.9rem;
+	box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+}
+
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	letter-spacing: 0.02em;
+	color: var(--amber);
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	margin-bottom: 1rem;
+}
+.eyebrow::before {
+	content: '';
+	width: 0.55em;
+	height: 0.55em;
+	background: currentColor;
+	border-radius: 1px;
+	display: inline-block;
+}
+
+.question {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.3rem;
+	color: var(--off-white);
+	margin: 0;
+	line-height: 1.35;
+}
+.questionSub {
+	margin: 0.35rem 0 0 0;
+	font-size: 0.95rem;
+	color: var(--slate);
+	line-height: 1.5;
+}
+
+.options {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	margin-top: 1.6rem;
+}
+.langBtn {
+	width: 100%;
+	background: var(--ink-3);
+	border: 1.5px solid var(--line);
+	border-radius: var(--radius-s);
+	color: var(--off-white);
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: 0.98rem;
+	padding: 0.85rem 1rem;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+.langBtn:hover {
+	border-color: var(--amber);
+	background: var(--ink-2);
+}

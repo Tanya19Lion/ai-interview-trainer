@@ -1,6 +1,8 @@
 import { apiFetch } from './client';
 import type {
 	ActiveSessionResponse,
+	HistoryFilters,
+	HistoryResponse,
 	InterviewSessionDetail,
 	StartSessionRequest,
 	StartSessionResponse,
@@ -26,4 +28,12 @@ export async function getActiveSession(): Promise<ActiveSessionResponse | null> 
 
 export function getSessionDetail(id: string): Promise<InterviewSessionDetail> {
 	return apiFetch(`/history/${id}`);
+}
+
+export function getHistory(filters: HistoryFilters = {}): Promise<HistoryResponse> {
+	const params = new URLSearchParams();
+	if (filters.topic) params.set('topic', filters.topic);
+	if (filters.level) params.set('level', filters.level);
+	const query = params.toString();
+	return apiFetch(`/history${query ? `?${query}` : ''}`);
 }

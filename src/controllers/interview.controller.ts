@@ -77,6 +77,7 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 		answer,
 		score: review.score,
 		feedback: review.feedback,
+		correctAnswer: review.correctAnswer,
 		weakTopics: review.weakTopics,
 	});
 

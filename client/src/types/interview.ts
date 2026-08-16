@@ -62,6 +62,7 @@ export interface QuestionAttempt {
 	answer: string;
 	score: number;
 	feedback: string;
+	correctAnswer: string;
 	weakTopics: string[];
 }
 
@@ -73,4 +74,21 @@ export interface InterviewSessionDetail {
 	averageScore?: number;
 	completedAt?: string;
 	questions: QuestionAttempt[];
+}
+
+export interface HistorySessionSummary {
+	id: string;
+	topic: Topic;
+	level: Level;
+	averageScore?: number;
+	completedAt?: string;
+}
+
+export interface HistoryFilters {
+	topic?: Topic;
+	level?: Level;
+}
+
+export interface HistoryResponse {
+	sessions: HistorySessionSummary[];
 }

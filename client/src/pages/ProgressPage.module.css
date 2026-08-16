@@ -1,0 +1,180 @@
+.page {
+	display: grid;
+	gap: var(--space-4);
+	max-width: var(--container);
+	margin-inline: auto;
+}
+
+.loading {
+	display: flex;
+	justify-content: center;
+	padding: var(--space-6) 0;
+}
+
+.head {
+	display: grid;
+	gap: 0.4rem;
+}
+.h1 {
+	font-family: var(--font-display);
+	color: var(--off-white);
+}
+.subtitle {
+	color: var(--slate);
+	max-width: 640px;
+}
+
+.badgeRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.55rem;
+}
+
+.card {
+	background: var(--ink-2);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-m);
+	padding: var(--space-4);
+}
+.cardTitle {
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+	color: var(--slate);
+	font-weight: 500;
+	margin: 0 0 var(--space-3) 0;
+}
+.empty {
+	color: var(--slate);
+	font-size: 0.88rem;
+}
+
+.twoCol {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--space-4);
+}
+@media (max-width: 860px) {
+	.twoCol {
+		grid-template-columns: 1fr;
+	}
+}
+
+.barRow {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	padding: 0.55rem 0;
+}
+.barName {
+	font-family: var(--font-mono);
+	width: 7em;
+	flex-shrink: 0;
+	color: var(--off-white);
+	font-size: 0.83rem;
+}
+.track {
+	flex: 1;
+	height: 8px;
+	background: var(--ink-3);
+	border-radius: 4px;
+	overflow: hidden;
+}
+.fill {
+	display: block;
+	height: 100%;
+	border-radius: 4px;
+}
+.fill.good {
+	background: var(--green);
+}
+.fill.mid {
+	background: var(--amber);
+}
+.fill.low {
+	background: var(--rust);
+}
+.barVal {
+	font-family: var(--font-mono);
+	width: 3em;
+	text-align: right;
+	color: var(--slate);
+	font-size: 0.8rem;
+	flex-shrink: 0;
+}
+
+.trendWrap {
+	margin-top: 0.3rem;
+}
+.trendLabels {
+	display: flex;
+	justify-content: space-between;
+	font-family: var(--font-mono);
+	font-size: 0.74rem;
+	color: var(--slate-2);
+	margin-top: 0.5rem;
+}
+
+.recoList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+.recoCard {
+	padding: 0.85rem 1rem;
+	border-left: 3px solid var(--rust);
+	background: var(--rust-soft);
+	border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+.recoAmber {
+	border-left-color: var(--amber);
+	background: var(--amber-soft);
+}
+.recoTitle {
+	font-family: var(--font-mono);
+	font-weight: 600;
+	font-size: 0.88rem;
+	color: var(--off-white);
+}
+.recoDesc {
+	font-size: 0.85rem;
+	color: var(--slate);
+	margin-top: 0.3rem;
+	line-height: 1.55;
+}
+
+.levelBar {
+	display: flex;
+	height: 14px;
+	border-radius: 999px;
+	overflow: hidden;
+}
+.levelBar span {
+	height: 100%;
+}
+.levelLegend {
+	display: flex;
+	gap: 1.4rem;
+	margin-top: 0.8rem;
+	flex-wrap: wrap;
+}
+.legendItem {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--slate);
+}
+.legendDot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+}
+
+.footerNote {
+	margin-top: var(--space-2);
+	font-family: var(--font-mono);
+	font-size: 0.76rem;
+	color: var(--slate-2);
+	text-align: center;
+}

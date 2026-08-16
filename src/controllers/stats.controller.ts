@@ -56,6 +56,7 @@ export async function getStats(req: AuthedRequest, res: Response): Promise<void>
 	const topicStats = Array.from(byTopic.entries()).map(([topic, { total, count }]) => ({
 		topic,
 		accuracy: total / count / 10,
+		count,
 	}));
 
 	const streakDays = computeStreakDays(
