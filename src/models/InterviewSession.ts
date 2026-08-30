@@ -1,6 +1,6 @@
 import { Schema, model, Types, type InferSchemaType } from 'mongoose';
 
-export const TOPICS = ['react', 'javascript', 'nodejs', 'typescript', 'nextjs', 'css', 'html', 'sql'] as const;
+export const TOPICS = ['react', 'javascript', 'nodejs', 'typescript', 'nextjs', 'css', 'html', 'sql', 'restapi'] as const;
 export const LEVELS = ['junior', 'middle', 'senior'] as const;
 
 const questionAttemptSchema = new Schema(

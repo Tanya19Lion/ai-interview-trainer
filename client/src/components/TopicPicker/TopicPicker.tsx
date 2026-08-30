@@ -10,6 +10,7 @@ const TOPIC_META: Record<Topic, { tag: string; desc: string }> = {
 	css: { tag: '#css', desc: 'Каскад, флекс/ґрід, специфічність' },
 	html: { tag: '#html', desc: 'Семантика, доступність, форми' },
 	sql: { tag: '#sql', desc: 'Джойни, індекси, нормалізація' },
+	restapi: { tag: '#restapi', desc: 'Ресурси, статус-коди, версіонування' },
 };
 
 export interface TopicPickerProps {
