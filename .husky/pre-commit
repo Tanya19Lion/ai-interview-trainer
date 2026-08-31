@@ -1,0 +1,17 @@
+# Blocks commits when client/server TOPICS or LEVELS enums have drifted.
+# See .claude/skills/sync-domain-enums/SKILL.md for the full checklist.
+
+PYTHON=python3
+command -v python3 >/dev/null 2>&1 || PYTHON=python
+
+"$PYTHON" .claude/skills/sync-domain-enums/scripts/check_enums.py "$(pwd)"
+status=$?
+
+if [ "$status" -ne 0 ]; then
+    echo ""
+    echo "COMMIT BLOCKED: client/server TOPICS or LEVELS enums are out of sync."
+    echo "Run the sync-domain-enums skill checklist to fix, or see the drift report above."
+    exit 1
+fi
+
+exit 0

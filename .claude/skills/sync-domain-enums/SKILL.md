@@ -26,10 +26,22 @@ description: Use when adding, renaming, or removing a value in the interview dom
 - **`correctAnswer` was already dropped once by exactly this kind of asymmetry.** Per `.claude/rules/backend/data-model.md`: `ai.service.ts`'s `reviewAnswer()` always computed `correctAnswer`, but `submitAnswer` originally stripped it before `session.questions.push(...)`, so it never reached the database — visible only transiently in the live `SubmitAnswerResponse`, not in any persisted history. Nothing failed loudly; `ReviewModal`'s diff card just quietly had no data to show. Treat any field that exists in more than one place in the request/response/persistence chain with the same suspicion as the enum arrays — the failure mode is silent, not a compile error.
 - **Don't assume `Record<Topic, ...>` maps need the same manual double-checking as the raw arrays.** `TOPIC_LABEL` and `TOPIC_META` *are* structurally tied to `Topic` via TypeScript's `Record<Topic, X>`, so a missing key is a real `tsc` error, not a silent gap — treat those two as "compiler will catch it," and spend your manual-review effort on the client/server array pair and any Mongoose-only validation instead.
 
-## Planned for v2 (not yet done)
+## Automated enforcement
 
-- **Wire `scripts/check_enums.py` into `/scaffold-verify` or a pre-commit hook** so drift is
-  caught automatically on every verification run instead of only when someone remembers to
-  invoke this skill by hand. Deliberately deferred: turning this into a blocking gate needs a
-  decision on how to handle a deliberate WIP commit that touches only one side (e.g. mid-refactor)
-  without breaking every commit until the other side lands. Revisit once that policy is decided.
+- `.husky/pre-commit` runs `scripts/check_enums.py` on every commit and **blocks the commit**
+  (non-zero exit, drift report printed) if `TOPICS`/`LEVELS` disagree between
+  `client/src/types/interview.ts` and `src/models/InterviewSession.ts`. No skip marker — a
+  one-sided WIP change to either file must be finished (or the enum edit reverted) before it can
+  be committed.
+- This is wired through [husky](https://typicode.github.io/husky/): the root `package.json` has a
+  `"prepare": "husky"` script and `husky` in `devDependencies`, and `.husky/pre-commit` is
+  committed to the repo. Running `npm install` at the repo root (which every contributor already
+  needs to do) runs `prepare`, which points git's `core.hooksPath` at `.husky/_` — so the gate is
+  live for everyone after a normal clone + install, with no extra manual step.
+- Two Claude Code hooks (`.claude/settings.json`, scripts under `.claude/hooks/`) reinforce the
+  same gate for Claude sessions specifically: a `PostToolUse` hook
+  (`post_tool_use_enum_check.py`) re-runs `check_enums.py` immediately after any Edit/Write on
+  either enum file, so drift surfaces in-session instead of only at commit time; a `PreToolUse`
+  hook (`pre_tool_use_block_no_verify.py`) denies any `git commit --no-verify`/`-n` Bash call,
+  closing the obvious way to bypass the husky gate. Both are session-local (Claude Code hooks, not
+  git hooks) — they don't affect commits made outside Claude Code.

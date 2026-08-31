@@ -94,5 +94,42 @@
 		"BASH_MAX_TIMEOUT_MS": "900000",
 		"CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
 		"CLAUDE_CODE_NEW_INIT": "1"
+	},
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/post_tool_use_enum_check.py",
+						"timeout": 15
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/pre_tool_use_block_no_verify.py",
+						"timeout": 10
+					}
+				]
+			}
+		],
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/session_start_progress.py",
+						"timeout": 10
+					}
+				]
+			}
+		]
 	}
 }
