@@ -36,7 +36,8 @@ def main() -> int:
         return 0
 
     root = repo_root()
-    script = os.path.join(root, ".claude", "skills", "sync-domain-enums", "scripts", "check_enums.py")
+    plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    script = os.path.join(plugin_root, "skills", "sync-domain-enums", "scripts", "check_enums.py")
     result = subprocess.run(
         [sys.executable, script, root], capture_output=True, text=True
     )

@@ -1,10 +1,10 @@
 # Blocks commits when client/server TOPICS or LEVELS enums have drifted.
-# See .claude/skills/sync-domain-enums/SKILL.md for the full checklist.
+# See plugins/sync-domain-enums-guard/skills/sync-domain-enums/SKILL.md for the full checklist.
 
 PYTHON=python3
 command -v python3 >/dev/null 2>&1 || PYTHON=python
 
-"$PYTHON" .claude/skills/sync-domain-enums/scripts/check_enums.py "$(pwd)"
+"$PYTHON" plugins/sync-domain-enums-guard/skills/sync-domain-enums/scripts/check_enums.py "$(pwd)"
 status=$?
 
 if [ "$status" -ne 0 ]; then

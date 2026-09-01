@@ -28,20 +28,21 @@ description: Use when adding, renaming, or removing a value in the interview dom
 
 ## Automated enforcement
 
-- `.husky/pre-commit` runs `scripts/check_enums.py` on every commit and **blocks the commit**
-  (non-zero exit, drift report printed) if `TOPICS`/`LEVELS` disagree between
-  `client/src/types/interview.ts` and `src/models/InterviewSession.ts`. No skip marker — a
-  one-sided WIP change to either file must be finished (or the enum edit reverted) before it can
-  be committed.
+- `.husky/pre-commit` runs `plugins/sync-domain-enums-guard/skills/sync-domain-enums/scripts/check_enums.py`
+  on every commit and **blocks the commit** (non-zero exit, drift report printed) if
+  `TOPICS`/`LEVELS` disagree between `client/src/types/interview.ts` and
+  `src/models/InterviewSession.ts`. No skip marker — a one-sided WIP change to either file must
+  be finished (or the enum edit reverted) before it can be committed.
 - This is wired through [husky](https://typicode.github.io/husky/): the root `package.json` has a
   `"prepare": "husky"` script and `husky` in `devDependencies`, and `.husky/pre-commit` is
   committed to the repo. Running `npm install` at the repo root (which every contributor already
   needs to do) runs `prepare`, which points git's `core.hooksPath` at `.husky/_` — so the gate is
   live for everyone after a normal clone + install, with no extra manual step.
-- Two Claude Code hooks (`.claude/settings.json`, scripts under `.claude/hooks/`) reinforce the
-  same gate for Claude sessions specifically: a `PostToolUse` hook
-  (`post_tool_use_enum_check.py`) re-runs `check_enums.py` immediately after any Edit/Write on
-  either enum file, so drift surfaces in-session instead of only at commit time; a `PreToolUse`
-  hook (`pre_tool_use_block_no_verify.py`) denies any `git commit --no-verify`/`-n` Bash call,
-  closing the obvious way to bypass the husky gate. Both are session-local (Claude Code hooks, not
-  git hooks) — they don't affect commits made outside Claude Code.
+- This plugin provides two Claude Code hooks (`hooks/hooks.json`, scripts under `hooks/scripts/`)
+  that reinforce the same gate for Claude sessions specifically, once the plugin is installed and
+  enabled: a `PostToolUse` hook (`post_tool_use_enum_check.py`) re-runs `check_enums.py`
+  immediately after any Edit/Write on either enum file, so drift surfaces in-session instead of
+  only at commit time; a `PreToolUse` hook (`pre_tool_use_block_no_verify.py`) denies any
+  `git commit --no-verify`/`-n` Bash call, closing the obvious way to bypass the husky gate. Both
+  are session-local (Claude Code hooks, not git hooks) — they don't affect commits made outside
+  Claude Code, and they only run once this plugin is installed for the session/project.

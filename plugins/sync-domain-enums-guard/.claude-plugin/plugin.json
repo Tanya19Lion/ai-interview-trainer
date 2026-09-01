@@ -1,0 +1,9 @@
+{
+	"name": "sync-domain-enums-guard",
+	"version": "1.0.0",
+	"description": "Skill and hooks that guard against client/server TOPICS and LEVELS enum drift in the AI Interview Trainer domain model.",
+	"author": {
+    	"name": "Tanya19Lion"
+  	},
+	"keywords": ["enum-sync", "mongoose", "typescript", "data-model"]
+}

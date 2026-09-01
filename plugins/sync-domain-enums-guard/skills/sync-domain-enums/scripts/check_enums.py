@@ -77,7 +77,7 @@ def main() -> int:
     if ok:
         print("\nAll enums in sync.")
         return 0
-    print("\nDrift found - see .claude/skills/sync-domain-enums/SKILL.md checklist to fix.")
+    print("\nDrift found - see plugins/sync-domain-enums-guard/skills/sync-domain-enums/SKILL.md checklist to fix.")
     return 1
 
 
