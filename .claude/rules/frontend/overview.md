@@ -5,15 +5,15 @@ paths:
 
 # Client app (`client/`) — overview
 
-A Vite + React 19 + TypeScript rebuild of the root-level `diff-*.html` prototypes, and the real
-frontend consuming the server API in `src/` (see `.claude/rules/backend/`). Key scripts (run
+A Vite + React 19 + TypeScript app,  the real frontend consuming the server API in `src/` (see
+`.claude/rules/backend/`). Key scripts (run
 from inside `client/`): `npm run dev` (Vite dev server), `npm run build` (`tsc -b && vite build`),
 `npm run lint` (`oxlint`), `npm run preview`.
 
 - **i18n is live**: `client/src/i18n.ts` initializes `react-i18next` with `keySeparator: false`/
-  `nsSeparator: false` — translation keys are flat strings (`t('hero.h1pre')`) ported 1:1 from the
-  mockup's `TRANSLATIONS` object into `client/src/locales/{uk,en}.json`, not nested i18next
-  namespacing. `main.tsx` wraps the app in `I18nextProvider`. Currently only `LandingPage.tsx`
+  `nsSeparator: false` — translation keys are flat strings (`t('hero.h1pre')`) stored in
+  `client/src/locales/{uk,en}.json`, not nested i18next namespacing. `main.tsx` wraps the app in
+  `I18nextProvider`. Currently only `LandingPage.tsx`
   (`/welcome`) uses `useTranslation()` — the rest of the app (`HomePage`, `HistoryPage`, etc.) is
   still hardcoded Ukrainian, matching how `components/Heatmap`/`components/HistoryTable` are not
   i18n-aware either (see `.claude/rules/frontend/components.md`). Don't assume `t()` is
@@ -21,9 +21,6 @@ from inside `client/`): `npm run dev` (Vite dev server), `npm run build` (`tsc -
 - `client/tsconfig.app.json` has `"resolveJsonModule": true` specifically so `i18n.ts` can
   `import uk from './locales/uk.json'` and have `tsc -b` type-check it — don't remove it while
   those imports exist.
-- When porting behavior or markup from a root-level `diff-*.html` prototype into `client/`,
-  prefer expressing it as a token-driven component under `client/src/components/` rather than
-  copying inline styles — that's the whole point of the ongoing migration.
 - If auth-related work surfaces a 404 on `/api/auth/dev-login`, that's the known gap described
   in `.claude/rules/backend/auth.md`, not a regression to chase.
 - `HomePage` (`/`), `HistoryPage` (`/history`), `ProgressPage` (`/progress`), and `LandingPage`
