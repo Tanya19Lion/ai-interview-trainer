@@ -1,0 +1,199 @@
+# Phase: Architect (handoff artifact to TL+devs before implementation).
+# Source of truth for the actual behavior remains the code:
+# src/routes/interview.routes.ts, src/controllers/interview.controller.ts.
+# Re-run api-sync-report.md after editing either side.
+openapi: 3.0.3
+info:
+  title: Interview flow API
+  version: "1.0.0"
+  description: >
+    Session lifecycle for AI-driven practice interviews. All endpoints require
+    the auth session cookie (see src/middleware/auth.ts) and are mounted under
+    /api/interview.
+servers:
+  - url: /api/interview
+
+paths:
+  /start:
+    post:
+      operationId: startSession
+      summary: Create a new interview session and return its first question.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+      responses:
+        '201':
+          description: Session created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartSessionResponse'
+        '400':
+          description: Invalid topic or level.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated.
+
+  /active:
+    get:
+      operationId: getActiveSession
+      summary: Return the caller's newest in-progress session with a fresh question.
+      responses:
+        '200':
+          description: An in-progress session exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveSessionResponse'
+        '204':
+          description: No in-progress session for this user.
+        '401':
+          description: Not authenticated.
+
+  /{sessionId}/answer:
+    post:
+      operationId: submitAnswer
+      summary: Submit an answer, receive an AI review, and get the next question or the final score.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAnswerRequest'
+      responses:
+        '200':
+          description: Review of this answer, plus either the next question or the final score.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitAnswerResponse'
+        '400':
+          description: Missing question or answer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found for this user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated.
+
+components:
+  schemas:
+    Topic:
+      type: string
+      enum: [react, javascript, nodejs, typescript, nextjs, css, html, sql, restapi]
+    Level:
+      type: string
+      enum: [junior, middle, senior]
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    StartSessionRequest:
+      type: object
+      required: [topic, level]
+      properties:
+        topic:
+          $ref: '#/components/schemas/Topic'
+        level:
+          $ref: '#/components/schemas/Level'
+
+    StartSessionResponse:
+      type: object
+      required: [sessionId, questionIndex, totalQuestions, question]
+      properties:
+        sessionId:
+          type: string
+        questionIndex:
+          type: integer
+          example: 0
+        totalQuestions:
+          type: integer
+          example: 5
+        question:
+          type: string
+
+    ActiveSessionResponse:
+      type: object
+      required: [sessionId, topic, level, questionIndex, totalQuestions, question]
+      properties:
+        sessionId:
+          type: string
+        topic:
+          $ref: '#/components/schemas/Topic'
+        level:
+          $ref: '#/components/schemas/Level'
+        questionIndex:
+          type: integer
+        totalQuestions:
+          type: integer
+        question:
+          type: string
+
+    SubmitAnswerRequest:
+      type: object
+      required: [question, answer]
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+
+    AnswerReview:
+      type: object
+      required: [score, feedback, correctAnswer, weakTopics]
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+        feedback:
+          type: string
+        correctAnswer:
+          type: string
+        weakTopics:
+          type: array
+          items:
+            type: string
+
+    SubmitAnswerResponse:
+      type: object
+      required: [review, done]
+      properties:
+        review:
+          $ref: '#/components/schemas/AnswerReview'
+        done:
+          type: boolean
+        averageScore:
+          type: number
+          description: Present only when done=true.
+        questionIndex:
+          type: integer
+          description: Present only when done=false.
+        totalQuestions:
+          type: integer
+          description: Present only when done=false.
+        question:
+          type: string
+          description: The next question. Present only when done=false.
