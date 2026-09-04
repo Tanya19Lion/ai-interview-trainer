@@ -1,6 +1,7 @@
 ---
 name: sdlc-audit
 description: Inspects a feature's SDLC artifact map (idea-brief, PRD, SAD, ADRs, data-model, openapi.yaml, api-sync-report, tasks/, CONTEXT) under docs/features/<feature>/, reporting which artifacts are missing or stale and what breaks when each is skipped. Use whenever the user asks to audit documentation completeness, check artifact drift, review SDLC hygiene for a feature/module, or asks "what docs are we missing for X" — even if they don't name a specific artifact.
+argument-hint: foldername
 ---
 
 ## What this skill does
