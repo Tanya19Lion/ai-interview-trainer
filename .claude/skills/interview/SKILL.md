@@ -34,7 +34,7 @@ Idea author (PM / Eng / CTO / anyone). Tech Lead joins at multi-perspective revi
 - «intake feature <slug>», «start new feature with CONTEXT», «full intake for <slug>».
 - `/sdlc-interview <slug>` as explicit invocation.
 - User drops a raw idea in prose and asks «format this per SDLC» / «run ideation for <slug>».
-- Glossary-aware: on start the skill reads `CONTEXT.md` if it exists (repo root or `docs/features/<slug>/`), keeps the glossary as session state, and triggers `sdlc:fix-term` inline for new domain terms.
+- Glossary-aware: on start the skill reads `CONTEXT.md` if it exists (repo root or `docs/features/<slug>/`), keeps the glossary as session state, and triggers `fix-term` inline for new domain terms.
 - Skip if `docs/features/<slug>/idea-brief.md` already exists with `status: Confirmed` and is fresh (≤2 weeks) — update it first, don't rewrite.
 
 ## Inputs
@@ -65,27 +65,27 @@ Idea author (PM / Eng / CTO / anyone). Tech Lead joins at multi-perspective revi
 
 3. **Option `description` — 3-5 речень** з трьох елементів:
    - **Що технічно станеться**: який рядок у idea-brief зміниться, які later phases на цю відповідь впливають
-   - **Що опція означає простими словами** — без жаргону:
-     - Не «RICE score 80, Approach C» → «RICE-формула (Reach × Impact × Confidence / Effort) дала 80 для варіанту C; це значить, що C виглядає більш виправданим за ресурсами, ніж A (60) або B (45) — але це Claude-прогноз, не facts»
-     - Не «Feasibility 3/3 ☑» → «всі три блоки feasibility (Skills, Time, Tech) Claude позначив як «підтверджено» — це значить, що у команди є експертиза, у release-windows є місце, і tech-stack не блокує. Якщо щось з цього TBD — Phase 11 Recommendation буде з warning»
-     - Не «strategic vector» → «головний напрям, у якому ми йдемо: напр., «consolidate content delivery всередину BeerLMS» — все, що suggests розширення scope поза цей напрям, у Phase 8-9 буде flagged як scope creep»
+   - **Що опція означає простими словами** — без жаргону, напр. не «Feasibility 3/3 ☑» → «всі три блоки feasibility (Skills, Time, Tech) Claude позначив як «підтверджено» — це значить, що у команди є експертиза, у release-windows є місце, і tech-stack не блокує. Якщо щось з цього TBD — Phase 11 Recommendation буде з warning»
    - **Hidden trade-off** — якщо опція має наслідок, який junior міг би не побачити (напр. «Mark recommendation as TBD» → «всі downstream skill-и (write-prd, architecture-design) hard-refuse поки status не Confirmed — це блокує всю SDLC-pipeline для цієї фічі») — згадати це прямо у description
 
 **Заборонено:** стислі англомовні labels («Confirm», «Adjust», «TBD»); однорядкові descriptions; технічні терміни без розшифровки; trade-off-и заховані у follow-up.
 
 **Why:** PM-аудиторія цього skill-у працює з product-мовою, не з engineering-жаргоном; junior-аудиторія не має повного контексту про SDLC-pipeline. Дослівна цитата фідбеку 2026-05-23: «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці» (контекст — sdlc:architecture-design, з вимогою «закласти не тільки в архітектуру а і в бриф ідею і в врайт прд»). Цю вимогу віддзеркалено в `sdlc:architecture-design/references/ask-examples.md` і `sdlc:write-prd/references/ask-examples.md`.
 
+**Tool limits:** `AskUserQuestion` дозволяє максимум 4 питання за виклик і 2-4 опції на питання — перевищення дає hard InputValidationError. Коли Phase 9/10 кажуть «1 multiSelect батч» для 4 RICE-чисел або 3 Feasibility-чекбоксів — це вкладається в ліміт (4 питання, по 2-4 опції кожне); якщо колись знадобиться більше кандидатів в одному питанні (напр. batch glossary terms) — розбивай на кілька викликів, не намагайся впхнути >4 опції.
+
 **Planning mode compatibility:** оскільки усі Write-операції зосереджені у Phase 12 (post-ExitPlanMode), skill коректно стартує у будь-якому permission mode (default / acceptEdits / plan / Auto). Якщо ExitPlanMode недоступний (тобто сесія була запущена не в plan mode) — Phase 12 виконується одразу після Phase 11, без переходу.
 
 ## Protocol
 
-**14 phases. Phases 0-11 read-only. Phase 11.5 = ExitPlanMode. Phases 12-14 execute writes + self-check + commit propose.**
+**Phases 0-14. Phases 0-11 read-only (session memory only, no Write/Edit/mkdir). End of Phase 11: ExitPlanMode handoff if in plan mode, else fall straight through. Phases 12-14 execute writes + self-check + commit propose.**
 
 ### 0. Pre-plan setup (read-only)
 
 - **Read** `./templates/idea-brief.md` — завантажити skeleton у session memory (NO copy yet).
 - **Read** `CONTEXT.md` (root and `docs/features/<slug>/` if exists) — завантажити `## Glossary` у session state.
 - **Verify** `docs/features/<slug>/idea-brief.md` does not exist with `status: Confirmed` (else: skip, update existing).
+- **Scope-check CONTEXT.md, якщо існує.** `CONTEXT.md` = domain glossary only (`## Glossary` + опційно `## Invariants`/`## Out of scope`) — ніякого progress-tracking prose. Якщо існуючий файл містить операційний контент (стан реалізації, unverified-зони, "де дивитись при багах") замість/на додачу до Glossary — це drift, не еталон: не копіюй цей паттерн і не пиши нові терміни всередину operational-прози. Заведи короткий флаг у session memory («CONTEXT.md тут має operational-контент, який слід перенести окремо, напр. у STATUS.md») і повідом користувачу під час Phase 12, а не мовчки.
 - **NO Write / Edit / mkdir.** Setup стає одним з steps плану, який буде виконано у Phase 12.
 
 ### 1. Idea capture (AskUserQuestion — mandatory)
@@ -105,12 +105,12 @@ Delivery: AskUserQuestion батчами по 2-3 (не all-at-once).
 
 ### 3. Glossary capture (deferred fix-term)
 
-На кожному новому domain-слові у відповідях користувача — додати term до session-state list `pending_glossary_terms`. **НЕ викликати** `sdlc:fix-term` зараз — це писало б у CONTEXT.md, що недопустимо у planning mode. Skip generic tech terms (HTTP, JSON, queue, cache, database). Terms apply-ються у Phase 12 (post-ExitPlanMode) перед Write idea-brief.md.
+На кожному новому domain-слові у відповідях користувача — додати term до session-state list `pending_glossary_terms`. **НЕ викликати** `fix-term` зараз — це писало б у CONTEXT.md, що недопустимо у planning mode. Skip generic tech terms (HTTP, JSON, queue, cache, database). Terms apply-ються у Phase 12 (post-ExitPlanMode) перед Write idea-brief.md.
 
 ### 4. Competitive research (Claude-driven, read-only)
 
 Claude автономно:
-- WebSearch + `mcp__plugin_qmd_qmd__query` для 3-5 конкурентів / adjacent solutions.
+- WebSearch (завжди) + `mcp__plugin_qmd_qmd__query`, якщо цей MCP-tool доступний у сесії (не гарантовано в кожному середовищі) — для 3-5 конкурентів / adjacent solutions.
 - Формує таблицю: **Product · URL · Features · Value (1-5 per feature) · Gap** у session memory.
 - Кожен рядок з footnote: date and search query used.
 - Якщо internal tool без market — `N/A — internal tool` з reason.
@@ -123,6 +123,8 @@ Shared prompt template, 3 personas виконуються паралельно �
 - **Variant-A (Simplicity):** найкоротший шлях, MVP-style, мінімум moving parts.
 - **Variant-B (Differentiation):** wow-factor / strategic moat / unique angle.
 - **Variant-C (Balanced):** trade-off між A та B.
+
+**Scope guardrail:** shared prompt template ОБОВ'ЯЗКОВО включає підтверджені `§5 Out of scope`-пункти з Phase 2 (verbatim). Якщо якийсь sub-agent пропонує підхід, що виходить за ці межі (напр. користувач сказав «без auto-sync», а Approach пропонує auto-sync як differentiation) — це дозволено, але sub-agent MUST позначити це явно одним реченням у своєму `Key trade-off` як «scope expansion vs. Phase 2» — не мовчки. Це дає шанс спіймати scope drift одразу на Phase 6 review, а не аж на Phase 11 confirm, коли RICE/Feasibility вже пораховані під розширений скоуп.
 
 Кожен sub-agent повертає 1-paragraph approach з:
 - **Name** (3-5 word).
@@ -143,24 +145,25 @@ Three personas виконуються паралельно через sub-agents
 
 Build §8 Synthesis matrix (3 personas × 3 approaches) з 6-word justifications per cell (+/0/-) у session memory.
 
-### 7. Trade-offs + edge cases (synthesis, read-only)
+### 7. Trade-offs synthesis (read-only)
 
 Claude synthesizes у session memory (no user input — review/edit only):
 - Trade-offs per approach: pros / cons table.
-- 5-8 edge cases that any approach must handle (data, integrations, failure modes, ops).
+
+Edge cases НЕ генеруються тут — це виключно робота Phase 8 (clean-context adversarial framing дає конкретніші, production-grounded edge cases, ніж synthesis з тим самим upstream-контекстом, який уже бачив усі approaches).
 
 ### 8. Devil's advocate (1 Agent.tool call з clean context, read-only)
 
 Spawn 1 sub-agent з чистим контекстом (NO upstream session memory), prompt: «знайди як це може провалитись. 5-10 attack vectors з production signals (що саме зламається, як це проявиться у monitoring/customer churn/incident)».
 
-Найкритичніший attack vector → reserved для §10 Risks. Решта — для §9 Edge cases.
+Це єдине джерело §9 Edge cases і §10 Risks: найкритичніший attack vector → reserved для §10 Risks. Решта (5-8 штук) — для §9 Edge cases.
 
 ### 9. Claude-proposed RICE (AskUserQuestion — mandatory)
 
 Claude обчислює R/I/C/E з upstream sections:
 - **Reach** ← §3 Users (кількість users / quarter affected).
 - **Impact** ← §2 Problem severity + Executive perspective bullets.
-- **Confidence** ← кількість TBDs / open questions; багато unresolved → 0.5; всі факти конкретні → 1.0.
+- **Confidence** ← кількість TBDs / open questions: 0.5 = кілька суттєвих unresolved-питань (напр. Reach — евристика без даних); 0.7 = здебільшого ясно, лишається 1-2 дрібних TBD; 0.8 = один незначний unknown; 1.0 = усі факти конкретні, нуль TBD.
 - **Effort** ← Effort signal з §7 approaches (S = 1-2 person-weeks, M = 3-5, L = 6-12).
 
 Compute `R × I × C / E`. AskUserQuestion per number (4 окремі checkpoints або 1 multiSelect батч) з опціями: `Confirm N` / `Adjust higher` / `Adjust lower` / `Mark TBD`. Rationale у idea-brief цитує upstream секцію.
@@ -188,19 +191,17 @@ Rationale MUST explicitly cite:
 
 AskUserQuestion для user confirm: `Accept recommendation` / `Pick different approach` / `Mark recommendation as TBD`.
 
-### 11.5. ExitPlanMode handoff (planning → execute)
-
-Усе вище — session memory only. Тепер skill **викликає `ExitPlanMode`** з planом який містить:
+**Handoff to execution.** Усе до цього моменту — session memory only. Якщо сесія стартувала у plan mode — викликати `ExitPlanMode` з planом, який містить:
 
 1. Create directory `docs/features/<slug>/` (if absent).
 2. Copy template `./templates/idea-brief.md` → `docs/features/<slug>/idea-brief.md`.
-3. Apply pending glossary terms (Phase 3 list) via `sdlc:fix-term` to `CONTEXT.md`.
+3. Apply pending glossary terms (Phase 3 list) via `fix-term` to `CONTEXT.md`.
 4. Fill 15 sections + Related + DoD self-check у новому файлі з усього session memory (Phases 1-11).
 5. Update frontmatter: `status: Confirmed`, `value_score.{rice,state,confirmed_at}`, `feasibility_state: confirmed`.
 6. Run Phase 13 self-check (regex, length, citations).
 7. Propose commit + next owner.
 
-Якщо ExitPlanMode tool недоступний (skill стартував не у plan mode) — пропустити цей step і виконати Phase 12 напряму. План у session memory залишається тим самим.
+Якщо ExitPlanMode tool недоступний (skill стартував не у plan mode, найтиповіший випадок) — пропустити цей крок і перейти напряму до Phase 12; план у session memory залишається тим самим, просто без окремого user-review checkpoint'у.
 
 ### 12. Execute: fill expanded idea-brief
 
@@ -208,7 +209,7 @@ AskUserQuestion для user confirm: `Accept recommendation` / `Pick different a
 
 - **mkdir** `docs/features/<slug>/` if absent.
 - **Copy** template → `docs/features/<slug>/idea-brief.md`.
-- **Apply** pending glossary terms (call `sdlc:fix-term` for each, якщо що).
+- **Apply** pending glossary terms (call `fix-term` for each, якщо що).
 - **Edit/Write** усі секції 1-15 + Related + DoD self-check з session memory. Update frontmatter:
   - `status: Confirmed`
   - `value_score.rice: <N>`, `value_score.state: confirmed`, `value_score.confirmed_at: <today YYYY-MM-DD>`
@@ -239,16 +240,6 @@ Next owner: PM + Tech Lead → `sdlc:write-prd <slug>` (gate тепер з idea-
 
 ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — це gate 3 concern (after sad.md (architecture-design) §Trade-offs). Якщо рекомендація з §13 виглядає як hard-to-reverse technical choice — note that у §15 Open questions, але don't open ADR thread here.
 
-## Questions for discussion
-
-- Який слаг — kebab-case, short, no date?
-- Який сегмент користувачів страждає найбільше від цієї проблеми?
-- Чому саме зараз — який trigger (incident / contract / deadline)?
-- Який метрик ми використовуємо щоб виміряти, що це спрацювало?
-- Які з 3 strategic approaches ближче до того, як команда зазвичай вирішує подібні задачі?
-- Чи погоджуєшся з Claude-proposed RICE numbers — чи треба коригувати?
-- Чи всі 3 Feasibility checkboxes реально закриті, чи десь є unknown?
-
 ## Definition of Done
 
 - `docs/features/<slug>/idea-brief.md` created and committed.
@@ -274,7 +265,7 @@ ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — �
 - **Brainstorm-style transcript dump.** §14 Parked & rejected is structured (table with status / reason / revisit trigger), not raw chat log.
 - **Solution-mode prose in §2 Problem.** «We need to add Redis» → wrong section. §2 is the problem only; solutions live у §7 Approaches.
 - **Fabricating user answers under Auto Mode.** `Auto Mode Active` system-reminder каже «work without stopping for clarifying questions» — це стосується pause-to-check моментів, а не in-flow AskUserQuestion checkpoints цього skill. Phases 1, 2, 9, 10, 11 MUST fire real AskUserQuestion-и; генерувати raw idea / Socratic answers / RICE confirms / Feasibility confirms / recommendation accept без user-input = reconstruction artifact, не interview. Якщо AskUserQuestion відкинуто через permission denial — зупинитись і повідомити користувача, не обходити.
-- **Writing files inside planning mode.** Phases 0-11 read-only. Якщо skill стартував у plan mode і ти спробуєш Write/Edit/mkdir раніше ніж ExitPlanMode (Phase 11.5) — permission deny. Тримай весь artifact у session memory до Phase 12.
+- **Writing files inside planning mode.** Phases 0-11 read-only. Якщо skill стартував у plan mode і ти спробуєш Write/Edit/mkdir раніше ніж handoff в кінці Phase 11 (ExitPlanMode) — permission deny. Тримай весь artifact у session memory до Phase 12.
 
 ## Template
 
@@ -297,16 +288,16 @@ ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — �
 >    - B (Differentiation): «Adaptive per-tenant quota based on plan-tier» — pricing leverage, L effort.
 >    - C (Balanced): «Static per-tenant quota з self-serve config» — M effort, customer can tweak.
 > 7. **Phase 6** — 3 sub-agents (Engineer / Executive / UX) review усі 3 паралельно. Engineer abstract (no Redis/nginx). Synthesis matrix у session memory.
-> 8. **Phase 7** — Claude synthesizes trade-offs + 6 edge cases у session memory.
-> 9. **Phase 8** — sub-agent з clean context: «how does this fail?» Returns 7 attack vectors. Top → reserved для §10 Risks.
+> 8. **Phase 7** — Claude synthesizes trade-offs table (pros/cons per approach) у session memory. No edge cases here — that's Phase 8's job now.
+> 9. **Phase 8** — sub-agent з clean context: «how does this fail?» Returns 7 attack vectors. Top → reserved для §10 Risks, решта 6 → §9 Edge cases.
 > 10. **Phase 9** — Claude proposes RICE: R=200, I=2, C=0.8, E=3 → 107. AskUserQuestion per number; user adjusts Effort to 4 → Score = 80.
 > 11. **Phase 10** — Claude scans repo (read-only): finds adjacent `usage-metering`. Proposes 3 ☑. AskUserQuestion per checkbox; user confirms all 3.
 > 12. **Phase 11** — Claude picks **Approach C**. Rationale cites: RICE=80, Feasibility 3/3 ☑, Engineer bullet, Kong gap. AskUserQuestion: user accepts.
 >
-> **— ExitPlanMode handoff —**
-> 13. **Phase 11.5** — `ExitPlanMode` із plan: «create dir, copy template, apply fix-term tenant, fill 15 sections, run self-check, propose commit».
+> **— Handoff (end of Phase 11) —**
+> 13. `ExitPlanMode` із plan: «create dir, copy template, apply fix-term tenant, fill 15 sections, run self-check, propose commit».
 >
 > **— Execute (post-plan) —**
-> 14. **Phase 12** — `mkdir docs/features/rate-limiting-per-user/`, copy template, `sdlc:fix-term tenant`, Write idea-brief.md з усіма секціями. Frontmatter `status: Confirmed`, `confirmed_at: 2026-05-21`.
+> 14. **Phase 12** — `mkdir docs/features/rate-limiting-per-user/`, copy template, `fix-term tenant`, Write idea-brief.md з усіма секціями. Frontmatter `status: Confirmed`, `confirmed_at: 2026-05-21`.
 > 15. **Phase 13** — self-check: 15 sections ✓, no Postgres/Redis у body ✓, 4.2 pages ✓, citations ✓.
 > 16. **Phase 14** — Commit message proposed: `01: idea-brief for rate-limiting-per-user` (user executes). Next: PM + Tech Lead → `sdlc:write-prd rate-limiting-per-user`.
