@@ -1,43 +1,25 @@
-# CONTEXT — Interview flow
+---
+status: Living
+updated_at: "2026-09-05"
+---
 
-**Phase:** Docs+Deploy
-**Purpose:** feature-level "how to pick this back up," the same role
-`PROGRESS.md` plays for the whole repo, scoped to just this feature.
+# Domain Context
 
-## Where things stand
+<!-- Operational status (implementation progress, unverified areas, where to debug) lives in
+     STATUS.md in this folder, not here — this file is domain vocabulary only. -->
 
-The full session lifecycle (start → up to 5 AI-scored answers → completion)
-is implemented end-to-end on both server and client, and matches everything
-recorded in `PRD.md` and `SAD.md` in this folder. The one historical bug on
-this feature (`correctAnswer` silently dropped before persistence) is fixed
-and guarded by a `required: true` schema field — see `adr/0001-...`.
+## Glossary
 
-## What's not yet verified
-
-Per `.claude/rules/frontend/overview.md`, nothing behind auth — including
-this entire feature — has been exercised against a live Mongo + `.env`
-backend since the auth/AppShell work landed. Only `tsc`/lint/build and
-`RequireAuth`'s redirect behavior have been confirmed. Before trusting this
-feature in a demo or handing it to QA, someone needs to actually run a full
-session against real Mongo + a real `ANTHROPIC_API_KEY` and watch:
-
-- the 5-question loop actually terminates and computes `averageScore`
-  correctly,
-- a hard reload mid-session correctly resumes via `GET /active` (note: the
-  resumed question will *not* be byte-identical to whatever was on screen,
-  since it's freshly generated — that's expected, not a bug),
-- `ReviewModal` renders `correctAnswer` for a session answered end-to-end
-  through the real API, not just from mocked data.
-
-## Where to look next
-
-- If a review/score looks wrong: the prompt/response-shape contract lives
-  entirely in `ai.service.ts` — start there, per
-  `.claude/rules/backend/interview-flow.md`.
-- If client and server disagree about a field: re-run
-  `api-sync-report.md` in this folder before assuming it's a new bug —
-  it documents the exact set of fields that must stay aligned by hand.
-- If adding a new `topic` or `level` value: update `TOPICS`/`LEVELS` in both
-  `src/models/InterviewSession.ts` and `client/src/types/interview.ts` (there
-  is a git hook, `plugins/sync-domain-enums-guard/`, that blocks a commit
-  if these drift — see repo-root `MEMORY.md`/`.husky/pre-commit`).
+- interview session — один прохід користувача від старту до завершення, що складається з до 5
+  AI-оцінених відповідей.
+- question attempt — один запис питання та відповіді користувача в межах interview session, з
+  AI-оцінкою та виявленими weak topics. NOT interview session (одна сесія містить до 5 question
+  attempts).
+- correctAnswer — еталонна відповідь, яку AI генерує під час оцінювання для порівняння в
+  ReviewModal. NOT answer (фактична відповідь користувача на question attempt — це інше поле,
+  саме їх плутанина викликала історичний баг).
+- weak topic — конкретна знаннієва прогалина, яку AI виявляє в окремій відповіді користувача. NOT
+  topic (предметна область всієї сесії, обирається один раз на початку, тоді як weak topic —
+  виявляється заднім числом на відповідь).
+- topic — предметна область, обрана користувачем один раз на всю interview session. NOT weak
+  topic (виявлена AI прогалина в окремій відповіді, без прямого зв'язку з обраним topic сесії).

@@ -253,3 +253,64 @@ email/password (задача 2+3) працює одразу після підн�
 cd client && npx tsc -b --noEmit && npm run lint && npm run build   # клієнт
 cd .. && npx tsc --noEmit && npm run lint                            # сервер (з кореня репо)
 ```
+
+---
+
+# 🚀 Поточна робота: `theme-toggle` (SDLC ideation, Phase 0-2)
+
+Укупнення нової фіч-ідеї через skill `/interview` — SDLC ideation phase. Цільовий артефакт: `docs/features/theme-toggle/idea-brief.md` (15 секцій, статус: Confirmed).
+
+## Зібрана інформація (Phase 0-2 завершено)
+
+### Phase 0: Setup
+- ✅ Завантажено template `./templates/idea-brief.md`
+- ✅ Перевірено `CONTEXT.md` (не існує в корені, але буде створено за потреби)
+- ✅ Перевірено що `docs/features/theme-toggle/idea-brief.md` ще не існує (можна стартувати з нуля)
+
+### Phase 1: Raw idea capture
+```
+Користувач: "Кожен користувач має свої вподобання, тому буде добре з точки зору UX додати цей функціонал"
+```
+**Контекст**: чому це іде ✅ dark/light mode (題-toggle), а не якийсь інший UI улучшення.
+
+### Phase 2: Socratic deep dive (4 батчі питань)
+
+**Батч 1 — Problem clarity:**
+- **Сегмент**: night users і люди з photosensitivity (основна болівка)
+- Яскраво освітлений інтерфейс болить очі; це регулярна проблема, не випадкова
+
+**Батч 2 — Solution validation:**
+- **Чому темна тема**: це стандартна практика у конкурентів (не власна гіпотеза)
+- Ніякої конкретної feedback від юзерів на руках, але industry standard
+
+**Батч 3 — Timeline & resources:**
+- **Priority**: high, потрібна в межах місяців
+- **Team**: 1 розробник, <1 спринту доступного часу
+- Відповідь вказує на **lean approach**: light/dark without intermediate options, можливо синхронізація з OS-темою для простоти
+
+**Батч 4 — Strategic fit:**
+- **Напрям**: постійно важливо — **інвестмент у accessibility та inclusivity**
+- Це не cosmetic feature, а commitment до accessible design
+- Не競-разрахунок, а fundamentals
+
+## Наступні кроки (Phase 3-11)
+
+- **Phase 3**: Glossary capture — обробити domain-терміни (photosensitivity, accessibility, theme-toggle)
+- **Phase 4**: Competitive research — WebSearch для 3-5 конкурентів (dark mode implementation)
+- **Phase 5**: Strategic approaches — 3 паралельні sub-agents (Simplicity / Differentiation / Balanced)
+- **Phase 6**: Multi-perspective review (Engineer / Executive / UX)
+- **Phase 7**: Trade-offs and edge cases
+- **Phase 8**: Devil's advocate (clean context sub-agent)
+- **Phase 9**: Claude-proposed RICE (AskUserQuestion)
+- **Phase 10**: Feasibility scan (repo scan + AskUserQuestion)
+- **Phase 11**: Recommendation synthesis (AskUserQuestion)
+- **Phase 11.5**: ExitPlanMode handoff
+- **Phase 12-14**: Execute writes + self-check + propose commit
+
+## Шлях до наступної сесії
+
+Запустити: `/interview theme-toggle` (або просто `/interview` і вибрати option 1 для theme-toggle)
+
+Skill автоматично **продовжить** з Phase 3 (Glossary capture), якщо виявить незавершену session memory. Якщо сесія нова — перепочне з Phase 0, але вже знаючи slug `theme-toggle`, майже одразу перейде до Phase 1-2.
+
+**Рекомендація**: набути context перед наступною сесією — прочитати це резюме, щоб skill не переспитував те ж саме.
