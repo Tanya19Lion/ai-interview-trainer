@@ -256,61 +256,60 @@ cd .. && npx tsc --noEmit && npm run lint                            # серв�
 
 ---
 
-# 🚀 Поточна робота: `theme-toggle` (SDLC ideation, Phase 0-2)
+# 🚀 Поточна робота: PRD stage (`write-prd` skill) + сам skill
 
-Укупнення нової фіч-ідеї через skill `/interview` — SDLC ideation phase. Цільовий артефакт: `docs/features/theme-toggle/idea-brief.md` (15 секцій, статус: Confirmed).
+## `theme-toggle` — PRD написано, чекає на коміт
 
-## Зібрана інформація (Phase 0-2 завершено)
+`docs/features/theme-toggle/idea-brief.md` (Confirmed) → `docs/features/theme-toggle/PRD.md`
+згенеровано повним протоколом `/sdlc-write-prd`: Socratic-валідація §4 User Stories → §5
+Acceptance Criteria → §6 NFR → §7 KPI, потім clean-context critic (Phase 7.5), потім self-check.
 
-### Phase 0: Setup
-- ✅ Завантажено template `./templates/idea-brief.md`
-- ✅ Перевірено `CONTEXT.md` (не існує в корені, але буде створено за потреби)
-- ✅ Перевірено що `docs/features/theme-toggle/idea-brief.md` ще не існує (можна стартувати з нуля)
+**Ключові рішення, зафіксовані в PRD:**
+- Персистентність вибору теми — **лише device-local** (закриває idea-brief §15 open question;
+  явно НЕ через акаунт-синхронізацію).
+- §5 AC свідомо **без authorization-типу** — фіча не має ролей/власників ресурсів; закрито через
+  `Override` bullet у §1 ¶4 (a не через штучно притягнутий AC).
+- NFR "time to correct-theme first paint" = **≤16ms** (один кадр при 60fps, легкий inline-скрипт
+  у `<head>`) — critic (Phase 7.5) підняв [F2] size-class creep на початкові 20ms, після чого
+  число звужено до 16ms, аби залишитись у S-розмірі фічі без важкого anti-FOUC механізму.
+- §8 Open Questions: усі мають `owner: Tech Lead` (self-check зловив і не пропустив голий `TBD`).
 
-### Phase 1: Raw idea capture
-```
-Користувач: "Кожен користувач має свої вподобання, тому буде добре з точки зору UX додати цей функціонал"
-```
-**Контекст**: чому це іде ✅ dark/light mode (題-toggle), а не якийсь інший UI улучшення.
+**Статус файлу:** користувач вручну виставив `status: Approved` у frontmatter PRD.md.
+**НЕ закомічено** — коміт свідомо відкладено ("Пропустити коміт, перейти до interview-flow").
 
-### Phase 2: Socratic deep dive (4 батчі питань)
+**Наступний крок:** вирішити, чи комітити PRD зараз (запропонований message: `03: PRD for
+theme-toggle (auto-drafted from client/src/styles/tokens.css patterns, Socratically validated)`),
+і чи рухатись далі до `sdlc:architecture-design theme-toggle` (Next owner за SKILL.md: PM + Tech
+Lead sign → Architect).
 
-**Батч 1 — Problem clarity:**
-- **Сегмент**: night users і люди з photosensitivity (основна болівка)
-- Яскраво освітлений інтерфейс болить очі; це регулярна проблема, не випадкова
+## `interview-flow` — write-prd НЕ запускався повторно
 
-**Батч 2 — Solution validation:**
-- **Чому темна тема**: це стандартна практика у конкурентів (не власна гіпотеза)
-- Ніякої конкретної feedback від юзерів на руках, але industry standard
+`docs/features/interview-flow/` вже має повний SDLC-ланцюжок після PRD (`SAD.md`, `adr/`,
+`data-model.md`, `openapi.yaml`, `api-sync-report.md`, `tasks/`) — це as-built документація вже
+реалізованої фічі, а не stage-03 чернетка перед architecture-design. Існуючий `PRD.md` описує
+реальні route'и/статус-коди (`POST /api/interview/start`, `400`, `204`) — протилежне до
+business-only мови, якої вимагає `write-prd` §5. Регенерацію свідомо пропущено (підтверджено
+користувачем). **Якщо треба перевірити узгодженість цих артефактів — використати `sdlc-audit`,
+не `write-prd`.**
 
-**Батч 3 — Timeline & resources:**
-- **Priority**: high, потрібна в межах місяців
-- **Team**: 1 розробник, <1 спринту доступного часу
-- Відповідь вказує на **lean approach**: light/dark without intermediate options, можливо синхронізація з OS-темою для простоти
+## Ревʼю самого `write-prd` skill-а — один фікс застосовано, решта відкрита
 
-**Батч 4 — Strategic fit:**
-- **Напрям**: постійно важливо — **інвестмент у accessibility та inclusivity**
-- Це не cosmetic feature, а commitment до accessible design
-- Не競-разрахунок, а fundamentals
+Під час прогону на `theme-toggle` знайдено кілька проблем у
+`.claude/skills/write-prd/SKILL.md` + `references/`:
 
-## Наступні кроки (Phase 3-11)
+- ✅ **Зроблено**: `references/checklist.md` рядок 44 — прибрано прив'язку anti-pattern-опису до
+  анекдоту з чужого проєкту ("course-lesson-mvp run"), замінено на generic-опис failure mode.
+- ⬜ **Відкрито**: `SKILL.md` "When to use" не перевіряє, чи `docs/features/<slug>/` вже має
+  downstream-артефакти (`SAD.md`/`adr/`/`openapi.yaml`/`tasks/`) перед тим, як пропонувати
+  регенерацію PRD — саме це довелось ловити вручну на `interview-flow`.
+- ⬜ **Відкрито**: §5 AC "5-state machine" (`Approve`/`Reword`/`Save as OQ`/`Drop`/`Add another
+  AC`) не влазить у ліміт `AskUserQuestion` (макс. 4 опції) — довелось імпровізувати під час
+  Socratic-циклу.
+- ⬜ **Відкрито**: обов'язковий coverage gate (5 типів AC, включно з authorization) не має
+  "N/A з обґрунтуванням"-виходу для фіч без відповідної осі (як-от theme-toggle) — довелось
+  проганяти реактивний цикл Drop→critic-override замість заявити це одразу на кроці 6.
+- ⬜ **Відкрито (дрібне)**: `## References`/`## Template` секції в кінці SKILL.md дублюють
+  посилання, вже дані inline в Protocol-кроках; `triggers:` YAML-масив дублює `description`;
+  нумерація кроків (7 → 8) не відповідає власним посиланням reference-файлів на "step 7.5".
 
-- **Phase 3**: Glossary capture — обробити domain-терміни (photosensitivity, accessibility, theme-toggle)
-- **Phase 4**: Competitive research — WebSearch для 3-5 конкурентів (dark mode implementation)
-- **Phase 5**: Strategic approaches — 3 паралельні sub-agents (Simplicity / Differentiation / Balanced)
-- **Phase 6**: Multi-perspective review (Engineer / Executive / UX)
-- **Phase 7**: Trade-offs and edge cases
-- **Phase 8**: Devil's advocate (clean context sub-agent)
-- **Phase 9**: Claude-proposed RICE (AskUserQuestion)
-- **Phase 10**: Feasibility scan (repo scan + AskUserQuestion)
-- **Phase 11**: Recommendation synthesis (AskUserQuestion)
-- **Phase 11.5**: ExitPlanMode handoff
-- **Phase 12-14**: Execute writes + self-check + propose commit
-
-## Шлях до наступної сесії
-
-Запустити: `/interview theme-toggle` (або просто `/interview` і вибрати option 1 для theme-toggle)
-
-Skill автоматично **продовжить** з Phase 3 (Glossary capture), якщо виявить незавершену session memory. Якщо сесія нова — перепочне з Phase 0, але вже знаючи slug `theme-toggle`, майже одразу перейде до Phase 1-2.
-
-**Рекомендація**: набути context перед наступною сесією — прочитати це резюме, щоб skill не переспитував те ж саме.
+**Наступний крок:** вирішити, чи застосовувати решту фіксів зі списку вище.

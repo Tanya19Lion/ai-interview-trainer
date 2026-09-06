@@ -298,6 +298,6 @@ ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — �
 > 13. `ExitPlanMode` із plan: «create dir, copy template, apply fix-term tenant, fill 15 sections, run self-check, propose commit».
 >
 > **— Execute (post-plan) —**
-> 14. **Phase 12** — `mkdir docs/features/rate-limiting-per-user/`, copy template, `fix-term tenant`, Write idea-brief.md з усіма секціями. Frontmatter `status: Confirmed`, `confirmed_at: 2026-05-21`.
+> 14. **Phase 12** — `mkdir docs/features/rate-limiting-per-user/`, copy template, `fix-term tenant`, Write idea-brief.md з усіма секціями. Frontmatter `status: Confirmed`, `confirmed_at: 2026-09-05`.
 > 15. **Phase 13** — self-check: 15 sections ✓, no Postgres/Redis у body ✓, 4.2 pages ✓, citations ✓.
-> 16. **Phase 14** — Commit message proposed: `01: idea-brief for rate-limiting-per-user` (user executes). Next: PM + Tech Lead → `sdlc:write-prd rate-limiting-per-user`.
+> 16. **Phase 14** — Commit message proposed: `01: idea-brief for rate-limiting-per-user` (user executes). Next: PM + Tech Lead → `write-prd rate-limiting-per-user`.
