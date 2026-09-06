@@ -16,7 +16,7 @@ How the skill turns required inputs + selected channel outputs + template instru
 - **§4 User stories** — ≥5 US (no upper cap) in `As a <role> / I want / So that` form. Skill proposes as many as needed to cover all roles from CONTEXT glossary + all goals from §2. Roles **only** from CONTEXT glossary (no `user`/`admin` invented if the glossary defines specific roles).
 - **§5 Acceptance criteria** — see «§5 AC contract» below.
 - **§6 NFR table** — recommended-list rows with numeric targets, **no upper cap**. No «fast»/«reliable»/«high». Measurement = concrete production metric name (e.g. endpoint name from reference module). TBD allowed only with owner + due tied to a row in §8.
-- **§6.1 Security / privacy** — data classification, personal data touched, authZ/authN impact, **3-5 abuse cases** (cross-org access, draft-leak, SSRF/injection through URL/text fields, spam create with rate limit, optional token misuse), security review verdict.
+- **§6.1 Security / privacy** — data classification, personal data touched, authZ/authN impact, **3-5 abuse cases** (cross-tenant access, draft-leak, SSRF/injection through URL/text fields, spam create with rate limit, optional token misuse), security review verdict.
 - **§7 KPIs** — ≥3 metrics (no upper cap), baseline → target with timeframe. Skill proposes as many as RICE drivers from idea-brief §11 + Recommendation §13. baseline=0 OK for new feature; baseline=TBD requires a measurement plan inline.
 - **§8 Open questions** — 2-3 entries, each with owner + due (date or stage trigger).
 
@@ -33,7 +33,7 @@ Five coverage types are mandatory — at least 1 AC of each:
 1. **happy** — actor performs main flow → system records the outcome and confirms.
 2. **error** — actor submits invalid input → system blocks the action and explains the reason to the actor (no HTTP code, no error-string — phrase as «system shows the actor that <field> must be <constraint>»).
 3. **authorization** — actor lacks permission (cross-org / cross-role / not-owner) → system either denies access or hides existence. Rationale in business terms («system hides existence to avoid leaking that the object belongs to another team») — no `404`/`403`.
-4. **domain invariant** — actor attempts an action that violates a named invariant (e.g. «no published lessons», «unique sequence per course») → system blocks the action and names the invariant in plain language (no error-code-string, no `409`).
+4. **domain invariant** — actor attempts an action that violates a named invariant (e.g. «no duplicate active drafts», «unique sequence per entity») → system blocks the action and names the invariant in plain language (no error-code-string, no `409`).
 5. **cross-context** — actor's action depends on state in another bounded context (membership, parent-child relation) → system enforces the cross-context rule.
 
 Each AC tagged with its US-NN. Roles from CONTEXT glossary and domain-invariant **names** as natural-language phrases are allowed — they are business terms.
@@ -43,13 +43,13 @@ Each AC tagged with its US-NN. Roles from CONTEXT glossary and domain-invariant 
 Zero tolerance — checked by Phase 7.5 critic F6 and pre-write regex scan (see [critic-phase.md](./critic-phase.md)):
 
 - HTTP verbs / methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
-- URL paths: `/courses`, `/lessons/{id}`, `/api/v1/...` (anything starting with `/` followed by lowercase identifier).
+- URL paths: `/entities`, `/entities/{id}`, `/api/v1/...` (anything starting with `/` followed by lowercase identifier).
 - HTTP status codes as bare numerics in AC body: `200`, `201`, `400`, `401`, `403`, `404`, `409`, `5xx`, `500`, `503`.
-- Error-code strings matching `[a-z_]+\.[a-z_]+` (e.g. `course.not_methodist`, `validation.description_too_long`).
+- Error-code strings matching `[a-z_]+\.[a-z_]+` (e.g. `entity.not_authorized`, `validation.description_too_long`).
 - JSON-schema fragments / payload bodies: `{title, description}`, `{id, status: "draft"}`.
-- SQL / DB constructs: `UNIQUE(...)`, `UNIQUE INDEX`, `FK`, `pq.*`, raw `INSERT`/`SELECT`/`UPDATE`, constraint names (`uniq_course_seq`).
+- SQL / DB constructs: `UNIQUE(...)`, `UNIQUE INDEX`, `FK`, `pq.*`, raw `INSERT`/`SELECT`/`UPDATE`, constraint names (`uniq_entity_seq`).
 
-The technical mapping for these (HTTP method/path/status, error-code strings, payload schemas, DB constraints) lives in **stage 09** (`sdlc:define-api`) and **stage 10** (`sdlc:decide-adr`). PRD AC is WHAT a user can observe, not HOW the system encodes it.
+The technical mapping for these (HTTP method/path/status, error-code strings, payload schemas, DB constraints) lives in **stage 09** (`define-api`) and **stage 10** (`decide-adr`). PRD AC is WHAT a user can observe, not HOW the system encodes it.
 
 ### Race conditions / edges
 

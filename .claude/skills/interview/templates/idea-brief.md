@@ -1,9 +1,9 @@
 ---
 status: Draft | Confirmed | Frozen
-owner: "<PM name>"
+owner: "<idea author: PM / Eng / CTO / anyone>"
 reviewers: []
 updated_at: "<YYYY-MM-DD>"
-feature_size: <XS|S|M|L|XL>     # set by sdlc:classify-size, not here
+feature_size: <XS|S|M|L|XL>     # set by classify-size if that skill exists, else fill manually / TBD
 stage: "01"
 ticket: "<ticket-id>"
 value_score:
@@ -13,12 +13,12 @@ value_score:
 feasibility_state: proposed | confirmed
 ---
 
-<!-- Stage 01 → see SDLC/plugin/skills/interview/SKILL.md -->
+<!-- Stage 01 → see .claude/skills/interview/SKILL.md -->
 <!-- Why: capture the idea before it's forgotten or retold incorrectly -->
 
 <!-- Anti-pattern enforcement (Claude self-check, не user-visible):
      Заборонені терміни у тілі: Postgres, Redis, Kafka, конкретні library names,
-     SM-2/FSRS/Leitner, схеми таблиць, API endpoints, latency targets, SLOs.
+     схеми таблиць, API endpoints, latency targets, SLOs.
      Це PRODUCT brief. Tech живе у SPEC §6 + architecture-brief + ADR (gate 3+). -->
 
 # Idea Brief — <feature name>

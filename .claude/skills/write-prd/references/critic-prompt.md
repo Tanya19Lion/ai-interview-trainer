@@ -1,4 +1,4 @@
-# Critic Sub-Agent Prompt — Phase 7.5 of `sdlc:write-prd`
+# Critic Sub-Agent Prompt — Phase 7.5 of `write-prd`
 
 This file holds the canonical prompt body for the post-Socratic critic. The skill (`SKILL.md` Protocol §7.5) reads this file, then dispatches a single `Agent` call (`subagent_type: "general-purpose"`) with **clean context**. The critic has not seen the Socratic conversation — it sees only the inputs the skill inlines into the prompt + the upstream files it re-reads itself.
 
@@ -47,7 +47,7 @@ Read `CONTEXT.md` and `idea-brief.md` first. Then probe the draft against the ed
 
 **F1 — Recommendation drift.** If the edits-log contains a `reject` or `edit` on a User Story / AC that was tied to the recommendation in idea-brief §13 (the Approach the team committed to), does the draft's §1 Context paragraph 3 still cite that recommendation accurately? Mismatch = drift. Example pattern: §1 says «Approach C: Progressive Async Learning + Social Completion», but US-06 (peer completion) was rejected from the draft.
 
-**F2 — Size-class creep.** Did `edit` / `add edge case` resolutions introduce new block types / sub-objects / branches that materially expand the feature surface beyond the size in the draft's frontmatter `feature_size`? Example pattern: AC-02 user-edit added «block types: text + video + image + code» where the original draft assumed text only — that pushes M → L. Flag this even if the user did not see the size implication.
+**F2 — Size-class creep.** Did `edit` / `add edge case` resolutions introduce new entity types / sub-objects / branches that materially expand the feature surface beyond the size in the draft's frontmatter `feature_size`? Example pattern: AC-02 user-edit added «supported input types: text + image + file» where the original draft assumed text only — that pushes M → L. Flag this even if the user did not see the size implication. If `feature_size` is missing or `TBD` (no upstream `classify-size`-equivalent skill has run), skip this probe and note it as N/A rather than guessing a size class.
 
 **F3 — Defer vs idea-brief vector.** For every item marked `drop` OR `save_as_oq` in the edits-log, check whether idea-brief §6 (Out of scope), §13 (Recommendation), or §11 (RICE) names that item as a critical engagement / adoption / risk driver. If yes, the defer silently re-introduces a vector the team already considered too important to drop. **Differentiate** in the finding text: «item dropped» (hard removal) vs «item deferred to Open Questions» (softer — item still alive in §8 with owner+due). Both can break the vector, but the deferred form is recoverable if the OQ resolves before downstream stages. Example patterns: (a) comments dropped, but idea-brief §13 cites engagement-from-discussion as the primary motivation lever; (b) US-04 (peer review) save_as_oq-migrated, but idea-brief §11 RICE Impact named peer-review as the dominant Impact driver — flag as «deferred to OQ, vector still at risk until <due>».
 
@@ -60,13 +60,13 @@ Read `CONTEXT.md` and `idea-brief.md` first. Then probe the draft against the ed
 Forbidden tokens (zero tolerance, list every hit):
 
 - HTTP verbs / methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` (as standalone tokens).
-- URL paths: anything starting with `/` followed by lowercase identifier (`/courses`, `/lessons/{id}`, `/api/v1/...`).
+- URL paths: anything starting with `/` followed by lowercase identifier (`/entities`, `/entities/{id}`, `/api/v1/...`).
 - HTTP status codes as bare numerics in AC body: `200`, `201`, `400`, `401`, `403`, `404`, `409`, `5xx`, `500`, `503`.
-- Error-code strings matching `[a-z_]+\.[a-z_]+` (e.g. `course.not_methodist`, `validation.description_too_long`, `lesson.sequence_conflict`).
+- Error-code strings matching `[a-z_]+\.[a-z_]+` (e.g. `entity.not_authorized`, `validation.description_too_long`, `item.sequence_conflict`).
 - JSON-schema fragments / payload bodies: `{title, description}`, `{id, status: "draft"}`.
-- SQL / DB constructs: `UNIQUE(...)`, `UNIQUE INDEX`, `FK`, `pq.*`, raw SQL `INSERT`/`SELECT`/`UPDATE`, constraint names (`uniq_course_seq`).
+- SQL / DB constructs: `UNIQUE(...)`, `UNIQUE INDEX`, `FK`, `pq.*`, raw SQL `INSERT`/`SELECT`/`UPDATE`, constraint names (`uniq_entity_seq`).
 
-Roles from CONTEXT glossary and domain invariant **names** (e.g. «no published lessons», «unique sequence per course» — as natural-language phrases, not constraint names) are **allowed** — they are business terms.
+Roles from CONTEXT glossary and domain invariant **names** (e.g. «no published drafts», «unique sequence per entity» — as natural-language phrases, not constraint names) are **allowed** — they are business terms.
 
 For each hit: cite the exact AC line and the offending token. Suggested resolution: rewrite into business form OR move the technical detail to the stage 09 / stage 10 artifact.
 
@@ -89,7 +89,7 @@ Each finding ≤2 lines after wrapping. **Cite-mode is required**: every finding
 **F6 special format** — list every forbidden-token hit, even if many. One bullet per AC line that contains hits:
 
 ```
-- **[F6] AC-{NN} contains forbidden tokens** — line: "{verbatim AC line snippet}"; hits: {token1}, {token2}, ...; suggested: rewrite into business form (actor-observable outcome) OR move HTTP/error/schema detail to stage 09 `sdlc:define-api`.
+- **[F6] AC-{NN} contains forbidden tokens** — line: "{verbatim AC line snippet}"; hits: {token1}, {token2}, ...; suggested: rewrite into business form (actor-observable outcome) OR move HTTP/error/schema detail to stage 09 (`define-api`).
 ```
 
 ### Discipline

@@ -258,10 +258,10 @@ cd .. && npx tsc --noEmit && npm run lint                            # серв�
 
 # 🚀 Поточна робота: PRD stage (`write-prd` skill) + сам skill
 
-## `theme-toggle` — PRD написано, чекає на коміт
+## `theme-toggle` — PRD написано
 
 `docs/features/theme-toggle/idea-brief.md` (Confirmed) → `docs/features/theme-toggle/PRD.md`
-згенеровано повним протоколом `/sdlc-write-prd`: Socratic-валідація §4 User Stories → §5
+згенеровано повним протоколом `/write-prd`: Socratic-валідація §4 User Stories → §5
 Acceptance Criteria → §6 NFR → §7 KPI, потім clean-context critic (Phase 7.5), потім self-check.
 
 **Ключові рішення, зафіксовані в PRD:**
@@ -274,42 +274,4 @@ Acceptance Criteria → §6 NFR → §7 KPI, потім clean-context critic (Ph
   число звужено до 16ms, аби залишитись у S-розмірі фічі без важкого anti-FOUC механізму.
 - §8 Open Questions: усі мають `owner: Tech Lead` (self-check зловив і не пропустив голий `TBD`).
 
-**Статус файлу:** користувач вручну виставив `status: Approved` у frontmatter PRD.md.
-**НЕ закомічено** — коміт свідомо відкладено ("Пропустити коміт, перейти до interview-flow").
 
-**Наступний крок:** вирішити, чи комітити PRD зараз (запропонований message: `03: PRD for
-theme-toggle (auto-drafted from client/src/styles/tokens.css patterns, Socratically validated)`),
-і чи рухатись далі до `sdlc:architecture-design theme-toggle` (Next owner за SKILL.md: PM + Tech
-Lead sign → Architect).
-
-## `interview-flow` — write-prd НЕ запускався повторно
-
-`docs/features/interview-flow/` вже має повний SDLC-ланцюжок після PRD (`SAD.md`, `adr/`,
-`data-model.md`, `openapi.yaml`, `api-sync-report.md`, `tasks/`) — це as-built документація вже
-реалізованої фічі, а не stage-03 чернетка перед architecture-design. Існуючий `PRD.md` описує
-реальні route'и/статус-коди (`POST /api/interview/start`, `400`, `204`) — протилежне до
-business-only мови, якої вимагає `write-prd` §5. Регенерацію свідомо пропущено (підтверджено
-користувачем). **Якщо треба перевірити узгодженість цих артефактів — використати `sdlc-audit`,
-не `write-prd`.**
-
-## Ревʼю самого `write-prd` skill-а — один фікс застосовано, решта відкрита
-
-Під час прогону на `theme-toggle` знайдено кілька проблем у
-`.claude/skills/write-prd/SKILL.md` + `references/`:
-
-- ✅ **Зроблено**: `references/checklist.md` рядок 44 — прибрано прив'язку anti-pattern-опису до
-  анекдоту з чужого проєкту ("course-lesson-mvp run"), замінено на generic-опис failure mode.
-- ⬜ **Відкрито**: `SKILL.md` "When to use" не перевіряє, чи `docs/features/<slug>/` вже має
-  downstream-артефакти (`SAD.md`/`adr/`/`openapi.yaml`/`tasks/`) перед тим, як пропонувати
-  регенерацію PRD — саме це довелось ловити вручну на `interview-flow`.
-- ⬜ **Відкрито**: §5 AC "5-state machine" (`Approve`/`Reword`/`Save as OQ`/`Drop`/`Add another
-  AC`) не влазить у ліміт `AskUserQuestion` (макс. 4 опції) — довелось імпровізувати під час
-  Socratic-циклу.
-- ⬜ **Відкрито**: обов'язковий coverage gate (5 типів AC, включно з authorization) не має
-  "N/A з обґрунтуванням"-виходу для фіч без відповідної осі (як-от theme-toggle) — довелось
-  проганяти реактивний цикл Drop→critic-override замість заявити це одразу на кроці 6.
-- ⬜ **Відкрито (дрібне)**: `## References`/`## Template` секції в кінці SKILL.md дублюють
-  посилання, вже дані inline в Protocol-кроках; `triggers:` YAML-масив дублює `description`;
-  нумерація кроків (7 → 8) не відповідає власним посиланням reference-файлів на "step 7.5".
-
-**Наступний крок:** вирішити, чи застосовувати решту фіксів зі списку вище.

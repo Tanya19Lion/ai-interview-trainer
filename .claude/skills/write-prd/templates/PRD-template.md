@@ -1,9 +1,9 @@
 ---
 status: Draft
 owner: "<заповни з idea-brief frontmatter owner>"
-reviewers: ["Tech Lead", "Security Lead"]
+reviewers: []
 updated_at: "<сьогодні YYYY-MM-DD>"
-feature_size: <з classify-size output: XS/S/M/L/XL>
+feature_size: <з classify-size output, якщо такого скіла немає — заповни вручну або TBD: XS/S/M/L/XL>
 stage: "03"
 ticket: "<TBD>"
 ---
@@ -62,7 +62,7 @@ Wikilinks: [idea-brief](./idea-brief.md), [CONTEXT](./CONTEXT.md).
 
 Roles тільки ті що у CONTEXT (наприклад `<role-A>`, `<role-B>`, `<role-C>` — не "user", не "admin" якщо не у glossary).
 Кожна US — від recommendation з idea-brief §13 + role patterns з reference code (якщо reference channel selected — хто має CRUD permissions у reference module).
-Title 3-6 слів, описує дію не сутність («Publish a course version», не «Course publishing»).
+Title 3-6 слів, описує дію не сутність.
 Кожна US покривається ≥1 AC у §5. -->
 
 ### US-01: <title>
@@ -90,22 +90,22 @@ AC описує **business-observable outcome від actor's perspective**. Не
 
 **ЗАБОРОНЕНО у §5 AC text** (zero tolerance — перевіряє Phase 7.5 critic F6 + pre-write regex scan):
 - HTTP verbs/methods (`GET`/`POST`/`PUT`/`PATCH`/`DELETE`).
-- URL paths (`/courses`, `/lessons/{id}`, `/api/v1/...`).
+- URL paths (`/articles`, `/articles/{id}`, `/api/v1/...`).
 - Status codes як bare numerics у тілі AC (`200`/`201`/`400`/`403`/`404`/`409`/`5xx`).
-- Error-code strings формату `[a-z_]+\.[a-z_]+` (наприклад `course.not_methodist`, `validation.description_too_long`).
+- Error-code strings формату `[a-z_]+\.[a-z_]+` (наприклад `article.not_authorized`, `validation.description_too_long`).
 - JSON-schema fragments / payload bodies (`{key: "value"}`).
 - SQL / DB constructs (`UNIQUE`, `FK`, `pq.*`, raw SQL, constraint names).
 
-Технічний mapping (HTTP method+endpoint+payload, status codes, error-code strings, schemas, DB constraints) живе у stage 09 (`sdlc:define-api`) + stage 10 (`sdlc:decide-adr`). Тут — тільки WHAT actor спостерігає.
+Технічний mapping (HTTP method+endpoint+payload, status codes, error-code strings, schemas, DB constraints) живе у stage 09 (`define-api`) + stage 10 (`decide-adr`). Тут — тільки WHAT actor спостерігає.
 
-Дозволено у AC text: roles з CONTEXT glossary, domain invariant **names** (наприклад «no published lessons», «unique sequence per course»), domain-objects з glossary.
+Дозволено у AC text: roles з CONTEXT glossary, domain invariant **names** (наприклад «no published drafts», «unique sequence per article»), domain-objects з glossary.
 
 5 типів покриття обов'язкові (хоча б по 1 кожного):
 1. **happy** — actor виконує main flow → system records the outcome and confirms (без status code, без endpoint).
 2. **error** — actor подає невалідний input → system blocks the action and explains the reason to the actor (без HTTP-коду, без error-code-string; формулюй як «system shows actor that <field> must be <constraint>»).
 3. **authorization** — actor lacks permission (cross-org / cross-role / not-owner) → system denies access OR hides existence. Rationale у business terms: «system hides existence to avoid leaking that the object belongs to another team» — без слів «404»/«403».
-4. **domain invariant** — actor attempts an action that violates a named invariant (наприклад «course cannot be published with zero lessons», «sequence must be unique per course») → system blocks the action and names the invariant in plain language (без error-code-string, без `409`).
-5. **cross-context** — actor's action depends on state in another bounded context (membership, parent-child relation) → system enforces the cross-context rule (наприклад «system requires the lesson to belong to a draft course owned by the actor»).
+4. **domain invariant** — actor attempts an action that violates a named invariant (наприклад «article cannot be published with zero sections», «sequence must be unique per article») → system blocks the action and names the invariant in plain language (без error-code-string, без `409`).
+5. **cross-context** — actor's action depends on state in another bounded context (membership, parent-child relation) → system enforces the cross-context rule (наприклад «system requires the section to belong to a draft article owned by the actor»).
 
 Кожен AC tagged з US-NN. Якщо у когось є race condition / concurrent edge — додай як AC-NNb (subletter), все ще у business-language. -->
 

@@ -6,17 +6,9 @@ description: >
   (--reference module code, MCP-Atlassian, RAG, docs), drafts from ./templates/PRD-template.md,
   Socratically validates per item, then runs a clean-context critic on the edits-log,
   then writes the file. Hard refuse if idea-brief.md or CONTEXT.md missing.
-  Triggers: "/sdlc-write-prd {slug}", "write PRD for {slug}", "draft PRD for {slug}",
+  Triggers: "/write-prd {slug}", "write PRD for {slug}", "draft PRD for {slug}",
   "PRD для {slug}", "write spec for {slug}", "product requirements for {slug}".
   Output: docs/features/{slug}/PRD.md.
-triggers:
-  - /sdlc-write-prd
-  - "write PRD for"
-  - "draft PRD for"
-  - "PRD для"
-  - "write spec for"
-  - "product requirements for"
-stage: "03"
 ---
 
 # Skill: write-prd (SDLC stage 03 — code-aware PRD drafter)
@@ -25,11 +17,11 @@ Generates a stage-03 PRD draft from upstream idea-phase artifacts + optional ref
 
 ## Owner
 
-PM + Tech Lead (co-authors). Tech Lead drives §1 Context patterns from the reference module; PM drives §2 Goals, §3 Non-goals, §7 KPIs.
+PM + Tech Lead responsibilities (may be the same person on a small team). §1 Context patterns from the reference module are Tech-Lead-flavored; §2 Goals, §3 Non-goals, §7 KPIs are PM-flavored.
 
 ## When to use
 
-- `/sdlc-write-prd {slug}` invocation, with `idea-brief.md` + `CONTEXT.md` already present.
+- `/write-prd {slug}` invocation, with `idea-brief.md` + `CONTEXT.md` already present.
 - Skip if `docs/features/{slug}/PRD.md` already exists with all AC in Given/When/Then and numeric NFR — suggest edit, not regenerate.
 - Green-field projects: pick «Skip — green-field» in step 3 channel question.
 
@@ -45,14 +37,14 @@ PM + Tech Lead (co-authors). Tech Lead drives §1 Context patterns from the refe
 
 ## Protocol
 
-1. **Prereq check (hard refuse).** `test -f` both required inputs. Missing idea-brief → «run `sdlc:interview <slug>` first»; missing CONTEXT → «run `sdlc:prep-context <slug>` first». No silent fallback.
+1. **Prereq check (hard refuse).** `test -f` both required inputs. Missing idea-brief → «run `interview <slug>` first»; missing CONTEXT → «run `fix-term` first to bootstrap CONTEXT.md». No silent fallback.
 2. **Read required inputs.** CONTEXT.md `## Glossary` first (canonical roles + domain terms — overrides anything that contradicts it); then idea-brief.md (§2 / §3 / §6 / §11 / §13).
 3. **Ask user which additional channels to use** via `AskUserQuestion` (multi-select). Options: `Reference module code` / `MCP-Atlassian (Confluence)` / `MCP-Atlassian (Jira)` / `Project documentation` / `Projects knowledge / RAG` / `Skip — green-field`. For each picked channel, ask the **specific** path / query / topic — no silent broad scans. If `--reference` was passed, pre-select `Reference module code`.
 4. **Read selected channels.** Reference module → extract entity types, error sentinels, status constants, authz checks. MCP-Atlassian → `mcp__atlassian__*` for specified pages/tickets, quote source. Docs / RAG → only the paths/topics the user named.
 5. **Read own template.** `./templates/PRD-template.md` — each section has `<!-- Skill instruction: ... -->` comments that are the per-section generation contract.
 6. **Propose drafts** for §1-§8. Per-section sources, the 5 AC coverage types (happy / error / authorization / domain invariant / cross-context), and the §5 forbidden-tokens list → see [./references/draft-generation.md](./references/draft-generation.md).
 7. **Socratic validation — batch propose-all-then-validate, per-section.** For each of §4 US → §5 AC → §6 NFR → §7 KPI: (a) render the full proposed list in one message so the user sees the big picture; (b) walk per-item resolutions via `AskUserQuestion` — 4-state machine `Approve as-is` / `Edit` / `Save as Open Question` / `Drop` (AC has a 5th option `Add another AC`); (c) apply transitions in-memory; (d) for §5 only — enforce coverage gate ≥1 AC of each of the 5 types via regen-fallback if a `Drop`/`Save as OQ` broke a type. Maintain an edits-log with action enum `edit|drop|add|save_as_oq`. State transitions + log format → see [./references/socratic-loop.md](./references/socratic-loop.md). Question shape + option `description` field → see [./references/ask-examples.md](./references/ask-examples.md).
-8. **Critic stress-test + write + commit.** Single `Agent` call (`subagent_type: "general-purpose"`, clean context) with the draft + edits-log + paths to CONTEXT/idea-brief; resolve findings via `AskUserQuestion` (Accept revert / Accept amendment / Override — overrides emit a §1 ¶4 bullet); run pre-write regex scan as F6 backup; run Self-check (below); on pass write `docs/features/<slug>/PRD.md` and propose commit `03: PRD for <slug> (auto-drafted from <reference-module> patterns, Socratically validated)` (or `green-field, Socratically validated` if no reference). Dispatch + resolution loop → see [./references/critic-phase.md](./references/critic-phase.md); agent prompt body → see [./references/critic-prompt.md](./references/critic-prompt.md). Next owner: PM + Tech Lead sign → Architect → `sdlc:architecture-design <slug>`.
+8. **Critic stress-test + write + commit.** Single `Agent` call (`subagent_type: "general-purpose"`, clean context) with the draft + edits-log + paths to CONTEXT/idea-brief; resolve findings via `AskUserQuestion` (Accept revert / Accept amendment / Override — overrides emit a §1 ¶4 bullet); run pre-write regex scan as F6 backup; run Self-check (below); on pass write `docs/features/<slug>/PRD.md` and propose a commit whose subject line follows the pattern `03: PRD for <slug> (auto-drafted from <reference-module> patterns, Socratically validated)` (or `green-field, Socratically validated` if no reference) — trailers (co-author, session, etc.) follow whatever attribution convention the current session/repo already requires, not a fixed format here. Dispatch + resolution loop → see [./references/critic-phase.md](./references/critic-phase.md); agent prompt body → see [./references/critic-prompt.md](./references/critic-prompt.md). Next owner: PM + Tech Lead sign → Architect → `architecture-design <slug>`.
 
 ## Self-check
 

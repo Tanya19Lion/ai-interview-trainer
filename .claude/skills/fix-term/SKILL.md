@@ -4,12 +4,12 @@ description: >
   Use when a domain term shows up in conversation (interview, PRD, ADR)
   and you want to fix its meaning in CONTEXT.md glossary before it drifts.
   Triggers on "fix term X", "what is X in our domain?", "add to CONTEXT",
-  "fix term {X}", "/sdlc-fix-term {term}". Lazy-bootstraps CONTEXT.md
+  "fix term {X}", "/fix-term {term}". Lazy-bootstraps CONTEXT.md
   (single-context or multi-context via CONTEXT-MAP.md), asks for canonical
   definition + NOT-cross-reference, checks conflict with existing entries,
   appends a line to ## Glossary. Output: edited CONTEXT.md (created lazily
   if missing). Skip for generic tech terms (HTTP, database) — that's not a
-  domain glossary. Primary invocation context: `sdlc:interview` triggers
+  domain glossary. Primary invocation context: `interview` triggers
   this skill automatically at phase 3 (Glossary checkpoint) when its
   glossary-matching spots a new domain term in a user answer; standalone
   invocation is for manual edits or for retro-fitting an existing glossary.
@@ -19,7 +19,7 @@ description: >
 
 Atomic skill for inline domain term resolution. Lazy-bootstraps `CONTEXT.md` when a domain term first shows up + NOT-cross-reference (to avoid future drift / homonym confusion).
 
-CONTEXT bootstrap logic lives here as a standalone skill. Reused: `sdlc:interview` (phase 3 Glossary checkpoint) delegates here inline when a new domain term shows up in user answers; user can invoke directly («fix tenant»).
+CONTEXT bootstrap logic lives here as a standalone skill. Reused: `interview` (phase 3 Glossary checkpoint) delegates here inline when a new domain term shows up in user answers; user can invoke directly («fix tenant»).
 
 ## Owner
 
@@ -29,7 +29,7 @@ Whoever drives the conversation — anyone who sees ambiguity. Tech Lead approve
 
 - «fix term `<term>`», «what is `<term>` in our domain?», «add `<term>` to CONTEXT».
 - During interview/brainstorm the user uses a domain term (tenant, quota, account, consumer, organization) and ambiguity arises.
-- `/sdlc-fix-term <term>` as explicit invocation.
+- `/fix-term <term>` as explicit invocation.
 - Skip for generic tech terms (HTTP, JSON, database, queue, REST) — that's not a domain glossary, that's tech. Put them in `sad.md` or ADR.
 - Skip if the term is already in `CONTEXT.md` and the definition is unchanged — don't duplicate.
 

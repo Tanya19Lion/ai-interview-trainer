@@ -132,7 +132,7 @@ Question:
   /articles/{id}/publish, Then API returns 409 with code article.no_sections».
   Hits: `POST`, `/articles/{id}/publish`, `409`, `article.no_sections`.
   Suggested: rewrite into business form (actor-observable outcome) — the
-  HTTP/error/schema detail moves to stage 09 `sdlc:define-api`.
+  HTTP/error/schema detail moves to stage 09 `define-api`.
   How do you want to resolve it?
 
 Options:
@@ -181,8 +181,8 @@ Every `AskUserQuestion` у цьому skill-у формулюється так, 
    - **Що ця опція реально означає** простими словами, без жаргону:
      - Не «GWT-form» → «формат Given/When/Then: «Дано: користувач залогінений; Коли: натискає Submit; Тоді: повертається 201 і ресурс у БД»»
      - Не «AC tagged with US-03 are reassigned or dropped» → «всі AC, які зараз посилаються на US-03 (можна побачити у `AC-NN | US: US-03 | ...` рядках), або переходять на інший US, або видаляються разом — skill спитає тебе про кожен окремо»
-     - Не «cursor pagination» → «передача останнього бачаного ID клієнту»
-     - Не «idempotent operation» → «можна викликати ту саму дію кілька разів і результат буде той самий — повторний publish на already-published course не змінює дані»
+     - Не «cursor pagination» → «передача останнього баченого ID клієнту»
+     - Не «idempotent operation» → «можна викликати ту саму дію кілька разів і результат буде той самий — повторний publish на вже опублікованому елементі не змінює дані»
    - **Hidden trade-off** — якщо опція має наслідок, який PM/junior міг би не побачити (напр. «Drop on US-03 видалить ще 4 AC; всі вони пов'язані з core-flow») — згадати це **прямо у description**
 
 ### Заборонено
@@ -208,4 +208,4 @@ Every `AskUserQuestion` у цьому skill-у формулюється так, 
 
 ### Why
 
-Користувач у PRD-фазі — найчастіше PM без deep technical background, або junior dev, який щойно прийшов у команду. Англомовні стислі питання змушують його зупиняти роботу для уточнень, що зриває Socratic-cadence і подвоює час на PRD. Дослівна цитата фідбеку 2026-05-23: «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці» (контекст — sdlc:architecture-design, з вимогою «закласти не тільки в архітектуру а і в бриф ідею і в врайт прд»).
+Користувач у PRD-фазі — найчастіше PM без deep technical background, або junior dev, який щойно прийшов у команду. Англомовні стислі питання змушують його зупиняти роботу для уточнень, що зриває Socratic-cadence і подвоює час на PRD. Дослівна цитата фідбеку 2026-05-23: «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці» (контекст — architecture-design, з вимогою «закласти не тільки в архітектуру а і в бриф ідею і в врайт прд»).

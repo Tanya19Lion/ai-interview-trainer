@@ -8,7 +8,7 @@ description: >
   Produces idea-brief.md (15 sections, ≤5 pages). Triggers on "raw idea",
   "capture an idea", "interview a feature X", "brief for X", "new feature X",
   "idea brief", "intake feature X", "start new feature", "ideation for {slug}",
-  "/sdlc-interview {slug}". Replaces the prior intake + brainstorm + interview
+  "/interview {slug}". Replaces the prior intake + brainstorm + interview
   trio. ADRs are no longer part of this skill — they are spawned inline by
   the architecture-design skill at gate 04-05. Not to be confused with the global `interview` skill
   (stress-testing ideas) — this one is bound to SDLC ideation phase and
@@ -32,7 +32,7 @@ Idea author (PM / Eng / CTO / anyone). Tech Lead joins at multi-perspective revi
 - «capture an idea <slug>», «new brief for <feature>», «raw idea for <feature>».
 - «interview a feature <slug>», «ideation for <slug>», «brief for <feature>».
 - «intake feature <slug>», «start new feature with CONTEXT», «full intake for <slug>».
-- `/sdlc-interview <slug>` as explicit invocation.
+- `/interview <slug>` as explicit invocation.
 - User drops a raw idea in prose and asks «format this per SDLC» / «run ideation for <slug>».
 - Glossary-aware: on start the skill reads `CONTEXT.md` if it exists (repo root or `docs/features/<slug>/`), keeps the glossary as session state, and triggers `fix-term` inline for new domain terms.
 - Skip if `docs/features/<slug>/idea-brief.md` already exists with `status: Confirmed` and is fresh (≤2 weeks) — update it first, don't rewrite.
@@ -70,7 +70,7 @@ Idea author (PM / Eng / CTO / anyone). Tech Lead joins at multi-perspective revi
 
 **Заборонено:** стислі англомовні labels («Confirm», «Adjust», «TBD»); однорядкові descriptions; технічні терміни без розшифровки; trade-off-и заховані у follow-up.
 
-**Why:** PM-аудиторія цього skill-у працює з product-мовою, не з engineering-жаргоном; junior-аудиторія не має повного контексту про SDLC-pipeline. Дослівна цитата фідбеку 2026-05-23: «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці» (контекст — sdlc:architecture-design, з вимогою «закласти не тільки в архітектуру а і в бриф ідею і в врайт прд»). Цю вимогу віддзеркалено в `sdlc:architecture-design/references/ask-examples.md` і `sdlc:write-prd/references/ask-examples.md`.
+**Why:** PM-аудиторія цього skill-у працює з product-мовою, не з engineering-жаргоном; junior-аудиторія не має повного контексту про SDLC-pipeline. Дослівна цитата фідбеку 2026-05-23: «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці» (контекст — architecture-design, з вимогою «закласти не тільки в архітектуру а і в бриф ідею і в врайт прд»). Цю вимогу віддзеркалено в `architecture-design/references/ask-examples.md` (коли цей скіл з'явиться) і `../write-prd/references/ask-examples.md`.
 
 **Tool limits:** `AskUserQuestion` дозволяє максимум 4 питання за виклик і 2-4 опції на питання — перевищення дає hard InputValidationError. Коли Phase 9/10 кажуть «1 multiSelect батч» для 4 RICE-чисел або 3 Feasibility-чекбоксів — це вкладається в ліміт (4 питання, по 2-4 опції кожне); якщо колись знадобиться більше кандидатів в одному питанні (напр. batch glossary terms) — розбивай на кілька викликів, не намагайся впхнути >4 опції.
 
@@ -110,7 +110,7 @@ Delivery: AskUserQuestion батчами по 2-3 (не all-at-once).
 ### 4. Competitive research (Claude-driven, read-only)
 
 Claude автономно:
-- WebSearch (завжди) + `mcp__plugin_qmd_qmd__query`, якщо цей MCP-tool доступний у сесії (не гарантовано в кожному середовищі) — для 3-5 конкурентів / adjacent solutions.
+- WebSearch (завжди) + будь-який інший MCP research/search tool, доступний у сесії (не гарантовано в кожному середовищі) — для 3-5 конкурентів / adjacent solutions.
 - Формує таблицю: **Product · URL · Features · Value (1-5 per feature) · Gap** у session memory.
 - Кожен рядок з footnote: date and search query used.
 - Якщо internal tool без market — `N/A — internal tool` з reason.
@@ -222,7 +222,7 @@ Parked approaches (2 non-recommended з §5) — у §14 з reason + revisit tri
 
 Run all checks (Read + grep over the file just written):
 - **15 sections present.** Все 1-15 + Related + DoD self-check filled.
-- **No anti-pattern terms у body.** Regex check (excluding DoD self-check meta-line): `\b(Postgres|Redis|Kafka|MySQL|SM-2|FSRS|Leitner|SQLAlchemy|gorm|JSONB)\b` + `p99`. **Word-boundary важливий**: `chi` як substring у «architecture» — false positive; додати `\b`.
+- **No anti-pattern terms у body.** Regex check (excluding DoD self-check meta-line): `\b(Postgres|Redis|Kafka|MySQL|SQLAlchemy|gorm|JSONB)\b` + `p99`. **Word-boundary важливий**: `chi` як substring у «architecture» — false positive; додати `\b`.
 - **Length ≤ 5 pages** (~2200 words ±10%). If over — compress §5 Approaches paragraphs and §6 Competitive table.
 - **Rationale citations.** §13 Recommendation cites §6 (1 gap) + §8 (1 cell) + §11 (RICE) + §12 (Feasibility).
 
@@ -236,9 +236,9 @@ Suggest commit (do not auto-execute):
 01: idea-brief for <slug>
 ```
 
-Next owner: PM + Tech Lead → `sdlc:write-prd <slug>` (gate тепер з idea-brief.md `status: Confirmed`).
+Next owner: PM + Tech Lead → `write-prd <slug>` (gate тепер з idea-brief.md `status: Confirmed`).
 
-ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — це gate 3 concern (after sad.md (architecture-design) §Trade-offs). Якщо рекомендація з §13 виглядає як hard-to-reverse technical choice — note that у §15 Open questions, але don't open ADR thread here.
+ADR (`architecture-design`) НЕ викликається на gate 1 — це gate 3 concern (after sad.md (architecture-design) §Trade-offs). Якщо рекомендація з §13 виглядає як hard-to-reverse technical choice — note that у §15 Open questions, але don't open ADR thread here.
 
 ## Definition of Done
 
@@ -249,13 +249,13 @@ ADR (`sdlc:architecture-design`) НЕ викликається на gate 1 — �
 - Frontmatter `status: Confirmed`, `value_score.state: confirmed`, `feasibility_state: confirmed`, `confirmed_at: <date>`.
 - §13 Recommendation rationale cites RICE (§11) + Feasibility (§12) + ≥1 multi-perspective cell (§8) + ≥1 competitive gap (§6).
 - **AskUserQuestion checkpoints actually fired** у Phases 1, 2, 9, 10, 11 (verify через user-message trail). Якщо хоч один був фабрикований → artifact NOT DoD-valid.
-- Next-stage owner assigned (PM + Tech Lead → `sdlc:write-prd`).
+- Next-stage owner assigned (PM + Tech Lead → `write-prd`).
 
 ## Anti-patterns
 
 - **Inventing competitors because «we need to write something».** Better `N/A — internal tool` with reason than fake research. Competitors = «all the same» without links — that's not research, that's laziness. Phase 4 must produce real URLs + features + value ratings.
 - **User-input RICE («calculator game»).** Old skill asked user for Reach/Impact/Confidence/Effort — user has no grounding to answer. New flow: Claude proposes from upstream sections (Users → Reach, Executive perspective → Impact, TBDs → Confidence, Effort signal → Effort). User only confirms or adjusts.
-- **Tech terms in idea-brief body** (Postgres, Redis, Kafka, SM-2, FSRS, p99 latency, JSONB). This is a PRODUCT brief. Tech lives у PRD §6 + sad.md (architecture-design) + ADR (gate 3+). Phase 13 self-check enforces this.
+- **Tech terms in idea-brief body** (Postgres, Redis, Kafka, p99 latency, JSONB). This is a PRODUCT brief. Tech lives у PRD §6 + sad.md (architecture-design) + ADR (gate 3+). Phase 13 self-check enforces this.
 - **Single approach in §5.** Strategic approaches MUST be 3 (Simplicity / Differentiation / Balanced). One approach = decision already taken, nothing to evaluate.
 - **Skip multi-perspective review.** Engineer-only view → blind to business / UX risks. Executive-only view → blind to implementation cost. Need all 3 perspectives in §6 to balance.
 - **Devil's advocate from same session context.** Phase 8 MUST spawn sub-agent з clean context, otherwise it's biased by all the optimism upstream.
