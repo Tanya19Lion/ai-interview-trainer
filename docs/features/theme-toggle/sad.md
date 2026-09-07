@@ -238,13 +238,13 @@ sequenceDiagram
 
 | Concept | Convention | Where defined |
 |---|---|---|
-| Logging | <e.g. structured slog, fields `module=<name>`> | <CLAUDE.md §X or here> |
-| Authentication | <e.g. JWT via session middleware> | <CLAUDE.md §X> |
-| Error handling | <e.g. domain sentinel → ports/errors.go → apperr JSON> | <CLAUDE.md §X> |
-| ID strategy | <e.g. UUID v7 in app layer> | <CLAUDE.md §X> |
-| Internationalisation | <e.g. N/A, English only> | — |
-| Observability | <e.g. OpenTelemetry on HTTP boundaries> | — |
-| Outbox / events | <module-specific patterns, if any> | <here> |
+| Logging | N/A — no client structured-logging convention exists; localStorage read failures are handled silently, not logged (AC-02) | — |
+| Internationalisation | Toggle label / aria-label localized via existing `react-i18next` (`locales/uk`, `locales/en`) | `client/src/locales/` |
+| Error handling | Corrupted/missing localStorage value → falls back to `prefers-color-scheme`, no thrown error, no user-facing error state (AC-02) | §4 (storage-override logic) |
+| ID strategy | N/A — no new entities/records introduced | — |
+| Accessibility / contrast | WCAG AA contrast audit of AI feedback (text, code highlighting, badges) across both themes — owner: Tech Lead, due: before this SAD's finalization commit (Step 8); resolves PRD §8 open question | §1 Stakeholders |
+| Observability | N/A — no production monitoring added (§7) | — |
+| Abuse mitigation | Client-side debounce on the toggle handler mitigates rapid-toggle-spam re-render abuse (PRD §6.1); no server-side rate limit applies — there is no request to rate-limit | PRD §6.1 |
 
 ## 9. Architecture decisions
 
