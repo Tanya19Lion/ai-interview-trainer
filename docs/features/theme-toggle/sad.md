@@ -123,39 +123,46 @@ Each tactical decision in later sections should be traceable to one of these str
 <!--           дерево папок + Mermaid C4Container.                                       -->
 <!-- 📌 Приклад: «web-app, content-api, media-worker, postgres, s3, cdn».                -->
 
-<One paragraph: layered / hexagonal / clean / event-driven. Why.>
+React feature-folder style (not layered/hexagonal — that convention is backend-only per CLAUDE.md). `client/src/` groups by concern: `components/` (one folder per UI component, co-located `.module.css`), `hooks/` (React hooks — historically TanStack Query wrappers only), `lib/` (pure, state-free helpers), `styles/` (design tokens). This feature introduces the first shared-UI-state module in the codebase (ADR-0001) and a new top-level grouping convention to hold it.
 
 **Internal decomposition:**
 
 ```
-<e.g. internal/modules/goals/>
-├── domain/       <entities + sentinel errors>
-├── app/          <use cases / services>
-├── infra/        <repository + outbox impl>
-├── ports/        <HTTP handlers, DTOs, error mapping>
-└── module.go     <self-wiring>
+client/src/
+├── context/theme/
+│   ├── ThemeContext.tsx     <React.createContext<ThemeContextValue>>
+│   ├── ThemeProvider.tsx    <resolves localStorage/OS on mount, exposes setTheme(), owns [data-theme] sync>
+│   └── useTheme.ts          <useContext(ThemeContext) wrapper hook>
+├── components/ThemeToggle/
+│   ├── ThemeToggle.tsx      <calls useTheme(); reuses buttonClassName({variant:'ghost'}) from components/Button>
+│   └── ThemeToggle.module.css
+└── styles/tokens.css        <extended with [data-theme="light"] override block, per ADR to be spawned in §8>
 ```
+
+`ThemeToggle` reuses the existing `buttonClassName({variant: 'ghost', size: 'md'})` helper (Explore report — same convention `PasswordField`'s show/hide control follows) and `lucide-react` `Sun`/`Moon` icons (already a dependency, currently only used in `PasswordField`) — no new UI-library dependency needed.
 
 **C4 Container (L2):**
 
 ```mermaid
 C4Container
-    title <system> — Containers
+    title theme-toggle — Containers
 
-    Person(user, "<User>")
+    Person(jobseeker, "Job-seeker")
 
-    Container_Boundary(boundary, "<Our System>") {
-        Container(web, "<Web/API container>", "<technology>", "<purpose>")
-        Container(svc, "<Service container>", "<technology>", "<purpose>")
-        ContainerDb(db, "<DB>", "<technology>", "<purpose>")
+    Container_Boundary(client, "ai-interview-trainer client (Vite SPA)") {
+        Container(toggle, "ThemeToggle", "React + lucide-react", "UI control; calls useTheme()")
+        Container(provider, "ThemeProvider / context/theme/", "React Context", "Owns theme state; resolves localStorage/OS; syncs [data-theme] attribute")
+        Container(appshell, "AppShell + pages", "React 19 + react-router-dom", "Existing routed UI; reads theme via useTheme() where needed (e.g. code highlighting)")
+        Container(fouc, "Anti-FOUC inline script", "Vanilla JS in index.html", "Sets [data-theme] before React loads — mechanism open, see §11 OQ")
     }
 
-    System_Ext(ext, "<External>", "<purpose>")
+    System_Ext(browser, "Browser environment", "localStorage + prefers-color-scheme")
 
-    Rel(user, web, "<interaction>", "<protocol>")
-    Rel(web, svc, "<service calls>")
-    Rel(svc, db, "<reads/writes>", "<driver>")
-    Rel(svc, ext, "<emits>", "<protocol>")
+    Rel(jobseeker, toggle, "Clicks", "DOM event")
+    Rel(toggle, provider, "setTheme()", "React Context")
+    Rel(provider, appshell, "provides theme value", "React Context")
+    Rel(provider, browser, "reads/writes theme pref", "Browser API")
+    Rel(fouc, browser, "reads once on load", "Browser API")
 ```
 
 ## 6. Runtime view
