@@ -174,25 +174,48 @@ C4Container
 <!--           ендпоінт-рівневі sequence-діаграми зʼявляться у stage 06 (define-api).      -->
 <!-- 📌 Приклад: «methodist → web-app: складає чорновик → web-app → content-api: зберегти». -->
 
-**Critical flow 1: <flow name>**
+**Critical flow 1: Manual theme toggle (AC-01, AC-03)**
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant API
-    participant Service
-    participant DB
-    User->>API: <request>
-    API->>Service: <call>
-    Service->>DB: <write tx>
-    DB-->>Service: ok
-    Service-->>API: result
-    API-->>User: 201
+    actor Jobseeker as Job-seeker
+    participant Toggle as ThemeToggle
+    participant Provider as ThemeProvider
+    participant DOM as document.documentElement
+    participant Storage as localStorage
+
+    Jobseeker->>Toggle: Clicks toggle
+    Toggle->>Provider: setTheme('light' | 'dark')
+    Provider->>DOM: setAttribute('data-theme', theme)
+    DOM-->>Jobseeker: CSS re-paint via [data-theme] cascade (≤100ms, QG-1)
+    Provider->>Storage: setItem('diff-theme', theme)
+    Storage-->>Provider: ok
 ```
 
-<!-- For XS/S: 1 flow above is enough. For M+: add 2-4 more (e.g. failure-mode flow, async flow). -->
+**Critical flow 2: First-visit smart default (AC-06, AC-02)**
 
-**Critical flow 2: <e.g. async event propagation>** — <if applicable, otherwise N/A>.
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant FoucScript as Anti-FOUC inline script
+    participant Storage as localStorage
+    participant Browser as Browser (prefers-color-scheme)
+    participant DOM as document.documentElement
+    participant Provider as ThemeProvider
+
+    Jobseeker->>FoucScript: First page load
+    FoucScript->>Storage: getItem('diff-theme')
+    alt valid stored value present
+        Storage-->>FoucScript: 'light' | 'dark'
+    else missing or corrupted (AC-02)
+        Storage-->>FoucScript: null / invalid
+        FoucScript->>Browser: matchMedia('(prefers-color-scheme: dark)')
+        Browser-->>FoucScript: dark | light
+    end
+    FoucScript->>DOM: setAttribute('data-theme', resolvedTheme) — before React hydrates (≤16ms, QG-2)
+    Note over Provider: React hydrates; ThemeProvider re-runs the same resolution logic to sync its own state with the DOM attribute already set
+    Provider-->>Jobseeker: Correct theme visible from first paint, no flash
+```
 
 ## 7. Deployment view
 
