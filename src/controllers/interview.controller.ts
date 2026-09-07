@@ -70,6 +70,10 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 		res.status(404).json({ error: 'Session not found' });
 		return;
 	}
+	if (session.status === 'completed') {
+		res.status(409).json({ error: 'Session is already complete - start a new one' });
+		return;
+	}
 
 	const review = await reviewAnswer(session.topic, session.level, question, answer);
 	session.questions.push({

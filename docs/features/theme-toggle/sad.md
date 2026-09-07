@@ -274,6 +274,29 @@ sequenceDiagram
     Provider-->>Jobseeker: Correct theme visible from first paint, no flash
 ```
 
+### US-04: Switch theme without disrupting an active interview session
+
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant Session as InterviewSessionPage
+    participant Toggle as ThemeToggle
+    participant Provider as ThemeProvider
+    participant DOM as document.documentElement
+    participant API as Backend submitAnswer
+
+    Note over Session: Active interview session — timer running, submitAnswer.mutate() possibly in-flight
+    Jobseeker->>Toggle: Clicks toggle (mid-session)
+    Toggle->>Provider: setTheme('light' | 'dark')
+    Provider->>DOM: setAttribute('data-theme', theme)
+    DOM-->>Jobseeker: CSS re-paint via [data-theme] cascade (≤100ms, QG-1)
+    Note over Session, API: Session state (question, answer, timer, in-flight mutation) untouched — ThemeProvider and InterviewSessionPage are independent React trees
+    alt submitAnswer.mutate() was in-flight when toggle clicked
+        API-->>Session: response arrives unaffected by theme change
+        Session-->>Jobseeker: review/result renders in newly active theme
+    end
+```
+
 ## 7. Deployment view
 
 <!-- 🎯 Навіщо: ТОПОЛОГІЯ, яку DevOps має знати без читання Helm-чартів — скільки реплік,  -->

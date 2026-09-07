@@ -5,7 +5,7 @@ description: >
   Arc42 12 sections + ADRs for a feature, after PRD is closed. Triggers on
   "architecture for {slug}", "design architecture for {feature}", "SAD for
   {slug}", "arc42 for {slug}", "stage 04-05 for {slug}", "C4 context+container
-  for {slug}", "/sdlc-architecture-design {slug}", "/sdlc-arc {slug}".
+  for {slug}", "/architecture-design {slug}", "/arc {slug}".
   Drafts §1-§12 in-memory, then per-section batch validates via AskUserQuestion
   (4-state machine: Approve / Edit / Save as Open Question / Drop), spawns
   ADRs only on blast-radius gate (irreversible / multi-module / has legitimate
@@ -53,7 +53,7 @@ Architect / Tech Lead. PM stays consulted on Quality Goals (§10) and §11 Risk 
 
 - After a PRD (product requirements doc) exists at `docs/features/<slug>/PRD.md` — produced by whatever upstream process your project uses (a dedicated PRD skill, a doc pasted in by hand, a ticket exported to markdown).
 - Brownfield repo (existing code the feature changes) OR greenfield with PRD only.
-- `/sdlc-architecture-design <slug>` as explicit invocation.
+- `/architecture-design <slug>` as explicit invocation.
 - Skip if `docs/features/<slug>/sad.md` already exists with 12 sections filled (content or `<!-- N/A: reason -->`) AND `adr/` has ≥1 file — suggest review instead.
 
 ## Inputs (HARD REFUSE if missing)

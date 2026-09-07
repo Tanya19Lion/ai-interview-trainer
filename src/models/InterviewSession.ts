@@ -28,6 +28,8 @@ const interviewSessionSchema = new Schema(
 	{ timestamps: true },
 );
 
+interviewSessionSchema.index({ userId: 1, status: 1 });
+
 export type InterviewSession = InferSchemaType<typeof interviewSessionSchema> & {
 	userId: Types.ObjectId;
 };

@@ -240,6 +240,110 @@ sequenceDiagram
     Web-->>Jobseeker: authenticated, redirected into the app
 ```
 
+### US-04: Authenticate via email/password
+
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant Web as Client SPA
+    participant API as API Server
+    participant DB as MongoDB
+
+    Jobseeker->>Web: enters email + password, submits login
+    Web->>API: POST /api/auth/login
+    API->>DB: find User by email
+    alt user found and password matches hash
+        DB-->>API: User (passwordHash)
+        API-->>Web: JWT in an httpOnly cookie
+        Web-->>Jobseeker: authenticated, redirected into the app
+    else user not found, or password does not match hash (AC-02)
+        DB-->>API: no match / User (passwordHash)
+        API-->>Web: 401 invalid email/password
+        Web-->>Jobseeker: shows "invalid email or password" — no hint which field is wrong
+    end
+```
+
+### US-05: Review interview history
+
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant Web as Client SPA
+    participant API as API Server
+    participant DB as MongoDB
+
+    Jobseeker->>Web: opens history page
+    Web->>API: GET /api/history (JWT httpOnly cookie)
+    alt valid JWT
+        API->>DB: find InterviewSession where userId = token.userId
+        DB-->>API: only this job-seeker's completed sessions (AC-05)
+        API-->>Web: session list
+        Web-->>Jobseeker: shows past sessions
+    else missing or expired JWT (AC-03)
+        API-->>Web: 401 unauthorized
+        Web-->>Jobseeker: redirected to login
+    end
+
+    Jobseeker->>Web: opens one session's detail
+    Web->>API: GET /api/history/:id (JWT httpOnly cookie)
+    API->>DB: find InterviewSession by id, filtered by userId (AC-05)
+    DB-->>API: session detail, only if owned by this job-seeker
+    API-->>Web: questions/answers/scores
+    Web-->>Jobseeker: shows session detail
+```
+
+### US-06: See stats
+
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant Web as Client SPA
+    participant API as API Server
+    participant DB as MongoDB
+
+    Jobseeker->>Web: opens stats page
+    Web->>API: GET /api/stats (JWT httpOnly cookie)
+    alt valid JWT
+        API->>DB: aggregate InterviewSession where userId = token.userId, group by topic/level
+        DB-->>API: pass-rate stats, this job-seeker's sessions only (AC-05)
+        API-->>Web: aggregated stats
+        Web-->>Jobseeker: shows pass-rate by topic and level
+    else missing or expired JWT (AC-03)
+        API-->>Web: 401 unauthorized
+        Web-->>Jobseeker: redirected to login
+    end
+```
+
+### Ad-hoc: submit answer to a completed session (AC-04)
+
+> Documents PRD AC-04. `submitAnswer` (`src/controllers/interview.controller.ts`) returns
+> `409` for the `else` branch below as of 2026-09-07 — see
+> `_audit/sequences-2026-09-07-ac04.md` for the fix that closed a gap where this check was
+> previously missing.
+
+```mermaid
+sequenceDiagram
+    actor Jobseeker as Job-seeker
+    participant Web as Client SPA
+    participant API as API Server
+    participant DB as MongoDB
+
+    Jobseeker->>Web: submits an answer for sessionId
+    Web->>API: POST /api/interview/:sessionId/answer
+    API->>DB: find InterviewSession by id, filtered by userId
+    DB-->>API: session (status: in_progress | completed)
+    alt session.status is in_progress
+        API->>API: evaluate answer via AI, append to questions[]
+        API->>DB: save session (questions[] updated, status flips to completed if last question)
+        DB-->>API: ok
+        API-->>Web: score + explanation + correct answer
+        Web-->>Jobseeker: shows feedback
+    else session.status is already completed (AC-04)
+        API-->>Web: 409 session already completed - start a new one
+        Web-->>Jobseeker: shows "session already complete" message
+    end
+```
+
 ## 7. Deployment view
 
 <!-- N/A: no Dockerfile, docker-compose, or CI/CD workflow exists in the repo as of this
