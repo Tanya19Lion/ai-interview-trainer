@@ -268,22 +268,27 @@ ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 <!--           ДОСЛІВНО (не округлюй p95 ≤250мс до ≤300мс — це F6-помилка критика).        -->
 <!-- 📌 Приклад: «p95 ≤500 мс на UPDATE блоку, перевіримо k6 load test 100 req/s».        -->
 
-Each top-3 goal from §1 expanded into a full scenario:
+Each top-4 goal from §1 expanded into a full scenario:
 
-**QG-1. <quality attribute>**
-- **When:** <trigger condition>
-- **Then:** <expected behavior with numbers from PRD NFR>
-- **How verify:** <test / chaos drill / load test / observability>
+**QG-1. Perceived switch performance**
+- **When:** Job-seeker clicks the theme toggle
+- **Then:** visual re-paint completes ≤100 ms from click (PRD §6 NFR, verbatim)
+- **How verify:** manual QA / browser Performance API measurement on click
 
-**QG-2. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-2. Cold-load correctness (anti-FOUC)**
+- **When:** Job-seeker loads the app cold (first paint)
+- **Then:** first paint is already in the correct theme, ≤16 ms from load start, no flash-of-unstyled-content (PRD §6 NFR, verbatim)
+- **How verify:** manual QA / browser Performance API on cold load
 
-**QG-3. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-3. Persistence accuracy**
+- **When:** Job-seeker returns to the app on the same device/browser
+- **Then:** 100% of returning visits render the last manually chosen theme (PRD §6 NFR, verbatim)
+- **How verify:** e2e test asserting re-render from localStorage (PRD's own measurement method, verbatim)
+
+**QG-4. AI-feedback readability across themes**
+- **When:** Job-seeker views AI-generated feedback (text, code highlighting, strength/weakness badges) in either theme
+- **Then:** all feedback content remains readable with sufficient WCAG AA contrast in both light and dark themes (PRD §6.1, AC-05)
+- **How verify:** manual QA WCAG AA contrast audit before release, owner Tech Lead (§1, §8); target 0 reported readability incidents within 30 days post-release (PRD §7 KPI, verbatim)
 
 ## 11. Risks and technical debt
 
