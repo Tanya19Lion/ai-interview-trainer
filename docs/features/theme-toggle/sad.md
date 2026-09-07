@@ -305,10 +305,14 @@ Each top-4 goal from §1 expanded into a full scenario:
 
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| Open architectural decision: anti-FOUC cold-load strategy (inline `<head>` script vs. `useLayoutEffect`) | Open question | Resolve before `sdlc:break-tasks`; deferred because it commits the project to a hand-written JS shim outside the React/Vite build tree (inline script) vs. a slower-but-pure-React path — needs a decision before tasks reference a concrete file to edit | Tech Lead |
+| Open architectural decision: anti-FOUC cold-load strategy (inline `<head>` script vs. `useLayoutEffect`) | Open question | Resolve before `sdlc:break-tasks`; deferred because it commits the project to a hand-written JS shim outside the React/Vite build tree (inline script) vs. a slower-but-pure-React path — needs a decision before tasks reference a concrete file to edit | Tanya19Lion (sole project owner — Tech Lead role) |
+| Open architectural decision: exact light-palette colors (PRD §8) — `tokens.css` currently has only a dark-first palette plus fixed `--paper`/`--paper-2` accents, no true light-mode root values | Open question | Resolve before `sdlc:break-tasks` for §5's `tokens.css` `[data-theme="light"]` override block — tasks can't be scoped without concrete color values | Tanya19Lion (sole project owner — Tech Lead role) |
+| Open architectural decision: is the ≤100 ms switch-latency NFR (QG-1) a verified realistic threshold or a heuristic estimate? (PRD §8) | Open question | Resolve on the first manual QA pass after implementation — measure actual re-paint latency with the browser Performance API and confirm or renegotiate the NFR empirically, not a priori | Tanya19Lion (sole project owner — Tech Lead role) |
+| ADR-0001 introduces the first React Context in `client/src` — re-render fan-out on every toggle could threaten QG-1's ≤100 ms budget if many feedback/code-highlighting components subscribe to theme value | Medium | Keep the Context value minimal (theme string only, no derived objects, no functions recreated per render) to limit unnecessary re-renders; verify against the actual component count during QG-1 manual QA | Tanya19Lion |
+| Brownfield drift: this SAD's §2/§5 rely on the Step-3 Explore scan (package versions, folder layout, `tokens.css` contents) captured 2026-09-07 — if the codebase changes materially before implementation starts, those sections may need a fresh scan | Low | Re-run `Explore` before `sdlc:break-tasks` if implementation is delayed by more than a few weeks | Tanya19Lion |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
-- <e.g. Goal entity is not versioned (immutable) — OK for v1, may need audit versioning in v2>
+- No automated e2e coverage for the anti-FOUC script itself (mechanism deferred, see Open Decisions above) — acceptable for v1 given S-size scope; revisit if a second feature also needs to touch `index.html`'s inline script.
 
 ## 12. Glossary
 
