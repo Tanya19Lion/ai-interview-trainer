@@ -136,10 +136,66 @@ client/src/
 ├── components/ThemeToggle/
 │   ├── ThemeToggle.tsx      <calls useTheme(); reuses buttonClassName({variant:'ghost'}) from components/Button>
 │   └── ThemeToggle.module.css
-└── styles/tokens.css        <extended with [data-theme="light"] override block, per ADR to be spawned in §8>
+└── styles/tokens.css        <extended with [data-theme="light"] override block — full mapping below, resolves PRD §8>
 ```
 
 `ThemeToggle` reuses the existing `buttonClassName({variant: 'ghost', size: 'md'})` helper (Explore report — same convention `PasswordField`'s show/hide control follows) and `lucide-react` `Sun`/`Moon` icons (already a dependency, currently only used in `PasswordField`) — no new UI-library dependency needed.
+
+**Light-theme token mapping (Variant A — resolves PRD §8 open question on exact light-palette colors).** Principle: page canvas and UI elements lighten; the editor-window card (the product's signature dark "diff card") stays dark in *both* themes — only tokens governing the page canvas change, everything inside `.editor-window` is copied 1:1 unmodified.
+
+*Canvas & surfaces:*
+
+| Token | Dark (current) | Light (new) | Used for |
+|---|---|---|---|
+| `--canvas` (was `--ink`) | `#14171F` | `#FBF8F1` | `<body>` background on all pages |
+| `--canvas-2` (was `--ink-2`) | `#1B1F29` | `#F1EADA` | Stat cards, history card, section backers |
+| `--canvas-3` (new) | — | `#E9E0CC` | Third-level surfaces (table-row hover, section dividers) |
+| `--line` | `rgba(244,241,232,.10)` | `rgba(35,38,47,.10)` | Card borders, table/navbar dividers (dark line on light) |
+| `--nav-bg` | `rgba(20,23,31,.85)` | `rgba(251,248,241,.88)` | Sticky navbar (backdrop-blur unchanged) |
+
+*Typography (outside the editor-window card):*
+
+| Token | Dark | Light | Used for |
+|---|---|---|---|
+| `--text-strong` (was `--off-white`) | `#F4F1E8` | `#23262F` | H1–H3, body text, outline-button labels |
+| `--text-soft` (was `--slate`) | `#9AA1B4` | `#5B5B52` | Subheadings, nav links, stat-card captions |
+| `--text-faint` (was `--slate-2`) | `#666E82` | `#8A8577` | Meta info: dates, table column headers, footer |
+
+*Buttons:*
+
+| Token | Dark | Light | Used for |
+|---|---|---|---|
+| `--btn-primary-bg` | `#4C9A5D` | `#2E6B3B` | "Start interview" / "Start free" — darker green holds WCAG AA on cream |
+| `--btn-primary-text` | `#0D140F` | `#F6F0E4` | Primary button text |
+| `--btn-secondary-border` | `rgba(244,241,232,.24)` | `rgba(35,38,47,.22)` | Secondary button ("Log in", "See example") outline |
+| `--btn-secondary-text` | `#F4F1E8` | `#23262F` | Secondary button text |
+
+*Semantic colors — text usage (level chips, history scores, eyebrow text) — darkened vs. the "neon" dark-theme originals to hold contrast on cream:*
+
+| Token | Dark | Light | Used for |
+|---|---|---|---|
+| `--green` | `#4C9A5D` | `#2E6B3B` | Eyebrow text, Junior chip, "good" history score |
+| `--rust` | `#C1543A` | `#8F3F2B` | Low score, warnings/errors outside the card |
+| `--amber` | `#E7A93B` | `#8A660F` | Middle chip, mid score — heaviest darkening (yellow holds contrast worst on cream) |
+| `--plum` | `#9C6B93` | `#7A4F72` | Senior chip text (dot-decoration fill may stay `#9C6B93`) |
+
+*Semantic colors — soft background usage (chip/badge tint) — nearly unchanged on the new cream canvas except amber (slightly denser so the chip doesn't blend into `--canvas-2`):*
+
+| Token | Dark | Light |
+|---|---|---|
+| `--green-soft` | `rgba(76,154,93,.16)` | `rgba(76,154,93,.14)` |
+| `--rust-soft` | `rgba(193,84,58,.16)` | `rgba(193,84,58,.14)` |
+| `--amber-soft` | `rgba(231,169,59,.18)` | `rgba(231,169,59,.20)` |
+
+*Shadow:*
+
+| Token | Dark | Light | Used for |
+|---|---|---|---|
+| `--shadow` | `0 30px 60px -20px rgba(0,0,0,.55)` | `0 30px 60px -20px rgba(35,30,20,.35)` | Editor-window drop shadow — must read warm (brown, not black) or it looks dirty-grey on cream |
+
+**Unchanged — the editor-window stays dark in both themes** (the product's signature "diff card" island): `--card-bg:#14171F`, `--card-titlebar:#1B1F29`, `--card-body:#181C26`, `--card-text-strong:#F4F1E8`, `--card-text-soft:#9AA1B4`, `--card-border:rgba(244,241,232,.10)`; diff-row colors `--green-text:#7BC08D` (added) / `--rust-text:#E08469` (removed) / `--amber-text:#E7A93B` (AI comment); traffic-light dots (`#E5645A` / `#E7B84B` / `#59C36A`) unchanged. This directly grounds QG-4 (AI-feedback readability): the highest-stakes reading surface (code diff + AI feedback) never changes contrast profile across themes — only its *surroundings* do.
+
+**WCAG AA spot-check on the new cream canvas (`#FBF8F1`)** — all pass ≥4.5:1 for body text: `text-strong` ≈13.8:1, `text-soft` ≈6.7:1, `green` ≈5.9:1, `rust` ≈6.4:1, `amber` ≈4.8:1, `plum` ≈5.3:1. This is the author's own spot-check, not a substitute for the full Tech Lead contrast audit (§8) — that audit now has concrete colors to test instead of an unspecified palette.
 
 **C4 Container (L2):**
 
@@ -153,7 +209,7 @@ C4Container
         Container(toggle, "ThemeToggle", "React + lucide-react", "UI control; calls useTheme()")
         Container(provider, "ThemeProvider / context/theme/", "React Context", "Owns theme state; resolves localStorage/OS; syncs [data-theme] attribute")
         Container(appshell, "AppShell + pages", "React 19 + react-router-dom", "Existing routed UI; reads theme via useTheme() where needed (e.g. code highlighting)")
-        Container(fouc, "Anti-FOUC inline script", "Vanilla JS in index.html", "Sets [data-theme] before React loads — mechanism open, see §11 OQ")
+        Container(fouc, "Anti-FOUC mechanism (provisional)", "TBD — inline <head> script vs. useLayoutEffect", "Sets [data-theme] before/at first paint — exact realization is an open decision, §11; diagram shows it as a container to preserve the flow, not to imply the choice is locked")
     }
 
     System_Ext(browser, "Browser environment", "localStorage + prefers-color-scheme")
@@ -194,10 +250,12 @@ sequenceDiagram
 
 **Critical flow 2: First-visit smart default (AC-06, AC-02)**
 
+*Note: the "Anti-FOUC inline script" participant below shows the flow's shape, not a locked implementation — the exact mechanism (inline `<head>` script vs. `useLayoutEffect`) is still an open decision, §11.*
+
 ```mermaid
 sequenceDiagram
     actor Jobseeker as Job-seeker
-    participant FoucScript as Anti-FOUC inline script
+    participant FoucScript as Anti-FOUC mechanism (provisional)
     participant Storage as localStorage
     participant Browser as Browser (prefers-color-scheme)
     participant DOM as document.documentElement
@@ -274,6 +332,7 @@ Each top-4 goal from §1 expanded into a full scenario:
 - **When:** Job-seeker clicks the theme toggle
 - **Then:** visual re-paint completes ≤100 ms from click (PRD §6 NFR, verbatim)
 - **How verify:** manual QA / browser Performance API measurement on click
+- **NFR realism (resolves PRD §8 open question):** confirmed architecturally-grounded, not just a heuristic guess — ADR-0001's chosen mechanism repaints via a single `[data-theme]` DOM-attribute + CSS custom-property cascade (§4), which the browser handles without blocking the main thread the way a full React re-render tree would. The Context re-render fan-out flagged as a risk in §11 is a *mitigation-tracked* concern (keep Context value minimal), not grounds to doubt the ≤100 ms target itself.
 
 **QG-2. Cold-load correctness (anti-FOUC)**
 - **When:** Job-seeker loads the app cold (first paint)
@@ -303,13 +362,15 @@ Each top-4 goal from §1 expanded into a full scenario:
 <!-- Severity column literals: Low / Medium / High for regular risks; "Open question" for rows
      created by Step-7 `Save as Open Question` resolutions (see references/socratic-loop.md). -->
 
-| Risk / debt | Severity | Mitigation | Owner |
-|---|---|---|---|
-| Open architectural decision: anti-FOUC cold-load strategy (inline `<head>` script vs. `useLayoutEffect`) | Open question | Resolve before `sdlc:break-tasks`; deferred because it commits the project to a hand-written JS shim outside the React/Vite build tree (inline script) vs. a slower-but-pure-React path — needs a decision before tasks reference a concrete file to edit | Tanya19Lion (sole project owner — Tech Lead role) |
-| Open architectural decision: exact light-palette colors (PRD §8) — `tokens.css` currently has only a dark-first palette plus fixed `--paper`/`--paper-2` accents, no true light-mode root values | Open question | Resolve before `sdlc:break-tasks` for §5's `tokens.css` `[data-theme="light"]` override block — tasks can't be scoped without concrete color values | Tanya19Lion (sole project owner — Tech Lead role) |
-| Open architectural decision: is the ≤100 ms switch-latency NFR (QG-1) a verified realistic threshold or a heuristic estimate? (PRD §8) | Open question | Resolve on the first manual QA pass after implementation — measure actual re-paint latency with the browser Performance API and confirm or renegotiate the NFR empirically, not a priori | Tanya19Lion (sole project owner — Tech Lead role) |
-| ADR-0001 introduces the first React Context in `client/src` — re-render fan-out on every toggle could threaten QG-1's ≤100 ms budget if many feedback/code-highlighting components subscribe to theme value | Medium | Keep the Context value minimal (theme string only, no derived objects, no functions recreated per render) to limit unnecessary re-renders; verify against the actual component count during QG-1 manual QA | Tanya19Lion |
-| Brownfield drift: this SAD's §2/§5 rely on the Step-3 Explore scan (package versions, folder layout, `tokens.css` contents) captured 2026-09-07 — if the codebase changes materially before implementation starts, those sections may need a fresh scan | Low | Re-run `Explore` before `sdlc:break-tasks` if implementation is delayed by more than a few weeks | Tanya19Lion |
+**Resolved during Step 8 critic pass (were PRD §8 open questions, now closed in this SAD — not deferred):**
+- **Light-palette exact colors** — resolved in §5 "Light-theme token mapping (Variant A)": full token-by-token mapping reusing the existing `--paper`-family structure conceptually but with concrete new hex values for canvas/typography/buttons/semantic colors; editor-window card stays dark in both themes. No longer an open question.
+- **≤100 ms switch-latency NFR (QG-1) realism** — resolved in §10 QG-1: confirmed architecturally-grounded (CSS-cascade repaint, not React re-render), not merely heuristic. No longer an open question.
+
+| Risk / debt | Severity | Due | Mitigation | Owner |
+|---|---|---|---|---|
+| Open architectural decision: anti-FOUC cold-load strategy (inline `<head>` script vs. `useLayoutEffect`) | Open question | Before `sdlc:break-tasks` | Deferred because it commits the project to a hand-written JS shim outside the React/Vite build tree (inline script) vs. a slower-but-pure-React path — needs a decision before tasks reference a concrete file to edit. §5/§6 diagrams show this flow's shape as "provisional" pending this resolution (Step-8 critic F1 fix) | Tanya19Lion (sole project owner — Tech Lead role) |
+| ADR-0001 introduces the first React Context in `client/src` — re-render fan-out on every toggle could threaten QG-1's ≤100 ms budget if many feedback/code-highlighting components subscribe to theme value | Medium | On QG-1 manual QA pass | Keep the Context value minimal (theme string only, no derived objects, no functions recreated per render) to limit unnecessary re-renders; verify against the actual component count during QG-1 manual QA | Tanya19Lion |
+| Brownfield drift: this SAD's §2/§5 rely on the Step-3 Explore scan (package versions, folder layout, `tokens.css` contents) captured 2026-09-07 — if the codebase changes materially before implementation starts, those sections may need a fresh scan | Low | If implementation delayed >a few weeks | Re-run `Explore` before `sdlc:break-tasks` | Tanya19Lion |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
 - No automated e2e coverage for the anti-FOUC script itself (mechanism deferred, see Open Decisions above) — acceptable for v1 given S-size scope; revisit if a second feature also needs to touch `index.html`'s inline script.
