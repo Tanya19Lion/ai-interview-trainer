@@ -49,23 +49,24 @@ ticket: "<TBD>"
 <!-- 📌 Приклад: «Postgres 18» (не «Postgres»); «дедлайн Q3 — жорсткий» (не «бажано»).    -->
 
 **Technical.**
-- <Language + version, e.g. Go 1.26>
-- <Framework + version, e.g. chi v5.1, pgx v5.7>
-- <Datastore + version, e.g. Postgres 18>
-- <Architecture convention, e.g. hexagonal per CLAUDE.md>
+- TypeScript ~6.0.2, React ^19.2.8 + react-dom ^19.2.8, Vite ^8.2.0, @vitejs/plugin-react ^6.0.4 (`client/package.json`)
+- Purely client-side feature — no changes to the root Express + TypeScript + MongoDB (Mongoose) backend (`ai-interview-trainer-server`)
+- Existing deps available for reuse: `lucide-react` (icon library, currently used only in `PasswordField`), `framer-motion` (available for transition, not currently used for theming)
+- Component convention: `components/<Name>/<Name>.tsx` + co-located `.module.css`, re-exported via `components/index.ts`
 
 **Organisational.**
-- <Effort budget, e.g. 3 person-weeks>
-- <Deadline, e.g. 2026-Q3 hard>
-- <Team composition, e.g. 1 backend + 0.5 frontend>
+- Feature size S (PRD frontmatter)
+- Soft deadline: next natural polish item before v1 release (~2026-10-05, per PROGRESS.md — all 10 client-plan tasks already shipped)
+- Team: implicitly 1 frontend engineer (client work to date has been single-owner per PROGRESS.md)
 
 **Conventions.**
-- <Link to CLAUDE.md or project conventions>
-- <Naming, ID strategy, error-handling pattern>
+- `.claude/rules/frontend/styles.md` — `client/src/styles/tokens.css` is the single source of truth for color/typography/spacing/radii; components read `var(--token-name)`, never hardcode values
+- No existing React Context or global-UI-state hook pattern in `client/src` (Explore report) — auth state is server-derived via TanStack Query, not client state; a theme mechanism sets a new precedent (resolved in §5)
+- localStorage: one existing usage (`LangOverlay`, key `'diff-lang-chosen'`, inline `getItem`/`setItem`, no wrapper utility) — sets a `'diff-<feature>'` kebab-case key-naming precedent
 
 **Regulatory / external.**
-- <e.g. GDPR — user deletion behavior per ADR-NNNN>
-- <e.g. SOC2, PCI — applicable controls>
+- PRD §6.1: Data classification = Internal; theme preference is a non-PII local string, not sent to the backend, not linked to an account
+- No new authz/authn boundary, no new server endpoint — Security review marked N/A in PRD §6.1 (S-size, purely client-side cosmetic feature)
 
 ## 3. Context and scope
 
