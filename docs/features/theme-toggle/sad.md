@@ -109,9 +109,9 @@ C4Context
 
 **Top-3 strategic choices (the seeds for ADRs):**
 
-1. **<e.g. Module isolation through events>** — <2-3 sentences rationale referencing Quality Goals and constraints>.
-2. **<e.g. Single-store persistence (Postgres)>** — <2-3 sentences>.
-3. **<e.g. Server-rendered dashboard>** — <2-3 sentences>.
+1. **React Context for theme state distribution** — a new `ThemeContext` + `ThemeProvider` composed in `main.tsx` gives every component a typed `useTheme()` read, needed by code-highlighting components that must pick a syntax-theme variant in JS (QG-4 readability), at the cost of a re-render fan-out on toggle (tracked against QG-1's ≤100 ms latency in §10). First such Context precedent in this codebase — see **ADR-0001**.
+2. **Anti-FOUC cold-load strategy — open.** How the correct theme is applied before React hydrates (inline `<head>` script vs. `useLayoutEffect`) is deferred; see §11 Open Decisions (owner: Tech Lead, due: before `sdlc:break-tasks`). This choice must be locked before `sdlc:break-tasks` because it determines whether a tactical task exists for editing `client/index.html` outside the normal React/TypeScript source tree.
+3. **Storage-override theme-resolution logic (no separate manual-choice flag)** — `localStorage` stores only the resolved `'light'|'dark'` value, written solely on manual toggle. Resolution order at every load: valid stored value present → use it, ignore OS; otherwise → compute live from `prefers-color-scheme`, never persisted. This single rule satisfies AC-02 (corrupt/missing value falls back to smart default), AC-03 (manual choice outranks later OS changes — no separate `isManual` flag needed, since presence of a stored value *is* the manual-choice signal), and AC-06 (first-visit smart default) without extra state. Low blast radius (single function, easy to relearn) — decided inline, no ADR.
 
 Each tactical decision in later sections should be traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surface them in §11 Risks.
 
@@ -236,8 +236,7 @@ sequenceDiagram
 
 | # | Title | Status | Section |
 |---|---|---|---|
-| <NNNN> | <imperative — e.g. "Use sliding window for rate limiting"> | Accepted | §<N> |
-| <NNNN> | <imperative — e.g. "Co-locate outbox worker in API process"> | Accepted | §<N> |
+| 0001 | Use React Context for theme state | Accepted | §4 |
 
 ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 
@@ -282,9 +281,7 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| <e.g. Outbox lag may reach hours during downstream outage> | Medium | <Alert >10 min, on-call playbook, retry backoff> | <DevOps> |
-| <e.g. No event schema versioning in v1> | Medium | <ADR-NNNN planned for v2, graceful handling of unknown fields> | <Backend> |
-| Open architectural decision: <decision-headline> | Open question | Resolve before <stage trigger or YYYY-MM-DD>; <inline rationale from Step-7 Save-as-OQ> | <owner> |
+| Open architectural decision: anti-FOUC cold-load strategy (inline `<head>` script vs. `useLayoutEffect`) | Open question | Resolve before `sdlc:break-tasks`; deferred because it commits the project to a hand-written JS shim outside the React/Vite build tree (inline script) vs. a slower-but-pure-React path — needs a decision before tasks reference a concrete file to edit | Tech Lead |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
 - <e.g. Goal entity is not versioned (immutable) — OK for v1, may need audit versioning in v2>
