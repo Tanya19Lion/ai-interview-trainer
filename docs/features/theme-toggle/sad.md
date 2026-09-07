@@ -22,21 +22,24 @@ ticket: "<TBD>"
 <!-- 📋 Що писати: 1 абзац intent + 3 рядки топ-3 якості + таблиця stakeholders.        -->
 <!-- 📌 Приклад: «QG-1: швидкість редагування блоку p95 ≤500 мс»                         -->
 
-**Intent.** <One paragraph from PRD §Goals — what we're building and for whom.>
+**Intent.** Job-seekers practicing interviews in ai-interview-trainer get a manual light/dark theme toggle with no page reload; a new visitor's first render already matches their OS-level theme preference (one-time read, no ongoing sync); the chosen theme persists per-device across sessions. This is the last polish item before the v1 release (~2026-10-05) — all 10 client-plan tasks are already shipped per PROGRESS.md (PRD §1).
 
-**Top-3 quality goals (1-liners; full scenarios in §10):**
+**Top-4 quality goals (1-liners; full scenarios in §10):**
 
-1. <e.g. "Availability under partial failure of downstream module">
-2. <e.g. "Performance for EM dashboard under team-scale growth">
-3. <e.g. "Recoverability of checkpoints with <30 min RTO">
+1. Perceived switch performance — visual latency ≤100 ms from click to full re-paint (PRD §6 NFR).
+2. Cold-load correctness — ≤16 ms to first paint already in the correct theme, no flash-of-unstyled-content (FOUC) (PRD §6 NFR).
+3. Persistence accuracy — 100% of returning visits on the same device/browser render the last manually chosen theme (PRD §6 NFR).
+4. AI-feedback readability across themes — text, code highlighting, and strength/weakness badges stay readable (WCAG AA contrast) in both light and dark; PRD §7 KPI names this the single most critical risk (idea-brief §10), so it is promoted to a top-level quality goal rather than left as an inline note.
 
 **Stakeholders.**
 
 | Role | Interest | Sign-off owner? |
 |---|---|---|
-| <e.g. IC> | <feature usage> | No |
-| <e.g. EM> | <dashboard reads> | No |
-| <e.g. Tech Lead> | <SAD approval> | Yes |
+| Job-seeker | Switches theme, expects readable AI feedback in either mode | No |
+| Tech Lead | SAD approval; owns WCAG AA contrast audit for AI feedback in both themes (§8, resolves PRD §8 open question — original "before architecture-design" deadline re-anchored to "before this SAD's finalization commit, Step 8") | Yes |
+
+**Decision overrides:**
+- None yet in this SAD — PRD §1 ¶4 override (authorization coverage-type N/A) carries forward unchanged; no new override introduced in §1.
 
 ## 2. Constraints
 
