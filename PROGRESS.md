@@ -256,9 +256,9 @@ cd .. && npx tsc --noEmit && npm run lint                            # серв�
 
 ---
 
-# 🚀 Поточна робота: PRD stage (`write-prd` skill) + сам skill
+# theme-toggle — SDLC-статус
 
-## `theme-toggle` — PRD написано
+## Stage 03 — PRD (готово)
 
 `docs/features/theme-toggle/idea-brief.md` (Confirmed) → `docs/features/theme-toggle/PRD.md`
 згенеровано повним протоколом `/write-prd`: Socratic-валідація §4 User Stories → §5
@@ -273,5 +273,40 @@ Acceptance Criteria → §6 NFR → §7 KPI, потім clean-context critic (Ph
   у `<head>`) — critic (Phase 7.5) підняв [F2] size-class creep на початкові 20ms, після чого
   число звужено до 16ms, аби залишитись у S-розмірі фічі без важкого anti-FOUC механізму.
 - §8 Open Questions: усі мають `owner: Tech Lead` (self-check зловив і не пропустив голий `TBD`).
+
+## Stage 04-05 — Architecture (готово, `status: Accepted`)
+
+`docs/features/theme-toggle/sad.md` згенеровано повним протоколом `/architecture-design`:
+Explore-скан репо (brownfield) → чорновий драфт §1-§12 → per-section Socratic-валідація
+(AskUserQuestion, 4-state machine) → 1 ADR через blast-radius gate → Step 8 clean-context critic
+(3 знахідки, усі вирішені) → фіналізаційний коміт. `sad.md`'s `status` вручну виставлено на
+`Accepted` після завершення (reviewers-поле очищено) — SAD затверджено користувачем.
+
+**Артефакти:**
+- `docs/features/theme-toggle/sad.md` — 12 секцій Arc42, C4 Context (§3), C4 Container (§5),
+  2 sequence-діаграми (§6).
+- `docs/features/theme-toggle/adr/0001-react-context-for-theme-state.md` — єдиний ADR цього
+  проходу (`Accepted`).
+
+**Ключові архітектурні рішення:**
+- **Стан теми — React Context** (`client/src/context/theme/{ThemeContext,ThemeProvider,useTheme}`),
+  перший такий precedent у `client/src` (ADR-0001; альтернатива — DOM-атрибут+CSS-каскад без
+  Context — розглянута й відхилена).
+- **Логіка визначення теми**: `localStorage` (`'diff-theme'`) зберігає лише ручний вибір, без
+  окремого `isManual`-флага — за відсутності валідного значення тема щоразу обчислюється з
+  `prefers-color-scheme`. Одне правило одночасно закриває AC-02 (fallback), AC-03 (пріоритет
+  ручного вибору), AC-06 (smart default).
+- **Anti-FOUC-механізм (inline `<head>`-скрипт vs `useLayoutEffect`) — досі ВІДКРИТЕ рішення**,
+  зафіксоване в §11 SAD з due "перед `break-tasks`" — Step 8 critic зловив, що §5/§6 вже
+  малювали його як готовий контейнер, хоча §4/§11 тримали відкритим; виправлено позначкою
+  "provisional" у діаграмах. **Це рішення треба буде прийняти до розбиття на таски.**
+- **Повна light-палітра (Variant A) записана в §5** — токен-за-токеном мапінг canvas/typography/
+  buttons/semantic-кольорів; `editor-window`-картка (diff/AI-фідбек) залишається темною в обох
+  темах — це і закриває QG-4 (читабельність фідбеку) найпростішим шляхом: найважливіша поверхня
+  взагалі не змінює контраст. Це рішення закрило останні 2 відкриті питання PRD §8 (точні
+  кольори, реалістичність ≤100мс NFR) прямо під час Step 8 critic-проходу, а не відкладанням.
+
+**Наступний крок:** stage 06 — `draw-sequence`, коли будеш готова продовжувати. Перед
+`break-tasks` не забути закрити відкрите anti-FOUC-рішення з §11.
 
 

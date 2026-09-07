@@ -1,7 +1,7 @@
 ---
-status: Draft
+status: Accepted
 owner: "Tanya19Lion"
-reviewers: ["Tech Lead", "Security Lead"]
+reviewers: []
 updated_at: "2026-09-07"
 feature_size: S
 stage: "04-05"
@@ -10,10 +10,9 @@ ticket: "<TBD>"
 
 # Software Architecture Document — theme-toggle
 
-<!-- Stages 04-05 → see sdlc/plugin/skills/architecture-design/SKILL.md -->
+<!-- Stages 04-05 → see /skills/architecture-design/SKILL.md -->
 <!-- 12 Arc42 sections. Empty sections — <!-- N/A: <one-line reason> -->. -->
 <!-- C4 Context (L1) lives inline in §3. C4 Container (L2) lives inline in §5. -->
-<!-- Заповнений приклад: див examples/course-lesson-mvp/sad.md у sdlc/ toolkit. -->
 
 ## 1. Introduction and goals
 
