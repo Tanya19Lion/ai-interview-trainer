@@ -76,28 +76,27 @@ ticket: "<TBD>"
 <!-- 📌 Приклад: «зовнішні — нема (свідома відмова від third-party у v1)» — це теж рішення.   -->
 <!-- Кордон довіри (trust boundary) — лінія, за якою ти не довіряєш даним без перевірки.       -->
 
-<Business context in 2-3 sentences. What the system does for whom.>
+Job-seeker interacts with `ai-interview-trainer` through a React SPA (`client/`) in the browser. This feature is purely client-side: no new traffic to the backend (root Express + Mongoose), no new endpoint. The only "external" interaction is reading `prefers-color-scheme` from the browser/OS once on first visit, and writing/reading the chosen theme in browser localStorage.
 
 **External systems (in / out):**
 
 | Actor or system | Type | Interaction |
 |---|---|---|
-| <e.g. IC> | Person | Creates goals, adds checkpoints |
-| <e.g. notification-service> | System (internal) | Receives cron registration |
-| <e.g. Identity Provider> | System (external) | Provides JWT tokens |
+| Job-seeker | Person | Views the app, toggles theme |
+| Browser environment (OS theme + localStorage) | System (external) | Provides `prefers-color-scheme` (once, first visit); stores/returns the chosen theme preference |
 
 **C4 Context (L1):**
 
 ```mermaid
 C4Context
-    title <system> — System Context
+    title theme-toggle — System Context
 
-    Person(user, "<User>", "<role + intent>")
-    System(system, "<Our System>", "<one-sentence description>")
-    System_Ext(ext, "<External system>", "<one-sentence description>")
+    Person(jobseeker, "Job-seeker", "practices interviews, switches visual theme")
+    System(app, "ai-interview-trainer client", "React 19 + TypeScript SPA (Vite)")
+    System_Ext(browser, "Browser environment", "prefers-color-scheme media query + localStorage")
 
-    Rel(user, system, "<interaction>", "<protocol>")
-    Rel(system, ext, "<interaction>", "<protocol>")
+    Rel(jobseeker, app, "Views app, toggles theme", "HTTPS")
+    Rel(app, browser, "Reads OS theme pref (once, first visit); writes/reads theme choice", "Browser API")
 ```
 
 ## 4. Solution strategy
