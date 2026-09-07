@@ -23,7 +23,7 @@ The draft is held in memory only — the on-disk `sad.md` is **not** touched bet
 ## Inputs in priority order
 
 1. **`CONTEXT.md` `## Glossary`** — canonical for role names + domain terms. If anything contradicts it (PRD, Explore output, reference code), glossary wins.
-2. **`docs/features/<slug>/PRD.md`** — Goals (§2), Non-goals (§3), NFR (§6 incl. numeric targets + measurement sources), Constraints, KPIs (§7), Open questions (§8), §1 Context overrides (¶4 bullets emitted by `sdlc:write-prd` Phase-7.5 critic).
+2. **`docs/features/<slug>/PRD.md`** — Goals (§2), Non-goals (§3), NFR (§6 incl. numeric targets + measurement sources), Constraints, KPIs (§7), Open questions (§8), §1 Context overrides (¶4 bullets, if the PRD-writing process this project uses emits them).
 3. **Step 3 Explore report** — primary language + framework + versions; top-level module layout; ports/adapters/layering conventions; data stores; inter-module communication style; CLAUDE.md-pinned constraints relevant to `<slug>`. Greenfield → null (skill notes `<!-- brownfield: N/A — greenfield repo -->` in §3 and skips repo-pattern citations).
 4. **Earlier-section in-memory decisions** — §4 strategic choices constrain §5/§6/§7/§8; §5 module boundaries constrain §6 flows; §10 quality scenarios reference §1 quality goals. The skill must read its own in-memory draft when drafting later sections (no re-reading the file).
 
@@ -77,7 +77,7 @@ The item-banks below are guidance — the skill picks how many items to draft ba
 
 - **§8 Crosscutting concepts.**
   - Table rows: logging / auth / errors / ID strategy / i18n / observability / outbox-events / rate-limiting (if applicable).
-  - **Default = «inherit from CLAUDE.md»** — bundled as one `AskUserQuestion` per [socratic-cadence.md](./socratic-cadence.md) Rule 1: "I'm assuming defaults from CLAUDE.md (slog/JWT/apperr/UUID-v7). Override?" with 2 options (`Keep defaults` / `Custom for §X`).
+  - **Default = «inherit from CLAUDE.md»** — bundled as one `AskUserQuestion` per [socratic-cadence.md](./socratic-cadence.md) Rule 1: "I'm assuming defaults from CLAUDE.md (name the project's actual logging/auth/error/ID conventions here). Override?" with 2 options (`Keep defaults` / `Custom for §X`).
   - Per-feature override only if PRD §6 NFR or §6.1 Security signals it.
 
 - **§9 Architecture decisions.**
@@ -95,7 +95,7 @@ The item-banks below are guidance — the skill picks how many items to draft ba
   - **Severity column** accepts literal `Open question` value for OQ rows (in addition to Low/Medium/High for regular risks).
 
 - **§12 Glossary.**
-  - Auto-extract from CONTEXT.md glossary terms that appear in sad.md body + add domain terms surfaced during Step 7 Socratic that aren't in CONTEXT (flag those for `sdlc:fix-term` follow-up after pass).
+  - Auto-extract from CONTEXT.md glossary terms that appear in sad.md body + add domain terms surfaced during Step 7 Socratic that aren't in CONTEXT (flag those to the user as new terms worth adding to the project's glossary, if it keeps one).
 
 ## Pre-Socratic hygiene
 

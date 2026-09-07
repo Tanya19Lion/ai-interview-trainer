@@ -1,4 +1,4 @@
-# Critic Sub-Agent Prompt — Step 8 of `sdlc:architecture-design`
+# Critic Sub-Agent Prompt — Step 8 of `architecture-design`
 
 ## TL;DR (короткий вступ українською)
 
@@ -113,7 +113,7 @@ NO_CONTESTED_DECISIONS
 Otherwise, one bullet per finding in this exact shape:
 
 ```
-- **[F{n}] {one-line headline}** — caused by: {edits-log ref or sad-line ref or adr-file ref}; contradicts: {§ref in sad + §ref in PRD / CONTEXT line / ADR Status}; suggested: {action — amend §6 flow 1 / regenerate §3 C4 block / move detail to stage 10 (`decide-adr`) / add §11 row / rename ADR / etc.}.
+- **[F{n}] {one-line headline}** — caused by: {edits-log ref or sad-line ref or adr-file ref}; contradicts: {§ref in sad + §ref in PRD / CONTEXT line / ADR Status}; suggested: {action — amend §6 flow 1 / regenerate §3 C4 block / defer to a follow-up ADR review / add §11 row / rename ADR / etc.}.
 ```
 
 Each finding ≤2 lines after wrapping. **Cite-mode is required**: every finding must cite at least one sad-§ AND at least one PRD-§ / CONTEXT line / ADR file. A finding without citations is invalid — drop it rather than ship it uncited.

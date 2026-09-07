@@ -10,7 +10,7 @@
 
 Якщо хоч 2 з 3 → ADR. Якщо 0 — inline у sad.md. Очікувана кількість ADR на функцію розміру M — 5-12.
 
-Канонічний приклад: ADR-0001 «Зберігати урок як таблицю блоків різних типів» з `course-lesson-mvp` — 3 з 3 → ADR.
+Приклад: рішення «зберігати сутність зі змішаним контентом як таблицю типізованих блоків» — незворотнє (міграція даних), зачіпає кілька модулів, є чесна альтернатива (JSON-blob) → 3 з 3 → ADR.
 
 ---
 
@@ -55,7 +55,7 @@ Examples that **don't fire**:
 
 > Will a reader six months from now ask "why not X?" where X is a real, non-strawman alternative?
 
-This is the "surprising in 6 months" filter from the older `propose-adr` skill. It excludes:
+This is the "surprising in 6 months" filter. It excludes:
 - Decisions where the alternative is obviously worse (no straw man ADRs).
 - Decisions where the alternative is excluded by an existing constraint (no ADR for "use Go because the repo is in Go").
 
@@ -95,6 +95,6 @@ Before validating the run, check:
 ## Anti-patterns
 
 - **ADR-ifying an alternative you rejected.** The ADR is about the chosen path. Alternatives go in `## Considered options`, not their own ADR.
-- **ADR with `Status: Proposed` from this skill.** Synchronous decisions with the user → `Accepted`. Use `decide-adr` for asynchronous Proposed→Accepted flows.
+- **ADR with `Status: Proposed` from this skill.** Synchronous decisions with the user → `Accepted`. A `Proposed`→`Accepted` async workflow belongs to a separate ADR-review process, if your project has one.
 - **One ADR per Quality Goal.** Quality Goals live in §10; ADRs document specific *decisions* taken because of those goals.
 - **A title that describes the problem, not the decision.** `0003-rate-limiting.md` (bad) vs `0003-sliding-window-with-redis.md` (good).

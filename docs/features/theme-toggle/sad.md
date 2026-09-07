@@ -380,12 +380,11 @@ Each top-4 goal from §1 expanded into a full scenario:
 <!--           weekly чи biweekly? Quarter — календарний чи фіскальний?»).                -->
 <!-- 📋 Що писати: таблиця термін / значення. Бізнес-терміни + технічні вперемішку.       -->
 <!--           Один термін може мати дві мови у заголовку: «Goal (Обʼєктив)».              -->
-<!-- 📌 Приклад: «Lesson | урок усередині курсу, що складається з блоків (text, video)». -->
 
-| Term | Meaning |
-|---|---|
-| Smart default | The theme the app shows on a job-seeker's first visit, computed once from the browser/OS `prefers-color-scheme` preference — never re-read after that visit unless no manual choice was ever stored (PRD §2, AC-06). |
-| Manual choice | The theme a job-seeker explicitly picks via the toggle; once stored in `localStorage`, it outranks any later OS preference change (AC-03) — this is what the storage-override resolution logic in §4 keys off of. |
-| Anti-FOUC | "Flash of unstyled/wrong content" — the visible flicker if the correct theme is applied only after React hydrates instead of before first paint; avoided by the inline `<head>` script mechanism (mechanism itself is an open decision, §11). |
-| `data-theme` attribute | The `[data-theme="light"\|"dark"]` attribute set on `document.documentElement`, driving the CSS custom-property overrides in `tokens.css` that give every component its theme-appropriate colors (§4, §5). |
-| CONTEXT.md glossary status | No true domain term was surfaced for theme-toggle at ideation time (CONTEXT.md's own note: "theme"/"toggle"/"dark-light mode" are generic UI vocabulary, not domain lexicon) — the terms above are SAD-internal technical vocabulary, not `sdlc:fix-term` candidates. |
+<!-- Terms + meanings (Smart default, Manual choice, Anti-FOUC, data-theme attribute) moved to
+     ./CONTEXT.md ## Glossary — keep this section's info in sync there: whenever a new term
+     is coined or an existing one's meaning changes in this SAD, add/update the matching row
+     in CONTEXT.md rather than reintroducing a table here. -->
+
+<!-- N/A: glossary content lives in ./CONTEXT.md -->
+No true domain term was surfaced for theme-toggle at ideation time (CONTEXT.md's own note: "theme"/"toggle"/"dark-light mode" are generic UI vocabulary, not domain lexicon) — the terms in CONTEXT.md are SAD-internal technical vocabulary, not `fix-term` candidates.

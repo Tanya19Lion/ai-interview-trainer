@@ -4,14 +4,14 @@
 
 Це **повний чеклист завершення** (англ. *Definition of Done*) — список того, що skill має перевірити перед фінальним комітом.
 
-Як читати розміри функцій (size class):
-- **XS** — функція на дні (1-2 інженери, 1 тиждень).
-- **S** — на тиждень-два (1-3 інженери, 2-3 тижні).
-- **M** — на місяць (2-5 інженерів, 3-5 тижнів). Типова функція курсу.
-- **L** — на квартал (4-8 інженерів, 6-12 тижнів).
+Як читати розміри функцій (size class) — orientirовна калібровка, підлаштуй числа під темп власної команди:
+- **XS** — функція на дні (~1-2 інженери, ~1 тиждень).
+- **S** — на тиждень-два (~1-3 інженери, ~2-3 тижні).
+- **M** — на місяць (~2-5 інженерів, ~3-5 тижнів).
+- **L** — на квартал (~4-8 інженерів, ~6-12 тижнів).
 - **XL** — на квартал+ з 2+ команд.
 
-Очікувана кількість ADR залежить від розміру: XS/S → 2-4, M → 5-12, L/XL → 10-15.
+Очікувана кількість ADR залежить від розміру: XS/S → 2-4, M → 5-12, L/XL → 10-15. Це теж орієнтир, не жорсткий ліміт.
 
 ---
 
@@ -33,7 +33,7 @@ Used at the end of Protocol Step 7 (before Step 8 critic dispatch) and at the en
 - [ ] Step 8 critic sub-agent ran on the post-Socratic `sad.md` + edits-log + ADR-spawns log; all findings either resolved via `AskUserQuestion` or overridden with rationale (recorded as a «Decision overrides» bullet in §1 Introduction paragraph 4).
 - [ ] Step 8 pre-write regex scan ran (Mermaid sanity / ADR title format / §9 orphan) — 0 hits OR all hits explicitly overridden in resolution loop with recorded rationale.
 - [ ] Roles in §1 Stakeholders + §3 actors match CONTEXT glossary exactly (no inventing `user` / `admin` when glossary defines specific roles).
-- [ ] Every ADR has Status = `Accepted` (not `Proposed` — this skill is synchronous). Use `sdlc:decide-adr` separately if you need a Proposed → Accepted workflow on something already half-decided in code.
+- [ ] Every ADR has Status = `Accepted` (not `Proposed` — this skill is synchronous). If you need an async Proposed → Accepted workflow for a decision already half-taken in code, that's a separate process from this skill.
 - [ ] Every ADR title is in **decision-form** (imperative kebab-case), not problem-form: `0003-sliding-window-with-redis.md` ✓ vs `0003-rate-limiting.md` ✗.
 - [ ] Incremental commits per section: `feat(<slug>): sad §N — <decisions summary>`. Final commit: `feat(<slug>): sad finalization (critic pass)`.
 - [ ] PM has been consulted on §10 Quality Goals (the only PM touchpoint in this skill — Architect/Tech Lead drives everything else).
@@ -58,16 +58,16 @@ In addition to the inline non-negotiables in SKILL.md `## Self-check`:
 
 - **>60 questions in one pass** — fatigue threshold. If approaching, bundle trivial defaults under one «I'm assuming … . Override?» question per [socratic-cadence.md](./socratic-cadence.md) Rule 1. Target total: 8-20 questions per pass; over 25 = fatigue territory.
 - **An ADR for every Socratic decision** — kills the ADR genre. Only blast-radius decisions become ADRs (see [blast-radius-heuristic.md](./blast-radius-heuristic.md)). Expect 5-12 for M-class features, NOT 25.
-- **Spilling into C4 L3 / L4** — explicitly out of scope. L3 Component + L4 Code are deferred to a separate diagramming pass. Suggest `sdlc:draw-sequence` (which covers component-level sequence) if user asks.
+- **Spilling into C4 L3 / L4** — explicitly out of scope. L3 Component + L4 Code are deferred to a separate diagramming pass — point the user at a dedicated sequence/component-diagramming skill or pass if one exists in this project.
 - **Re-asking decided things on resume** — read `sad.md` first; sections with real content are *decided*. Only the Step 8 critic surfaces re-questioning, and only on cross-section drift detection.
 - **One giant commit at the end** — incremental commits per section (Step 7e) + finalization commit (Step 8) make resume + review tractable. Single end-of-pass commit loses Phase-by-phase traceability.
 - **«For completeness» empty sections** — every section either has real content or `<!-- N/A: <one-line reason> -->`. An empty section without N/A note is a structural F5 critic finding.
-- **Generated ADRs with `Proposed` status** — this skill is synchronous (you are deciding with the user right now). Status is `Accepted`. Use `sdlc:decide-adr` separately for Proposed → Accepted workflow on something already half-decided in code.
+- **Generated ADRs with `Proposed` status** — this skill is synchronous (you are deciding with the user right now). Status is `Accepted`. A Proposed → Accepted workflow for something already half-decided in code belongs to a separate process.
 - **ADR with strawman options** — ADR `Considered options` excludes alternatives ruled out by existing constraints. Don't include «MongoDB» if CLAUDE.md pins Postgres; don't include «Redis» if there's no Redis in the stack and no §4 strategic seed for a cache tier. Strawmen dilute the ADR genre and trigger F6 critic.
 - **ADR title in problem-form** — `0003-rate-limiting.md` describes the problem; `0003-sliding-window-with-redis.md` describes the chosen approach. ADR title must be a decision (imperative), not a topic.
 - **Skipping Step 4 Explore on brownfield** — guessing the repo layout loses 30 minutes of rework + produces fictional §5 Container view + invented §2 Constraints. Always Explore first; greenfield skips with `<!-- brownfield: N/A -->` note.
 - **Save-as-Open-Question without owner+due** — skill MUST ask follow-up `AskUserQuestion` immediately after the user picks this option. If user leaves either field blank, the migration is downgraded to `Drop` with explicit warning surfaced — never silently shipped with half-filled §11 row.
-- **Skip Step 8 critic** — Step 7 Socratic loop only catches per-section issues; it cannot see cross-section drift caused by user edits (e.g. §4 outbox-events caps vs §6 happy-path missing outbox emit). Writing the finalization commit without running the critic ships that drift downstream to `draw-sequence` / `define-api` / `decide-adr`.
+- **Skip Step 8 critic** — Step 7 Socratic loop only catches per-section issues; it cannot see cross-section drift caused by user edits (e.g. §4 outbox-events caps vs §6 happy-path missing outbox emit). Writing the finalization commit without running the critic ships that drift downstream to whatever consumes `sad.md` next (sequence diagrams, API design, ADR review).
 - **Resolve critic findings unilaterally** (without `AskUserQuestion`). The whole point of Step 8 is to surface contested decisions to the user. Picking «revert» or «amend» without asking re-introduces silent-edit failure mode.
 - **Mermaid template stubs in §3 / §5 left in final draft** — `Person(user, "<User>", "<role + intent>")` is a placeholder. Pre-write regex scan catches this; F5 critic catches this; structural floor is real actors + real names everywhere.
 - **§10 scenarios with invented numbers** — F6 critic catches NFR-number leak. §10 cites PRD §6 NFR verbatim (no rounding, no inventing thresholds the PM never agreed to).

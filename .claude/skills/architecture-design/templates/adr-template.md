@@ -1,5 +1,4 @@
 <!-- Format: MADR (Markdown Any Decision Record — формат запису архітектурних рішень). -->
-<!-- Заповнений приклад: див ~/sources/beer-lms/docs/features/course-lesson-mvp/adr/0001-content-storage-strategy.md -->
 
 ---
 status: Accepted                                # Proposed → Accepted → Superseded by NNNN. Цей skill пише Accepted одразу.
@@ -13,8 +12,8 @@ ticket: "<ticket-id>"                           # Тікет із трекера
 
 # NNNN — <title in imperative: e.g. "Use sliding window for rate limiting">
 
-<!-- Spawned by sdlc:architecture-design when a decision crosses the blast-radius threshold. -->
-<!-- See sdlc/plugin/skills/architecture-design/references/blast-radius-heuristic.md -->
+<!-- Spawned by the architecture-design skill when a decision crosses the blast-radius threshold. -->
+<!-- See ../references/blast-radius-heuristic.md -->
 <!-- ВАЖЛИВО: заголовок описує РІШЕННЯ, не проблему. -->
 <!-- ✓ "Зберігати урок як таблицю блоків різних типів"  -->
 <!-- ✗ "Стратегія зберігання уроку"                     -->
@@ -27,10 +26,9 @@ ticket: "<ticket-id>"                           # Тікет із трекера
 
 <2-4 sentences: what is happening, why this decision needs to be made now. Pull from sad.md §3 (Context) + the section that triggered this ADR.>
 
-<!-- Приклад (з 0001-content-storage-strategy.md):                                                              -->
-<!-- "PRD §4 говорить: methodist складає урок зі змішаного контенту — текст + відео + картинки.                 -->
-<!--  Питання: у якій формі зберігаємо тіло уроку у БД? Це фундаментальне рішення, від нього залежить API,      -->
-<!--  форма фронт-редактора, можливість перевпорядкування блоків." (3 речення)                                  -->
+<!-- Приклад форми (3 речення): «PRD §4 говорить: <хто> складає <сутність> зі змішаного контенту —              -->
+<!-- текст + медіа. Питання: у якій формі зберігаємо це в БД? Рішення фундаментальне, від нього залежить          -->
+<!-- API, форма редактора, можливість подальших змін.» Підставляй власну предметну область.                     -->
 
 ## Decision drivers
 

@@ -39,14 +39,14 @@ The critic returns a markdown report ≤300 words. Either:
 - Literal `NO_CONTESTED_DECISIONS` → proceed straight to Pre-write regex scan + Self-check + finalization commit.
 - Or 0-7 findings, one bullet per finding, citing sad-§ + PRD-§ / CONTEXT line + suggested resolution.
 
-Failure classes the critic probes (full definitions in [critic-prompt.md](./critic-prompt.md)):
+Failure classes the critic probes — one-line summary here, full definitions + worked examples in [critic-prompt.md](./critic-prompt.md) §«Failure classes»:
 
-- **F1 — Strategic-vector drift.** After Socratic edits, §4 Solution Strategy or §1 Quality Goals contradicts a later section's content (e.g. §4 caps async-via-outbox but §6 happy-path shows synchronous call without outbox emit; §1 QG-1=availability dominant but §10 scenarios all measure performance).
-- **F2 — Size-class creep.** Socratic edits expanded scope beyond `feature_size` (e.g. M-class feature now has 8 modules in §5 building-block view, which is L-territory; or §6 has 7 sequence diagrams which signals scope creep).
-- **F3 — Defer vs PRD vector.** A `save_as_oq`-migrated decision touched a feature PRD §6 NFR / §7 KPI / §13 Recommendation / §11 RICE named as load-bearing. **Differentiate** in finding text: «decision dropped» (hard removal) vs «decision deferred to §11 OD-table» (softer — alive in §11 with owner+due). Both can break the vector, but the deferred form is recoverable if OQ resolves before downstream stages.
-- **F4 — Silent edits.** Final `sad.md` text differs from `after` field of an `edit` entry (author silently re-edited after Socratic, bypassing the contract).
-- **F5 — Coverage regression.** 12 sections all filled (or `<!-- N/A: <reason> -->`)? §3 has a C4 Context Mermaid block (not template stub)? §5 has a C4 Container Mermaid block (not template stub)? §6 has ≥1 sequence diagram (3-5 for M+)? §9 ADR table references every file in `adr/` (no orphans, no missing rows)? §11 contains a row for every `save_as_oq` decision in the edits-log?
-- **F6 — Constraint / Quality leak.** §10 scenarios reference numbers NOT present in PRD §6 NFR (invented targets); ADR `Considered options` lists a strawman (an alternative excluded by an existing constraint, e.g. «MongoDB» when CLAUDE.md pins Postgres as the only store); §2 Constraints contradicts CLAUDE.md without an Override note pointing at §11.
+- **F1 — Strategic-vector drift.** §4/§1 says one thing, a later section silently contradicts it.
+- **F2 — Size-class creep.** Socratic edits pushed scope past the declared `feature_size`.
+- **F3 — Defer vs PRD vector.** A dropped/deferred decision touched something PRD named load-bearing.
+- **F4 — Silent edits.** Final `sad.md` text diverges from the edits-log's `after` field.
+- **F5 — Coverage regression.** Empty sections, template-stub Mermaid, ADR/§9 orphans.
+- **F6 — Constraint/Quality leak.** Invented numbers in §10, strawman ADR options, §2 vs CLAUDE.md drift.
 
 If the critic returns `CRITIC_BLOCKED: <reason>` (cannot Read PRD/CONTEXT/adr-dir) — STOP and report to the user. Do **not** silent-write the finalization commit.
 
@@ -61,7 +61,7 @@ For each finding, surface it to the user via `AskUserQuestion`. Per finding, opt
 Constraints:
 
 - **≤2 `AskUserQuestion` batches**, max 4 questions per batch. The user's **second** answer per finding is final (single-iteration cap, mirrors Step 7).
-- **`Override` resolutions emit a bullet** into `sad.md` §1 Introduction paragraph 4 (Decision overrides), exactly: «<finding-headline> — overridden by author, rationale: <user-rationale>». This makes the deliberate choice visible to downstream skills (`draw-sequence`, `define-api`, `decide-adr`).
+- **`Override` resolutions emit a bullet** into `sad.md` §1 Introduction paragraph 4 (Decision overrides), exactly: «<finding-headline> — overridden by author, rationale: <user-rationale>». This makes the deliberate choice visible to whatever consumes `sad.md` downstream (sequence diagrams, API design, ADR review).
 
 After all findings resolved, re-run the SKILL.md Self-check inline non-negotiables. If any still fail — re-open the relevant `AskUserQuestion` once, then proceed.
 
@@ -104,4 +104,4 @@ These three scans are the safety net if the critic missed something (e.g. trunca
 - **Critic timeout / error** → STOP, report to user. Never fall back to silent finalization commit.
 - **Critic returns malformed output** (no bullets, no `NO_CONTESTED_DECISIONS`, no `CRITIC_BLOCKED`) → re-dispatch once with «Your previous output did not match the required format» appended; if still malformed → STOP and ask the user how to proceed.
 - **User picks `Override` for every finding** → allowed (SAD authorship is the user's call), but every override emits a §1 ¶4 bullet so the override trail is auditable.
-- **Regex scan hits 5+ times** → likely indicates the Phase-7 draft generation hygiene check failed (see [draft-generation.md](./draft-generation.md) §«Pre-Socratic hygiene»). Report to user as a process anomaly + ask whether to re-run the section's batch (single section re-do is OK; full Step-7 redo is not — too much churn).
+- **Regex scan hits 5+ times** → likely indicates the Step 6 draft generation hygiene check failed (see [draft-generation.md](./draft-generation.md) §«Pre-Socratic hygiene»). Report to user as a process anomaly + ask whether to re-run the section's batch (single section re-do is OK; full Step-6 redo is not — too much churn).

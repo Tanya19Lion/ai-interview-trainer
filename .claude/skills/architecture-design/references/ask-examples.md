@@ -6,7 +6,7 @@
 
 Принцип: option label — це **наступна дія skill-у** («Прийняти», «Перенести у §11 OQ»), а option description — це **3-5 речень, що технічно станеться** + **trade-off простими словами без жаргону**. Не «modify the API», а «додам поле X у таблицю Y і route Z». Не «UNION-query», а «обʼєднання 4 SELECT-ів через SQL UNION — повільніше за читання з однієї таблиці».
 
-Канонічний наскрізний приклад через всю лекцію + цей файл + beer-lms — **ADR-0001 «Зберігати урок як таблицю блоків різних типів»** (`content-storage-strategy`). Дивись цей файл у `~/sources/beer-lms/docs/features/course-lesson-mvp/adr/0001-content-storage-strategy.md` — там той самий приклад заповнений повністю.
+Наскрізний приклад нижче — вигаданий feature «як зберігати урок зі змішаного контенту» — ілюструє повний цикл: питання → 4-5 опцій з ПЛЮСИ/МІНУСИ/НАСЛІДОК → spawn ADR. Підставляй свою предметну область за тим самим шаблоном.
 
 ## Загальна форма
 
@@ -21,9 +21,9 @@ How Step 7 (Socratic batch loop) and Step 8 (critic resolution) phrase questions
 
 All decision-types (Strategic / Building-block / Crosscutting bundle / Quality scenario / Risk entry / Open-architectural-decision) share the same 4-state machine: `Approve` / `Edit` / `Save as Open Question` / `Drop`. `Cancel` and `Reject` are synonyms for `Drop`.
 
-## Strategic decision (§4 Solution strategy) — канонічний приклад `course-lesson-mvp`
+## Strategic decision (§4 Solution strategy) — worked example
 
-> **UA-коментар.** Це той самий приклад, який лекція 6.4 (Слайди 14-19) і beer-lms `adr/0001-content-storage-strategy.md` використовують як наскрізний. Питання реальне з функції `course-lesson-mvp` — «як зберігати урок зі змішаного контенту?». Зверни увагу: option label = наступна дія skill-у, не просто назва опції. Description — 3-5 речень з конкретикою (назви таблиць, ADR-номери), а не «modify the storage».
+> **UA-коментар.** Приклад ілюструє форму, не конкретну предметну область — підставляй свою. Питання: «як зберігати урок зі змішаного контенту?». Зверни увагу: option label = наступна дія skill-у, не просто назва опції. Description — 3-5 речень з конкретикою (назви таблиць, ADR-номери), а не «modify the storage».
 
 ```
 Question:
@@ -61,7 +61,7 @@ After `Save as Open Question`, the follow-up `AskUserQuestion`:
 ```
 Question:
   Module-integration decision is migrating to §11 Open Decisions. Provide owner and due
-  (YYYY-MM-DD or stage trigger like «before sdlc:break-tasks»). Both mandatory.
+  (YYYY-MM-DD or stage trigger like «before task breakdown»). Both mandatory.
 
 Options:
   - label: "Provide owner + due"
@@ -93,8 +93,8 @@ Options:
 ```
 Question:
   §8 Crosscutting concepts — Logging / auth / errors / IDs.
-  Defaults from CLAUDE.md: slog structured JSON / JWT via session middleware / domain
-  sentinel → apperr JSON / UUID v7 in app layer. Override any of these for this feature?
+  Defaults from CLAUDE.md: <this project's actual logging / auth / error-handling / ID-strategy
+  conventions>. Override any of these for this feature?
 
 Options:
   - label: "Keep CLAUDE.md defaults (Recommended)"
@@ -104,7 +104,7 @@ Options:
   - label: "Save as Open Question"
     description: "Skill removes the §8 row and adds a §11 row: «Open architectural decision: crosscutting overrides — Open question — owner: <you-type>, due: <you-type>». Skill asks owner+due next."
   - label: "Drop and re-frame"
-    description: "Skill discards the bundle and asks per-concept individually (slog? auth? errors? IDs?). Use when you want granular review of plumbing."
+    description: "Skill discards the bundle and asks per-concept individually (logging? auth? errors? IDs?). Use when you want granular review of plumbing."
 ```
 
 ## Quality scenario (§10)
@@ -123,7 +123,7 @@ Options:
   - label: "Edit verification method"
     description: "You type the new How-verify (e.g. «load test with k6 — 10k RPS for 5 min»); skill regenerates QG-1 and asks once more (single-iteration cap)."
   - label: "Save as Open Question"
-    description: "Skill removes QG-1 scenario from §10 and adds a §11 row: «Open architectural decision: QG-1 verification method — Open question — owner: SRE, due: before sdlc:plan-tests». Skill asks owner+due next."
+    description: "Skill removes QG-1 scenario from §10 and adds a §11 row: «Open architectural decision: QG-1 verification method — Open question — owner: SRE, due: before test planning». Skill asks owner+due next."
   - label: "Drop"
     description: "Skill removes QG-1 from §10 and re-prompts you to pick a replacement Quality Goal from PRD NFR. §1 Top-3 must remain ≥3 — this is a coverage-floor case."
 ```
@@ -162,7 +162,7 @@ Options:
   - label: "Accept amendment (different wording)"
     description: "You type the alternative wording for §6 flow 1 (or which sad section to amend differently); skill applies your wording."
   - label: "Override"
-    description: "Skill keeps §6 unchanged and emits a bullet in §1 ¶4: «Strategic-vector drift in §6 flow 1 — overridden by author, rationale: <your reason>», so downstream skills (draw-sequence, define-api) see the deliberate choice. You provide the rationale next."
+    description: "Skill keeps §6 unchanged and emits a bullet in §1 ¶4: «Strategic-vector drift in §6 flow 1 — overridden by author, rationale: <your reason>», so downstream work (detailed sequence/API design) sees the deliberate choice. You provide the rationale next."
 ```
 
 ```
@@ -180,7 +180,7 @@ Options:
   - label: "Accept amendment (different wording)"
     description: "You type the Mermaid block contents; skill applies your version verbatim."
   - label: "Override"
-    description: "Skill keeps §3 unchanged and emits a §1 ¶4 bullet: «§3 C4 stub left intentional — overridden by author, rationale: <yours>». Use rarely — downstream skills (draw-sequence) need C4 Context for component-diagram + deployment passes."
+    description: "Skill keeps §3 unchanged and emits a §1 ¶4 bullet: «§3 C4 stub left intentional — overridden by author, rationale: <yours>». Use rarely — later component-diagram and deployment work needs a real C4 Context to build on."
 ```
 
 ```

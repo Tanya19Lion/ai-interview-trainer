@@ -23,7 +23,7 @@ For concrete question wording + option `description` fields, see [ask-examples.m
 1. **7a. Renders the full proposed section** in one message — proposed body text + numbered list of decisions the section contains. This gives the user the big picture before any resolution is requested (they spot duplicates / gaps / drop-the-whole-section problems before per-decision commitment).
 2. **7b. Walks per-decision resolutions** — one `AskUserQuestion` per decision, using the 4-state machine below.
 3. **7c. Applies transitions** to the in-memory section as each resolution arrives.
-4. **7d. Runs the blast-radius gate** on every Approved decision (NOT on Edit/Drop/Save-as-OQ — those don't become ADRs). If ≥1 criterion fires, spawn an ADR (Phase-1b logic preserved — see SKILL.md Step 7 (d-e) and [blast-radius-heuristic.md](./blast-radius-heuristic.md)).
+4. **7d. Runs the blast-radius gate** on every Approved decision (NOT on Edit/Drop/Save-as-OQ — those don't become ADRs). If ≥1 criterion fires, spawn an ADR (see SKILL.md Step 7 (d-e) and [blast-radius-heuristic.md](./blast-radius-heuristic.md)).
 5. **7e. Writes the resolved section to `sad.md`** (with all in-memory transitions applied) + writes any ADR files spawned in 7d + commits `feat(<slug>): sad §N — <decisions summary>`. Single commit per section that bundles sad.md + adr/.
 6. **7f. Moves to the next section** — repeats 7a-7e. The skill **never returns** to a previously-written section. Cross-section drift (e.g. §4 strategy contradicts §6 happy-path flow) is the Phase-8 critic's job.
 
@@ -43,7 +43,7 @@ Each section may contain a mix of decision-types. The same 4-state machine appli
 > **UA-перифраза.** «4-state machine» — це 4 можливі дії з кожним рішенням: **Прийняти** (Approve) / **Виправити** (Edit) / **Винести у відкрите питання** (Save as OQ) / **Викинути** (Drop). `Cancel` і `Reject` — синоніми Drop. Кожна дія має чітку механіку нижче.
 
 
-- **`Approve`** → keep decision verbatim. No edits-log entry. **Run blast-radius gate** (Step 7d). If gated, spawn ADR (Phase-1b logic — see SKILL.md and [blast-radius-heuristic.md](./blast-radius-heuristic.md)). Move to next decision.
+- **`Approve`** → keep decision verbatim. No edits-log entry. **Run blast-radius gate** (Step 7d). If gated, spawn ADR (see SKILL.md and [blast-radius-heuristic.md](./blast-radius-heuristic.md)). Move to next decision.
 
 - **`Edit`** → user types new option / new wording / new severity etc. in one go; skill regenerates the decision with the new constraint and asks **once more** on the new version (single-iteration cap — the second answer is final). Log entry with `action: "edit"`.
 
@@ -53,7 +53,7 @@ Each section may contain a mix of decision-types. The same 4-state machine appli
   | Open architectural decision: <headline> | Open question | Resolve before <stage trigger or YYYY-MM-DD>; <inline rationale from user> | <owner> |
   ```
 
-  Owner + due (date OR stage trigger like «before sdlc:break-tasks») are **mandatory** — skill issues a follow-up `AskUserQuestion` immediately after the user picks this option to capture both. If the user leaves owner OR due blank, the resolution is **downgraded to `Drop`** with an explicit warning surfaced.
+  Owner + due (date OR stage trigger like «before task breakdown») are **mandatory** — skill issues a follow-up `AskUserQuestion` immediately after the user picks this option to capture both. If the user leaves owner OR due blank, the resolution is **downgraded to `Drop`** with an explicit warning surfaced.
 
   Severity column accepts literal `Open question` value (not Low/Medium/High) — that's the marker that distinguishes OQ rows from regular risks (used by Phase-8 critic F3 + checklist).
 
