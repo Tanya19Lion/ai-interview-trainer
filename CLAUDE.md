@@ -33,11 +33,13 @@ firewall policy, not for ordinary feature work.
   `/api/auth/dev-login` stub described in earlier docs has been removed — don't reintroduce it.
 - **`PROGRESS.md`** (repo root) tracks in-flight work on the repo — check it before starting new
   work so you don't duplicate or skip a step.
-- **Project-level docs** (repo root): `SPEC.md` (goals/non-goals/technical decisions/acceptance
-  criteria), `ARCHITECTURE.md` (layered-backend pattern and the `routes → controllers → services
-  → models` dependency rule), `docs/adr/` (architecture decision records, starting with
-  `0001-initial-setup.md`). Read these before proposing an architectural change — a new ADR
-  should follow when a decision recorded there is revisited.
+- **Project-level docs**: `docs/PRD.md` (goals/non-goals/user stories/acceptance criteria —
+  supersedes the old root `SPEC.md`), `docs/sad.md` (arc42-style SAD: layered-backend
+  pattern, the `routes → controllers → services → models` dependency rule, C4 diagrams —
+  supersedes the old root `ARCHITECTURE.md`), `docs/CONTEXT.md` (project-level domain
+  glossary), `docs/adr/` (architecture decision records,
+  starting with `0001-initial-setup.md`). Read these before proposing an architectural change —
+  a new ADR should follow when a decision recorded there is revisited.
 - **Root `Makefile`** now also exposes app-level targets alongside the existing sandbox/firewall
   verification ones: `make dev` (server, `tsx watch`), `make dev-client` (client Vite dev
   server), `make test` (server unit tests), `make migrate` (currently a documentation stub — see

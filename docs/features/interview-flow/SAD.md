@@ -1,7 +1,7 @@
 # Software Architecture Document — Interview flow
 
 **Phase:** Architect
-**Consistency check:** should stay aligned with the repo-wide `ARCHITECTURE.md`
+**Consistency check:** should stay aligned with the repo-wide `docs/sad.md`
 layered pattern (`routes → controllers → services → models`) — this document
 only adds feature-specific detail on top of that.
 

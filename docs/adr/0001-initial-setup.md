@@ -22,7 +22,7 @@ full-stack застосунку (auth, генерація питань AI, зб�
 ## Decision
 
 - **Сервер**: Express + TypeScript + Mongoose, layered за принципом
-  `routes → controllers → services → models` (деталі й dependency rule — `ARCHITECTURE.md`).
+  `routes → controllers → services → models` (деталі й dependency rule — `docs/sad.md`).
   AI-виклики ізольовані в `src/services/ai.service.ts`, а не розкидані по контролерах.
 - **Клієнт**: окремий Vite + React 19 + TypeScript SPA у `client/`, що спілкується з сервером
   лише через HTTP API — без спільного npm-пакета типів між клієнтом і сервером.

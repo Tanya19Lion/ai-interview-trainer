@@ -13,7 +13,7 @@ missing, and what's gone stale relative to the code.
 
 The reason this matters in this repo specifically: `client/src/types/interview.ts`
 and `src/models/InterviewSession.ts` type the interview domain independently, by
-hand, with no shared package (see `ARCHITECTURE.md`, `CLAUDE.md`, `docs/adr/0001-initial-setup.md`).
+hand, with no shared package (see `docs/sad.md`, `CLAUDE.md`, `docs/adr/0001-initial-setup.md`).
 That gap already caused a real bug — `correctAnswer` was computed in
 `ai.service.ts` but never persisted through `submitAnswer`, silently breaking
 `ReviewModal`'s diff rendering (recorded in `PROGRESS.md`). Nothing in the repo
@@ -42,7 +42,7 @@ names a different documentation root.
 |---|----------|----------------|------------|--------------------|
 | 1 | idea-brief | `idea-brief.md` | PM | Captures the problem/motivation before requirements are formalized |
 | 2 | PRD | `PRD.md` | BA/PO | The "what" contract between product intent and engineering |
-| 3 | SAD (Software Architecture Doc) | `SAD.md` | Architect | The "how" contract between requirements and implementation; should stay consistent with the repo's `ARCHITECTURE.md` |
+| 3 | SAD (Software Architecture Doc) | `SAD.md` | Architect | The "how" contract between requirements and implementation; should stay consistent with the repo's `docs/sad.md` |
 | 4 | adr/ | `adr/` (or an entry in the repo-root `docs/adr/` tagged to this feature) | Architect | Records irreversible decisions and rejected alternatives so they aren't silently re-litigated |
 | 5 | data-model | `data-model.md` | Architect | Contract between the SAD and the actual Mongoose schemas in `src/models/*.ts` |
 | 6 | openapi.yaml | `openapi.yaml` | Architect | Contract between `src/routes/*.routes.ts` + `src/controllers/*` and `client/src/api/*.ts` — the exact layer where the `correctAnswer` mismatch happened; this is the handoff artifact Architect gives to TL+devs before implementation starts |
