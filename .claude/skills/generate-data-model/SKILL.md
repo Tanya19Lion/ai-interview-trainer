@@ -50,7 +50,7 @@ Backend Lead.
 **Never assume SQL.** Determine which profile the project actually uses, in this priority order:
 
 1. `.claude/rules/migrations.md` already exists → the profile it documents wins; read it instead of re-detecting.
-2. Repo manifests: `package.json` deps (`mongoose`, `pg`, `mysql2`, `knex`, `prisma`, `typeorm`, `firebase-admin`, `migrate-mongo`), `go.mod` (`gorm.io`, `database/sql`, `go.mongodb.org/mongo-driver`), `requirements.txt`/`pyproject.toml` (`sqlalchemy`, `pymongo`, `django.db`).
+2. The project's dependency manifest for its language/ecosystem (e.g. a package manager or module file) — look for persistence-related packages (an ORM, a query builder, a driver for a relational or document store, an existing migration tool).
 3. Existing schema/migration folders: `migrations/*.sql` → relational-SQL; `migrations/*.js` + a `migrate-mongo-config` → document-store; `src/models/*.ts` (or `.js`) with `mongoose.Schema` → document-store; `prisma/schema.prisma` → relational-SQL (via Prisma).
 4. CLAUDE.md / ADRs / project docs — an explicit statement of the stack and its migration story (e.g. "MongoDB via Mongoose, `make migrate` is a documentation stub until the schema stabilizes" is itself the profile — read it as ground truth, don't second-guess it).
 
@@ -96,7 +96,7 @@ These defaults are baked into the skill and into the baseline `.claude/rules/mig
    d. (Optional) domain types in the project's language, if present — the skill builds a type-vs-schema map for drift detection.
    e. (Brownfield only) the existing schema — parse `migrations/*.sql` offline for relational-SQL, or read existing schema definition files (e.g. `src/models/*.ts` Mongoose schemas) for document-store. No live-DB connection.
 
-4. **Aggregate roots discussion.** Ask the user (or infer from PRD acceptance criteria): which aggregate roots? What lives around what? A Lesson aggregates ContentBlocks; an InterviewSession aggregates its question/answer attempts. Without explicit aggregates the reference graph turns into a hairball — this matters just as much in a document-store, where it decides what's embedded vs. what's a separate collection reference.
+4. **Aggregate roots discussion.** Ask the user (or infer from PRD acceptance criteria): which aggregate roots? What lives around what? A Lesson aggregates ContentBlocks; an Order aggregates its line items. Without explicit aggregates the reference graph turns into a hairball — this matters just as much in a document-store, where it decides what's embedded vs. what's a separate collection reference.
 
 5. **Identifier strategy.** No default — ask the user which strategy applies: an app-generated UUID, a DB-side sequence, the store's native identifier (e.g. Mongo `ObjectId`), or a business key (e.g. a PRD acceptance criterion demanding a lookup slug as the identifier). First check whether the project already has an established convention elsewhere in the code — don't re-litigate settled precedent, but don't silently assume one either if nothing in the code shows it.
 
@@ -128,7 +128,7 @@ These defaults are baked into the skill and into the baseline `.claude/rules/mig
 
    **no-migration-tool** — no executable file is generated. Instead:
    - Update or generate the schema definition file directly (e.g. the Mongoose schema in `src/models/`), matching the project's existing conventions.
-   - Append a dated entry to `data-model.md`'s **Schema-change log**: what changed, why, the backfill approach (as a described one-off script or manual step the maintainer runs), and the rollback story in prose. This is the deliberate, first-class output for this profile — not a fallback — matching a project's own documented decision not to adopt a migration tool yet (e.g. this repo's `docs/adr/0001-initial-setup.md`: "Mongoose without formal migrations means a document-shape change has no automatic rollback path — `make migrate` stays a documentation placeholder until the schema stabilizes enough to justify a migration tool").
+   - Append a dated entry to `data-model.md`'s **Schema-change log**: what changed, why, the backfill approach (as a described one-off script or manual step the maintainer runs), and the rollback story in prose. This is the deliberate, first-class output for this profile — not a fallback — matching a project's own documented decision not to adopt a migration tool yet (e.g. a project ADR stating that a document-shape change has no automatic rollback path and a formal migration tool stays a documentation placeholder until the schema stabilizes enough to justify one).
 
 10. **Generate seeds.** Three buckets, expressed per profile:
     - **Bootstrap** (admin user, default org) — relational-SQL: first migration `<timestamp>_bootstrap_<thing>.up.sql`; document-store: a seed script or a documented one-off `insertOne`/`create` call. Hardcode a deterministic identifier in whatever format was confirmed in step 5, so re-running the seed is idempotent.
@@ -214,7 +214,7 @@ These defaults are baked into the skill and into the baseline `.claude/rules/mig
 >
 > **Skill behavior:**
 > 1. `test -f docs/features/acme-orders/PRD.md && test -f docs/features/acme-orders/sad.md` → OK.
-> 2. Step 0: `go.mod` has `database/sql` + a `migrations/*.sql` folder → **relational-SQL**. `.claude/rules/migrations.md` missing → bootstrapped from the SQL profile section. Reported to user.
+> 2. Step 0: the dependency manifest shows a relational-DB driver + a `migrations/*.sql` folder → **relational-SQL**. `.claude/rules/migrations.md` missing → bootstrapped from the SQL profile section. Reported to user.
 > 3. Reads PRD (entities: Order, OrderLineItem, Customer, PaymentEvent), SAD §6.4 (ER stub: Order ||--o{ OrderLineItem), sequences (index on `orders.customer_id` for listOrders; on `order_line_items.order_id` for getOrder with line items).
 > 4. Aggregate roots: Order aggregates OrderLineItem; Customer is referenced, not embedded.
 > 5. Identifier: the repo's existing tables all use `BIGSERIAL` — confirmed with the user to keep that convention rather than introduce something new.
@@ -225,18 +225,18 @@ These defaults are baked into the skill and into the baseline `.claude/rules/mig
 > 10. Test fixtures: `internal/testfixtures/order.go` with `NewOrder`, `NewOrderLineItem`. PII guard satisfied.
 > 11–15. Drift: no Go structs yet → skipped. Self-check: all pass. Report + commit suggestion `08+09: data-model + schema changes for acme-orders`.
 
-> **User:** "data model for interview-history" (document-store, no-migration-tool profile — e.g. this repo)
+> **User:** "data model for order-history" (document-store, no-migration-tool profile)
 >
 > **Skill behavior:**
 > 1. Prereqs OK.
-> 2. Step 0: `package.json` has `mongoose`, no `migrate-mongo`, `src/models/*.ts` uses `mongoose.Schema` directly, and `docs/adr/0001-initial-setup.md` states `make migrate` is a deliberate documentation placeholder → **no-migration-tool**. `.claude/rules/migrations.md` missing → bootstrapped from the shared "Hard rules" section + the document-store/no-migration-tool profile section. Reported to user.
-> 3. Reads PRD (entity: `InterviewSession` aggregating question/answer attempts), SAD §6.4 ER stub, sequences (`writes InterviewSession.questions[]`, `reads InterviewSession by userId` → index candidate).
-> 4. Aggregate root: `InterviewSession` aggregates its question/answer attempts as an embedded array (matches ADR-0001's stated reason for choosing Mongo: shape changes more often than a rigid relational schema would allow at this stage).
-> 5. Identifier: project already relies on Mongo's native `_id` (`ObjectId`) everywhere else — confirmed with the user to keep that convention rather than introduce an app-generated id.
-> 6. Types: `topic: { type: String, enum: TOPICS }`, `level: { type: String, enum: LEVELS }`, `questions: [{ ... }]` (embedded, not a separate collection — no cross-collection query needs it split out), `createdAt: { type: Date, default: Date.now, immutable: true }`, no `updatedAt`.
-> 7. Indexes: `schema.index({ userId: 1 })` for the history/stats "own sessions only" filter (AC-05 in the project-level PRD).
-> 8. Writes `docs/features/interview-history/data-model.md` including the Schema-change log section.
-> 9. No-migration-tool branch: updates `src/models/InterviewSession.ts` directly; appends a dated Schema-change log entry describing the new index, its backfill (none needed — new index, no new required field), and its rollback (`db.collection.dropIndex(...)`, documented in prose).
+> 2. Step 0: the dependency manifest shows a document-store ORM with no migration-tool dependency, an existing schema definition file uses that ORM's schema API directly, and a project ADR states the missing migration tool is a deliberate placeholder → **no-migration-tool**. `.claude/rules/migrations.md` missing → bootstrapped from the shared "Hard rules" section + the document-store/no-migration-tool profile section. Reported to user.
+> 3. Reads PRD (entity: `Order` aggregating line-item attempts), SAD §6.4 ER stub, sequences (`writes Order.lineItems[]`, `reads Order by customerId` → index candidate).
+> 4. Aggregate root: `Order` aggregates its line items as an embedded array (matches the project ADR's stated reason for choosing a document store: shape changes more often than a rigid relational schema would allow at this stage).
+> 5. Identifier: project already relies on the store's native id everywhere else — confirmed with the user to keep that convention rather than introduce an app-generated id.
+> 6. Types: `status: { type: String, enum: STATUSES }`, `channel: { type: String, enum: CHANNELS }`, `lineItems: [{ ... }]` (embedded, not a separate collection — no cross-collection query needs it split out), `createdAt: { type: Date, default: Date.now, immutable: true }`, no `updatedAt`.
+> 7. Indexes: `schema.index({ customerId: 1 })` for the history/stats "own orders only" filter (an AC in the project-level PRD).
+> 8. Writes `docs/features/order-history/data-model.md` including the Schema-change log section.
+> 9. No-migration-tool branch: updates the `Order` schema definition file directly; appends a dated Schema-change log entry describing the new index, its backfill (none needed — new index, no new required field), and its rollback (documented in prose).
 > 10. Seeds: none required. Test fixtures: none new (existing factory reused).
-> 11. Drift detection: compares `src/models/InterviewSession.ts` (server schema) against `client/src/types/interview.ts` (hand-duplicated client type) — exactly the drift class `check_enums.py`'s pre-commit hook already guards for `TOPICS`/`LEVELS`; reports any field beyond the enum sync that's out of step.
-> 12–15. No breaking change in this pass. Self-check: reversibility check passes because the log entry states a rollback in prose. Report includes detected profile + evidence. Commit suggestion `08+09: data-model + schema changes for interview-history`.
+> 11. Drift detection: compares the server schema against a hand-duplicated client-side type file — the same drift class a pre-commit enum-sync check might already guard for; reports any field beyond that sync that's out of step.
+> 12–15. No breaking change in this pass. Self-check: reversibility check passes because the log entry states a rollback in prose. Report includes detected profile + evidence. Commit suggestion `08+09: data-model + schema changes for order-history`.
