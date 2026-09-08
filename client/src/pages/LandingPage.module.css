@@ -233,21 +233,23 @@
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	border-left: 1px solid var(--line);
+	border-top: 1px solid var(--line);
 	margin-left: 0.55rem;
+	display: flex;
+	align-items: flex-start;
 }
 .logItem {
 	position: relative;
-	padding: 0 0 var(--space-5) var(--space-4);
+	padding: var(--space-4) var(--space-5) var(--space-4) 0;
 }
 .logItem:last-child {
-	padding-bottom: 0;
+	padding-right: 0;
 }
 .logItem::before {
 	content: '';
 	position: absolute;
 	left: -5px;
-	top: 0.35rem;
+	top: -0.25rem;
 	width: 9px;
 	height: 9px;
 	border-radius: 50%;
@@ -273,6 +275,26 @@
 	color: var(--slate);
 	max-width: 56ch;
 	font-size: 0.96rem;
+}
+
+@media (max-width: 900px) {
+	.logList {
+		flex-direction: column;
+		border-top: none;
+		margin-left: 0;
+	}
+	.logItem {
+		padding: 0 0 var(--space-4) 1.1rem;
+		border-left: 1px solid var(--line);
+	}
+	.logItem:last-child {
+		padding-bottom: 0;
+		border-left-color: transparent;
+	}
+	.logItem::before {
+		left: -5px;
+		top: 0.15rem;
+	}
 }
 
 /* ---------- DEMO / REVIEW SECTION ---------- */

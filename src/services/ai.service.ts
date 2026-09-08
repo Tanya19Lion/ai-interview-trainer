@@ -59,6 +59,24 @@ export async function generateQuestion(
 	return { question };
 }
 
+/** Прибирає markdown code-fence (```` ```json ... ``` ````), якщо модель його все ж додала
+ * попри інструкцію в system-промпті не робити цього. */
+export function parseAnswerReview(raw: string): AnswerReview {
+	const cleaned = raw
+		.trim()
+		.replace(/^```(?:json)?\s*/i, '')
+		.replace(/```\s*$/, '')
+		.trim();
+	try {
+		return JSON.parse(cleaned) as AnswerReview;
+	} catch (err) {
+		const reason = err instanceof Error ? err.message : String(err);
+		throw new Error(
+			`AI review response is not valid JSON (${reason}). Raw response (first 500 chars): ${cleaned.slice(0, 500)}`,
+		);
+	}
+}
+
 export async function reviewAnswer(
 	topic: string,
 	level: string,
@@ -68,7 +86,7 @@ export async function reviewAnswer(
 	const client = getClient();
 	const message = await client.messages.create({
 		model: MODEL,
-		max_tokens: 600,
+		max_tokens: 1024,
 		system:
 			"Ти рев'юєр технічної співбесіди. Оціни відповідь користувача на питання за темою і рівнем. " +
 			'Поверни СУВОРО валідний JSON без markdown-огорожі у форматі: ' +
@@ -87,5 +105,5 @@ export async function reviewAnswer(
 		.join('\n')
 		.trim();
 
-	return JSON.parse(raw) as AnswerReview;
+	return parseAnswerReview(raw);
 }

@@ -3,7 +3,7 @@
 	padding: 0.25rem;
 	background: var(--ink-2);
 	border: 1px solid var(--line);
-	border-radius: var(--radius-m);
+	border-radius: 999px;
 	gap: 0.2rem;
 }
 
@@ -12,10 +12,11 @@
 	border: none;
 	background: transparent;
 	color: var(--slate);
-	font-family: var(--font-mono);
-	font-size: 0.82rem;
-	padding: 0.5rem 0.95rem;
-	border-radius: var(--radius-s);
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 0.85rem;
+	padding: 0.5rem 1.1rem;
+	border-radius: 999px;
 	cursor: pointer;
 	transition:
 		background 0.15s ease,
@@ -27,6 +28,6 @@
 }
 
 .active {
-	background: var(--ink-3);
-	color: var(--off-white);
+	background: var(--amber);
+	color: #1a1503;
 }

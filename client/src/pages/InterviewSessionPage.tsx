@@ -118,7 +118,7 @@ export function InterviewSessionPage() {
 					weakTopics: q.weakTopics,
 				}))}
 				onRestart={() => navigate('/interview/new')}
-				onHome={() => navigate('/')}
+				onHome={() => navigate('/home')}
 			/>
 		);
 	}
@@ -196,7 +196,7 @@ export function InterviewSessionPage() {
 				averageScore={finalAverageScore}
 				results={results}
 				onRestart={() => navigate('/interview/new')}
-				onHome={() => navigate('/')}
+				onHome={() => navigate('/home')}
 			/>
 		);
 	}

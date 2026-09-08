@@ -15,7 +15,7 @@ export function useGoogleLogin() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (idToken: string) => googleLogin(idToken),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+		onSuccess: (data) => queryClient.setQueryData(['me'], data),
 	});
 }
 
@@ -23,7 +23,7 @@ export function useRegister() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: registerWithPassword,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+		onSuccess: (data) => queryClient.setQueryData(['me'], data),
 	});
 }
 
@@ -31,7 +31,7 @@ export function useLoginWithPassword() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: loginWithPassword,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+		onSuccess: (data) => queryClient.setQueryData(['me'], data),
 	});
 }
 

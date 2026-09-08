@@ -12,17 +12,17 @@ import { ProgressPage } from './pages/ProgressPage';
 export function AppRoutes() {
 	return (
 		<Routes>
-			<Route path="/welcome" element={<LandingPage />} />
+			<Route path="/" element={<LandingPage />} />
 			<Route path="/login" element={<LoginPage />} />
 			<Route element={<ProtectedLayout />}>
-				<Route path="/" element={<HomePage />} />
+				<Route path="/home" element={<HomePage />} />
 				<Route path="/interview/new" element={<NewSessionPage />} />
 				<Route path="/interview/:sessionId" element={<InterviewSessionPage />} />
 				<Route path="/history" element={<HistoryPage />} />
 				<Route path="/progress" element={<ProgressPage />} />
 			</Route>
 			<Route path="/showcase" element={<App />} />
-			<Route path="*" element={<Navigate to="/" replace />} />
+			<Route path="*" element={<Navigate to="/home" replace />} />
 		</Routes>
 	);
 }

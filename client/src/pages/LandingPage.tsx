@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
 	Chip,
 	CodeDiffLine,
@@ -64,6 +64,7 @@ function seededHeatLevels(seed: number, count: number): number[] {
 
 export function LandingPage() {
 	const { t } = useTranslation();
+	const location = useLocation();
 	const [navOpen, setNavOpen] = useState(false);
 	const [demoTopic, setDemoTopic] = useState<Topic>('react');
 	const [demoLevel, setDemoLevel] = useState<Level>('middle');
@@ -129,12 +130,12 @@ export function LandingPage() {
 								/>
 							</svg>
 						</button>
-						<Link to="/login" className={buttonClassName({ variant: 'ghost' })}>
+						<Link to="/login" state={location.state} className={buttonClassName({ variant: 'primary' })}>
 							{t('nav.login')}
 						</Link>
-						<a href="#cta" className={buttonClassName({ variant: 'primary' })}>
+						{/* <a href="#cta" className={buttonClassName({ variant: 'primary' })}>
 							{t('nav.cta')}
-						</a>
+						</a> */}
 					</div>
 				</div>
 			</nav>
@@ -154,7 +155,11 @@ export function LandingPage() {
 							</h1>
 							<p className={styles.heroSub}>{t('hero.sub')}</p>
 							<div className={styles.heroCta}>
-								<Link to="/login" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+								<Link
+									to="/login"
+									state={location.state}
+									className={buttonClassName({ variant: 'primary', size: 'lg' })}
+								>
 									{t('hero.ctaPrimary')}
 								</Link>
 								<a href="#review" className={buttonClassName({ variant: 'ghost', size: 'lg' })}>
@@ -163,9 +168,9 @@ export function LandingPage() {
 							</div>
 							<div className={styles.heroTopics}>
 								<span className={styles.topicsLabel}>{t('hero.topicsLabel')}</span>
-								{TOPICS.slice(0, 6).map((topic) => (
+								{TOPICS.slice(0, 4).map((topic) => (
 									<Chip key={topic}>#{TOPIC_LABEL[topic]}</Chip>
-								))}
+								))}							
 							</div>
 						</div>
 
@@ -212,9 +217,9 @@ export function LandingPage() {
 					</Reveal>
 
 					<ol className={styles.logList}>
-						{HOW_STEPS.map((step) => (
+						{HOW_STEPS.map((step, index) => (
 							<li key={step.h3} className={styles.logItem}>
-								<Reveal>
+								<Reveal style={{ transitionDelay: `${index * 150}ms` }}>
 									<span className={styles.logHash}>{step.cmd}</span>
 									<h3 className={styles.logH3}>{t(step.h3)}</h3>
 									<p className={styles.logP}>{t(step.p)}</p>
@@ -425,7 +430,7 @@ export function LandingPage() {
 					</Reveal>
 				</section>
 
-				<section className={[styles.section, styles.ctaBand].join(' ')} id="cta">
+				{/* <section className={[styles.section, styles.ctaBand].join(' ')} id="cta">
 					<Eyebrow centered>{t('cta.eyebrow')}</Eyebrow>
 					<h2 className={styles.ctaH2}>{t('cta.h2')}</h2>
 					<p className={styles.ctaP}>{t('cta.p')}</p>
@@ -435,7 +440,7 @@ export function LandingPage() {
 						</Link>
 					</div>
 					<p className={styles.finePrint}>{t('cta.fine')}</p>
-				</section>
+				</section> */}
 			</main>
 
 			<footer className={styles.footer}>

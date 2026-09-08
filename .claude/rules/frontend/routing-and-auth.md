@@ -12,16 +12,19 @@ paths:
 - **Routing** (`client/src/AppRoutes.tsx`, `main.tsx`) — `react-router-dom` v7 with
   `TanStack Query` for server state (`QueryClient` set up once in `main.tsx`, alongside
   `GoogleOAuthProvider` from `@react-oauth/google` and, now, `I18nextProvider` — see
-  `.claude/rules/frontend/overview.md` for the i18n setup). Public routes: `/welcome`
-  (`pages/LandingPage.tsx`, the marketing page — no `RequireAuth`, has its own nav/footer/CTA
-  links to `/login`), `/login` (`pages/LoginPage.tsx`), `/showcase` (old kitchen-sink `App.tsx`, a
-  living style guide — not the app's home route). Protected routes (`/`, `/interview/new`,
-  `/interview/:sessionId`, `/history`, `/progress`) are nested under a single layout route whose
-  `element` is `ProtectedLayout` — add new authenticated pages as children of that same layout
-  route rather than wrapping each one in `RequireAuth` individually. `/` renders
-  `pages/HomePage.tsx` (profile card, stats badges, resume-session card, recent sessions, links to
-  History/Progress) — note `/` (the authenticated Kabinet) and `/welcome` (the public marketing
-  page) are two different screens; don't confuse them.
+  `.claude/rules/frontend/overview.md` for the i18n setup). Public routes: `/`
+  (`pages/LandingPage.tsx`, the marketing page and the app's entry point — no `RequireAuth`, has
+  its own nav/footer/CTA links to `/login`), `/login` (`pages/LoginPage.tsx`), `/showcase` (old
+  kitchen-sink `App.tsx`, a living style guide — not the app's home route). Protected routes
+  (`/home`, `/interview/new`, `/interview/:sessionId`, `/history`, `/progress`) are nested under a
+  single layout route whose `element` is `ProtectedLayout` — add new authenticated pages as
+  children of that same layout route rather than wrapping each one in `RequireAuth` individually.
+  `/home` renders `pages/HomePage.tsx` (profile card, stats badges, resume-session card, recent
+  sessions, links to History/Progress) — note `/home` (the authenticated Kabinet) and `/` (the
+  public marketing page, first thing an unauthenticated visitor sees) are two different screens;
+  don't confuse them. A successful login (`pages/LoginPage.tsx`) redirects to `/home` by default,
+  or back to `location.state.from` if `RequireAuth` bounced the user off a specific protected
+  route first.
 - **`client/src/ProtectedLayout.tsx`** — composes `RequireAuth` + `AppShell` +
   `InterviewFocusContext.Provider` for every protected route. Owns the `focus` state
   (`lib/interviewFocus.ts`) that lets a nested page (currently `InterviewSessionPage`) tell the
@@ -53,6 +56,6 @@ paths:
   re-generates a question via the AI service, so firing it unconditionally would be wasteful) to
   get the live question text back, and only falls through to "сесія недоступна" if neither
   resolves anything usable (e.g. the id doesn't belong to the current user).
-- `pages/LandingPage.tsx` (`/welcome`) is the bilingual public marketing screen — see
+- `pages/LandingPage.tsx` (`/`) is the bilingual public marketing screen — see
   `.claude/rules/frontend/components.md` for `Reveal`/`LangOverlay`, the two components built
   specifically for it.

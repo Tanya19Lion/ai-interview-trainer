@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import type { SubmitEvent } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import type { CredentialResponse } from '@react-oauth/google';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
 	Button,
 	CodeDiffLine,
@@ -21,14 +21,19 @@ import styles from './LoginPage.module.css';
 type Mode = 'signin' | 'signup';
 
 const SUBTITLE: Record<Mode, string> = {
-	signin: 'Продовж прокачувати навички технічних співбесід.',
-	signup: 'Створи акаунт і почни проходити співбесіди у форматі code review.',
+	signin: 'Введи email і пароль — або обери Google, це швидше.',
+	signup: 'Створи акаунт за хвилину — або зареєструйся через Google, ще швидше.',
+};
+
+const SWITCH_LINE: Record<Mode, { question: string; action: string; target: Mode }> = {
+	signin: { question: 'Ще немає акаунта?', action: 'Зареєструватися', target: 'signup' },
+	signup: { question: 'Вже є акаунт?', action: 'Увійти', target: 'signin' },
 };
 
 export function LoginPage() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const redirectTo = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/';
+	const redirectTo = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/home';
 
 	const [mode, setMode] = useState<Mode>('signin');
 	const [signinEmail, setSigninEmail] = useState('');
@@ -58,6 +63,7 @@ export function LoginPage() {
 	}
 
 	const pendingError = mode === 'signin' ? login.error : register.error;
+	const switchLine = SWITCH_LINE[mode];
 
 	const handleGoogleSuccess = useCallback(
 		(credentialResponse: CredentialResponse) => {
@@ -71,132 +77,156 @@ export function LoginPage() {
 
 	return (
 		<div className={styles.page}>
-			<div className={styles.card}>
-				<Eyebrow>$ diff --login</Eyebrow>
-				<h1 className={styles.h1}>Увійди в diff</h1>
-				<p className={styles.subtitle}>{SUBTITLE[mode]}</p>
-
-				<div className={styles.googleWrap}>
-					<GoogleLogin
-						theme="filled_black"
-						size="large"
-						width="320"
-						text={mode === 'signin' ? 'signin_with' : 'signup_with'}
-						onSuccess={handleGoogleSuccess}
-					/>
-				</div>
-
-				<div className={styles.divider}>
-					<span>або</span>
-				</div>
-
-				<Tabs
-					value={mode}
-					onChange={(value) => setMode(value as Mode)}
-					items={[
-						{ value: 'signin', label: 'Увійти' },
-						{ value: 'signup', label: 'Зареєструватися' },
-					]}
-				/>
-
-				{mode === 'signin' ? (
-					<form className={styles.form} onSubmit={handleSignin}>
-						<TextField
-							label="Email"
-							type="email"
-							required
-							autoComplete="email"
-							value={signinEmail}
-							onChange={(event) => setSigninEmail(event.target.value)}
-						/>
-						<PasswordField
-							label="Пароль"
-							autoComplete="current-password"
-							required
-							value={signinPassword}
-							onChange={setSigninPassword}
-						/>
-						<Button type="submit" variant="primary" size="lg" disabled={login.isPending}>
-							{login.isPending ? 'Входимо…' : 'Увійти'}
-						</Button>
-					</form>
-				) : (
-					<form className={styles.form} onSubmit={handleSignup}>
-						<TextField
-							label="Ім'я"
-							required
-							autoComplete="name"
-							value={signupName}
-							onChange={(event) => setSignupName(event.target.value)}
-						/>
-						<TextField
-							label="Email"
-							type="email"
-							required
-							autoComplete="email"
-							value={signupEmail}
-							onChange={(event) => setSignupEmail(event.target.value)}
-						/>
-						<PasswordField
-							label="Пароль"
-							autoComplete="new-password"
-							required
-							minLength={8}
-							hint="Мінімум 8 символів"
-							value={signupPassword}
-							onChange={setSignupPassword}
-						/>
-						<Button type="submit" variant="primary" size="lg" disabled={register.isPending}>
-							{register.isPending ? 'Створюємо акаунт…' : 'Створити акаунт'}
-						</Button>
-					</form>
-				)}
-
-				{pendingError && <p className={styles.error}>{pendingError.message}</p>}
-
-				<p className={styles.switchLine}>
-					{mode === 'signin' ? (
-						<>
-							Немає акаунта?{' '}
-							<button type="button" className={styles.switchLink} onClick={() => setMode('signup')}>
-								Зареєструйся
-							</button>
-						</>
-					) : (
-						<>
-							Вже є акаунт?{' '}
-							<button type="button" className={styles.switchLink} onClick={() => setMode('signin')}>
-								Увійди
-							</button>
-						</>
-					)}
-				</p>
+			<div className={styles.topbar}>
+				<Link to="/" className={styles.logo}>
+					diff<span className={styles.cursor} aria-hidden="true" />
+				</Link>
 			</div>
 
 			<EditorWindow
-				className={styles.ambient}
+				className={styles.ambientWrap}
 				title={
 					<>
-						<b>welcome</b> · getting-started.md
+						<b>session_04</b> · react/middle/answer.md
 					</>
 				}
 				footer={
 					<>
-						<ScoreChip tone="good">Прогрес: 0/10 співбесід</ScoreChip>
-						<LevelChip>Junior · React</LevelChip>
+						<ScoreChip tone="mid">Точність: 6/10</ScoreChip>
+						<LevelChip>Middle · React</LevelChip>
 					</>
 				}
 			>
-				<CodeDiffLine gutter="1" variant="removed">
-					Читав документацію, але не практикувався
+				<CodeDiffLine gutter="12" variant="question">
+					// Q: Чим useMemo відрізняється від useCallback?
 				</CodeDiffLine>
-				<CodeDiffLine gutter="2" variant="added">
-					Проходь технічні співбесіди у форматі code review
+				<CodeDiffLine gutter="13" variant="removed">
+					useMemo кешує функцію, а useCallback кешує значення.
 				</CodeDiffLine>
-				<EditorComment>
-					Кожна відповідь — це diff: що було не так і як покращити.
-				</EditorComment>
+				<CodeDiffLine gutter="13" variant="added">
+					useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не
+					створювалась заново.
+				</CodeDiffLine>
+				<EditorComment>Поширена плутанина. Memo → значення, Callback → сама функція.</EditorComment>
 			</EditorWindow>
+
+			<main className={styles.authMain}>
+				<div className={styles.authCard}>
+					<Eyebrow centered>$ diff --login</Eyebrow>
+					<h1 className={styles.h1}>Один акаунт. Уся історія твоїх співбесід.</h1>
+					<p className={styles.subtitle}>{SUBTITLE[mode]}</p>
+
+					<div className={styles.tabsRow}>
+						<Tabs
+							value={mode}
+							onChange={(value) => setMode(value as Mode)}
+							items={[
+								{ value: 'signin', label: 'Увійти' },
+								{ value: 'signup', label: 'Зареєструватися' },
+							]}
+						/>
+					</div>
+
+					<div className={styles.googleWrap}>
+						<GoogleLogin
+							theme="filled_black"
+							size="large"
+							width="320"
+							text="continue_with"
+							onSuccess={handleGoogleSuccess}
+						/>
+					</div>
+
+					<p className={styles.scopeNote}># доступ лише до email та імені — жодного Gmail чи Диску</p>
+
+					<div className={styles.divider}>
+						<span>або</span>
+					</div>
+
+					{mode === 'signin' ? (
+						<form className={styles.form} onSubmit={handleSignin}>
+							<TextField
+								label="Email"
+								type="email"
+								placeholder="tanya@example.com"
+								required
+								autoComplete="email"
+								value={signinEmail}
+								onChange={(event) => setSigninEmail(event.target.value)}
+							/>
+							<PasswordField
+								label="Пароль"
+								labelExtra={
+									<a href="#" className={styles.forgotLink}>
+										Забули пароль?
+									</a>
+								}
+								placeholder="••••••••"
+								autoComplete="current-password"
+								required
+								value={signinPassword}
+								onChange={setSigninPassword}
+							/>
+							<Button type="submit" variant="primary" size="lg" disabled={login.isPending}>
+								{login.isPending ? 'Входимо…' : 'Увійти'}
+							</Button>
+						</form>
+					) : (
+						<form className={styles.form} onSubmit={handleSignup}>
+							<TextField
+								label="Ім'я"
+								placeholder="Таня"
+								required
+								autoComplete="name"
+								value={signupName}
+								onChange={(event) => setSignupName(event.target.value)}
+							/>
+							<TextField
+								label="Email"
+								type="email"
+								placeholder="tanya@example.com"
+								required
+								autoComplete="email"
+								value={signupEmail}
+								onChange={(event) => setSignupEmail(event.target.value)}
+							/>
+							<PasswordField
+								label="Пароль"
+								placeholder="мінімум 8 символів"
+								autoComplete="new-password"
+								required
+								minLength={8}
+								hint="Мінімум 8 символів"
+								value={signupPassword}
+								onChange={setSignupPassword}
+							/>
+							<Button type="submit" variant="primary" size="lg" disabled={register.isPending}>
+								{register.isPending ? 'Створюємо акаунт…' : 'Створити акаунт'}
+							</Button>
+						</form>
+					)}
+
+					{pendingError && <p className={styles.error}>{pendingError.message}</p>}
+
+					<p className={styles.switchLine}>
+						{switchLine.question}{' '}
+						<button
+							type="button"
+							className={styles.switchLink}
+							onClick={() => setMode(switchLine.target)}
+						>
+							{switchLine.action}
+						</button>
+					</p>
+
+					<p className={styles.finePrint}>
+						Продовжуючи, ти погоджуєшся з <a href="#">Умовами використання</a> та{' '}
+						<a href="#">Політикою конфіденційності</a> diff.
+					</p>
+				</div>
+			</main>
+
+			<p className={styles.authFooter}>diff — порівняй. виправ. пройди.</p>
 		</div>
 	);
 }

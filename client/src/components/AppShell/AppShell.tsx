@@ -6,7 +6,7 @@ import { ProgressSegments } from '../ProgressSegments/ProgressSegments';
 import styles from './AppShell.module.css';
 
 const NAV_ITEMS = [
-	{ to: '/', label: 'Кабінет', end: true },
+	{ to: '/home', label: 'Кабінет', end: true },
 	{ to: '/interview/new', label: 'Нова сесія', end: false },
 	{ to: '/history', label: 'Історія', end: false },
 	{ to: '/progress', label: 'Прогрес', end: false },
