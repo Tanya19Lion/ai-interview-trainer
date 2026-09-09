@@ -1,6 +1,6 @@
 ---
 status: Living
-updated_at: "2026-09-07"
+updated_at: "2026-09-09"
 ---
 
 # Domain Context
@@ -20,3 +20,4 @@ updated_at: "2026-09-07"
 | Weak topic | A specific knowledge gap AI detects in one individual answer. NOT topic (the subject area of the whole session, chosen once at the start, with no direct link to any single weak topic surfaced later). |
 | Topic | The subject area a job-seeker chooses once for an entire interview session — one of `react`, `javascript`, `nodejs`, `typescript`, `nextjs`, `css`, `html`, `sql`, `restapi` (`src/models/InterviewSession.ts` `TOPICS`). NOT weak topic. |
 | Level | The difficulty tier of a session — `junior`, `middle`, or `senior` (`src/models/InterviewSession.ts` `LEVELS`). |
+| Password reset token | A one-time, time-limited token proving ownership of an email address, used to authorize setting a new password. NOT session auth token (the one issued at login that authenticates ongoing requests). |
