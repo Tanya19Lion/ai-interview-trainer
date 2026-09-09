@@ -12,7 +12,7 @@ description: >
   hard refuse if missing.
 ---
 
-# Skill: complete-sequence-diagrams
+# Skill: complete-sequence-diagrams (SDLC stage 04-05 enrichment)
 
 Auditor + completer for the Runtime view. Reads PRD user stories, cross-checks SAD §6, and adds Mermaid `sequenceDiagram` blocks for every US that does not yet have one. Iterative per use case (user confirms each diagram), validates Mermaid syntax with `mmdc`, flags ADR-worthy decisions, and adds async patterns (idempotency, retry, DLQ) where the flow is non-`localhost`.
 
@@ -104,7 +104,7 @@ Tech Lead.
 
 9. **Self-check against DoD.** Every PRD US is either Covered, explicitly Trivial, or has a fresh Mermaid block in §6. mmdc passed on all new blocks.
 
-10. **Propose commit.** `06: complete sequence coverage for <slug>` + next owner (Backend Lead → stage 07 data-model / generate-data-model).
+10. **Propose commit.** `04-05: complete sequence coverage for <slug>` + next owner (Backend Lead → stage 06 data-model / generate-data-model).
 
 ## Single-flow mode
 
@@ -113,7 +113,7 @@ Tech Lead.
 ## Inputs the skill does NOT touch
 
 - **Deployment view (§7).** Out of scope. If a sequence requires a new node (e.g., `Scheduler pod`), flag in the report; the user updates §7 separately.
-- **API contract method names.** If `define-api` already produced `openapi.yaml`, the skill reuses those operation names; otherwise leaves a TODO comment `<!-- TODO: align with openapi.yaml -->`.
+- **API contract method names.** If `api-forge` already produced `openapi.yaml`, the skill reuses those operation names; otherwise leaves a TODO comment `<!-- TODO: align with openapi.yaml -->`.
 - **C4 container/component diagrams.** Only reads them for actor list; does not modify.
 
 ## Questions for discussion
@@ -133,7 +133,7 @@ Tech Lead.
 ## Anti-patterns
 
 - **Draw-without-coverage.** Adding sequences for the same 3 happy paths over and over while webhook / cron / cross-service flows have nothing. The whole point of this skill is the long tail.
-- **Auto-generated ADRs.** This skill only flags decisions; ADRs are written by a human (or `decide-adr` skill).
+- **Auto-generated ADRs.** This skill only flags decisions; ADRs are written by a human (or spawned inline by `architecture-design` at stage 04-05).
 - **One mega-sequence for the whole feature.** Split per US. Cross-US flows get their own `### Cross-cutting: <name>` heading.
 - **Drawing happy path only when PRD lists explicit error AC.** Each US gets happy + 2-3 errors from PRD acceptance criteria.
 - **New actors silently added to sequences without flagging §5.** The Container view is the source of truth; the report MUST list new actors.

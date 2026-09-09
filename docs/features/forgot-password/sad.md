@@ -1,7 +1,7 @@
 ---
 status: Draft
 owner: "Tanya (architect/eng)"
-reviewers: ["Tanya (tech lead)"]
+reviewers: ["Tanya19Lion"]
 updated_at: "2026-09-09"
 feature_size: S
 stage: "04-05"

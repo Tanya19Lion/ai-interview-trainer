@@ -96,7 +96,7 @@ AC описує **business-observable outcome від actor's perspective**. Не
 - JSON-schema fragments / payload bodies (`{key: "value"}`).
 - SQL / DB constructs (`UNIQUE`, `FK`, `pq.*`, raw SQL, constraint names).
 
-Технічний mapping (HTTP method+endpoint+payload, status codes, error-code strings, schemas, DB constraints) живе у stage 09 (`define-api`) + stage 10 (`decide-adr`). Тут — тільки WHAT actor спостерігає.
+Технічний mapping (HTTP method+endpoint+payload, status codes, error-code strings, schemas, DB constraints) живе у stage 07 (`api-forge`) + stage 04-05 (ADR в `architecture-design`). Тут — тільки WHAT actor спостерігає.
 
 Дозволено у AC text: roles з CONTEXT glossary, domain invariant **names** (наприклад «no published drafts», «unique sequence per article»), domain-objects з glossary.
 

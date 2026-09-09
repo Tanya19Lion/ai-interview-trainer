@@ -15,7 +15,7 @@ description: >
   invocation is for manual edits or for retro-fitting an existing glossary.
 ---
 
-# Skill: fix-term (CONTEXT.md domain glossary atomic)
+# Skill: fix-term (CONTEXT.md domain glossary atomic, SDLC stage 01-02)
 
 Atomic skill for inline domain term resolution. Lazy-bootstraps `CONTEXT.md` when a domain term first shows up + NOT-cross-reference (to avoid future drift / homonym confusion).
 

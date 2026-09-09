@@ -15,7 +15,7 @@ description: >
   writes an artifact into docs/features/.
 ---
 
-# Skill: interview (SDLC ideation phase — single entry-point)
+# Skill: interview (SDLC phase 01-02 — single entry-point)
 
 Consolidated 14-phase ideation runner. Single entry-point for the ideation phase. Replaces the prior atomic trio `intake` + `brainstorm` + `interview` with one autonomous Claude-driven protocol. Output: a single `docs/features/<slug>/idea-brief.md` with 15 sections (≤5 pages), no separate `brainstorm.md` / `initiatives.md`.
 

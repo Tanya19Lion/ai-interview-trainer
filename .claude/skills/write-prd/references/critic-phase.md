@@ -43,7 +43,7 @@ For each finding, surface it to the user via `AskUserQuestion`. Per finding, opt
 Constraints:
 
 - **≤2 `AskUserQuestion` batches**, max 4 questions per batch. The user's **second** answer per finding is final (single-iteration cap, mirrors step 7).
-- **`Override` resolutions emit a bullet** into the draft §1 Context ¶4, exactly: «<finding-headline> — overridden by author, rationale: <user-rationale>». This makes the deliberate choice visible to downstream skills (`architecture-design`, `define-api`).
+- **`Override` resolutions emit a bullet** into the draft §1 Context ¶4, exactly: «<finding-headline> — overridden by author, rationale: <user-rationale>». This makes the deliberate choice visible to downstream skills (`architecture-design`, `api-forge`).
 
 After resolution, re-run the Self-check inline non-negotiables (see SKILL.md `## Self-check`). If any still fail — re-open the relevant `AskUserQuestion` once, then proceed.
 

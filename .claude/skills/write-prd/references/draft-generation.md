@@ -49,7 +49,7 @@ Zero tolerance — checked by Phase 7.5 critic F6 and pre-write regex scan (see 
 - JSON-schema fragments / payload bodies: `{title, description}`, `{id, status: "draft"}`.
 - SQL / DB constructs: `UNIQUE(...)`, `UNIQUE INDEX`, `FK`, `pq.*`, raw `INSERT`/`SELECT`/`UPDATE`, constraint names (`uniq_entity_seq`).
 
-The technical mapping for these (HTTP method/path/status, error-code strings, payload schemas, DB constraints) lives in **stage 09** (`define-api`) and **stage 10** (`decide-adr`). PRD AC is WHAT a user can observe, not HOW the system encodes it.
+The technical mapping for these (HTTP method/path/status, error-code strings, payload schemas, DB constraints) lives in **stage 07** (`api-forge`) and **stage 04-05** (`architecture-design`'s ADRs). PRD AC is WHAT a user can observe, not HOW the system encodes it.
 
 ### Race conditions / edges
 

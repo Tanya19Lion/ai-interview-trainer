@@ -55,7 +55,7 @@ Read `CONTEXT.md` and `idea-brief.md` first. Then probe the draft against the ed
 
 **F5 — Coverage regression.** After applying all `drop`-s AND `save_as_oq`-migrations, does §5 still hold ≥1 AC for each of the 5 coverage types (happy / error / authorization / domain invariant / cross-context)? **OQ-migrated AC do NOT count toward coverage** — they live in §8 now. Skill should have regenerated a replacement of the broken type during step 7d; if it didn't, the gap is here. Also: does every numeric NFR row still have a measurement source (no «TBD» without owner+due in §8)?
 
-**F6 — AC implementation-leak.** Scan §5 AC text for **forbidden tokens**. AC describes business-observable outcome from the actor's perspective — the technical mapping lives in stage 09 (`define-api`) and stage 10 (`decide-adr`).
+**F6 — AC implementation-leak.** Scan §5 AC text for **forbidden tokens**. AC describes business-observable outcome from the actor's perspective — the technical mapping lives in stage 07 (`api-forge`) and stage 04-05 (`architecture-design`'s ADRs).
 
 Forbidden tokens (zero tolerance, list every hit):
 
@@ -81,7 +81,7 @@ NO_CONTESTED_DECISIONS
 Otherwise, one bullet per finding in this exact shape:
 
 ```
-- **[F{n}] {one-line headline}** — caused by: {edits-log ref or draft-line ref}; contradicts: {§ref in draft + §ref in idea-brief / CONTEXT line}; suggested: {action — revert / amend §1 Context paragraph 3 / add Non-goal / rewrite AC into business form / move detail to stage 09 (`define-api`) / etc.}.
+- **[F{n}] {one-line headline}** — caused by: {edits-log ref or draft-line ref}; contradicts: {§ref in draft + §ref in idea-brief / CONTEXT line}; suggested: {action — revert / amend §1 Context paragraph 3 / add Non-goal / rewrite AC into business form / move detail to stage 07 (`api-forge`) / etc.}.
 ```
 
 Each finding ≤2 lines after wrapping. **Cite-mode is required**: every finding must cite at least one draft-§ AND at least one idea-brief-§ or CONTEXT line. A finding without citations is invalid — drop it rather than ship it uncited.
@@ -89,7 +89,7 @@ Each finding ≤2 lines after wrapping. **Cite-mode is required**: every finding
 **F6 special format** — list every forbidden-token hit, even if many. One bullet per AC line that contains hits:
 
 ```
-- **[F6] AC-{NN} contains forbidden tokens** — line: "{verbatim AC line snippet}"; hits: {token1}, {token2}, ...; suggested: rewrite into business form (actor-observable outcome) OR move HTTP/error/schema detail to stage 09 (`define-api`).
+- **[F6] AC-{NN} contains forbidden tokens** — line: "{verbatim AC line snippet}"; hits: {token1}, {token2}, ...; suggested: rewrite into business form (actor-observable outcome) OR move HTTP/error/schema detail to stage 07 (`api-forge`).
 ```
 
 ### Discipline

@@ -11,7 +11,7 @@ description: >
   Output: docs/features/{slug}/PRD.md.
 ---
 
-# Skill: write-prd (SDLC stage 03 — code-aware PRD drafter)
+# Skill: write-prd (code-aware PRD drafter - SDLC stage 03)
 
 Generates a stage-03 PRD draft from upstream idea-phase artifacts + optional reference code patterns, validates each proposed item Socratically, then runs a clean-context critic before writing. Less typing, more reviewing. Detail per Protocol step lives in `references/`; this file is the backbone.
 

@@ -39,6 +39,6 @@ In addition to the 4 inline non-negotiables in SKILL.md «Self-check» section:
   - JSON-schema fragments / payload bodies (`{title, description?}`).
   - SQL / DB constructs (`UNIQUE(...)`, `FK`, `pq.*`, raw SQL, constraint names).
 
-  These belong to **stage 09** (`define-api` — HTTP/schema/error-string mapping) and **stage 10** (`decide-adr` — DB-constraint decisions). The Phase 7.5 critic F6 probe + pre-write regex scan catch this. If a token absolutely must remain (rare — usually a quoted glossary term), user must Override in Phase 7.5 with a recorded rationale.
+  These belong to **stage 07** (`api-forge` — HTTP/schema/error-string mapping) and **stage 04-05** (`architecture-design`'s ADRs — DB-constraint decisions). The Phase 7.5 critic F6 probe + pre-write regex scan catch this. If a token absolutely must remain (rare — usually a quoted glossary term), user must Override in Phase 7.5 with a recorded rationale.
 - **Skip Phase 7.5 critic.** §7 Socratic loop only catches per-item issues — it cannot see cross-item drift caused by user edits (e.g. US-rejected vs §1 Context still citing the rejected vector). Writing the file without running the critic ships that drift downstream.
 - **Resolve critic findings unilaterally** (without `AskUserQuestion`). The whole point of Phase 7.5 is to surface contested decisions to the user. Picking «revert» or «amend» without asking re-introduces the silent-edit failure mode this phase exists to catch — e.g. an AC quietly re-worded after user approval, with no edits-log entry to show it happened.

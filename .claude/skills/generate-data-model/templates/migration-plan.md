@@ -4,13 +4,13 @@ owner: "<Backend Lead name>"
 reviewers: []
 updated_at: "<YYYY-MM-DD>"
 feature_size: M
-stage: "09"
+stage: "06"
 ticket: "<ticket-id>"
 ---
 
 # Migration plan — <feature>
 
-<!-- Stage 09 → see SDLC/plugin/skills/plan-migration/SKILL.md -->
+<!-- Stage 06 → see .claude/skills/generate-data-model/SKILL.md (supersedes the legacy plan-migration skill) -->
 
 ## Strategy
 Expand → deploy code → contract.

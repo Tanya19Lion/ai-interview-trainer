@@ -1,0 +1,52 @@
+"""
+<Feature> API — GraphQL schema
+Stage 07 → see .claude/skills/api-forge/SKILL.md (GraphQL branch)
+"""
+
+type Query {
+  # <resource>(id: ID!): <Resource>
+  # <resource>s(after: String, first: Int = 20): <Resource>Connection!
+}
+
+type Mutation {
+  # <verbResource>(input: <VerbResource>Input!): <VerbResource>Result!
+}
+
+type <Resource> {
+  id: ID!
+  # ...
+}
+
+# Relay-style cursor pagination — the GraphQL-native equivalent of the REST
+# branch's cursor pagination. Do not switch this to an offset/page number.
+type <Resource>Connection {
+  edges: [<Resource>Edge!]!
+  pageInfo: PageInfo!
+}
+
+type <Resource>Edge {
+  cursor: String!
+  node: <Resource>!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  endCursor: String
+  startCursor: String
+}
+
+input <VerbResource>Input {
+  # ...
+}
+
+type <VerbResource>Result {
+  <resource>: <Resource>
+}
+
+# Error shape: this schema does not define an "Error" type. User-facing failures are
+# thrown as GraphQLError with:
+#   extensions: { code: "<module>.<error_name>", details: { ... } }
+# — the same {code, message, details?} default as the REST branch, carried in
+# `extensions` instead of an HTTP response body, so FE error handling stays uniform
+# across both contract styles.

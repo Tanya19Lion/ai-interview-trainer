@@ -132,7 +132,7 @@ Question:
   /articles/{id}/publish, Then API returns 409 with code article.no_sections».
   Hits: `POST`, `/articles/{id}/publish`, `409`, `article.no_sections`.
   Suggested: rewrite into business form (actor-observable outcome) — the
-  HTTP/error/schema detail moves to stage 09 `define-api`.
+  HTTP/error/schema detail moves to stage 07 `api-forge`.
   How do you want to resolve it?
 
 Options:

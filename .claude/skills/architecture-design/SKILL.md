@@ -14,7 +14,6 @@ description: >
   (Context in §3, Container in §5); no L3/L4. Brownfield: dispatches Explore
   subagent to map the repo before drafting. Prerequisite: docs/features/{slug}/PRD.md
   — hard refuse if missing. GATE stage 🚪.
-stage: "04-05"
 ---
 
 # Skill: architecture-design (SDLC stages 04-05 🚪 GATE)

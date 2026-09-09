@@ -1,10 +1,10 @@
 ---
 status: Draft
-owner: "Tanya19Lion"
+owner: "<Backend Lead name>"
 reviewers: []
 updated_at: "<YYYY-MM-DD>"
 feature_size: S
-stage: "08"
+stage: "06"
 ticket: "<ticket-id>"
 persistence_profile: "<relational-SQL | document-store | no-migration-tool>"
 ---

@@ -6,7 +6,7 @@ description: >
   (relational/SQL, document-store like MongoDB, or a project with no formal
   migration tool yet). Triggers on "data model for {slug}", "schema for
   {feature}", "generate migrations for {slug}", "DB design + migration",
-  "stage 8+9 for {slug}", "/generate-data-model {slug}". Detects the
+  "stage 06 for {slug}", "/generate-data-model {slug}". Detects the
   project's actual persistence stack first (never assumes SQL), then reads
   PRD §4 + SAD §6.4 ER + sequence diagrams + (optional) domain types in the
   project's language and produces docs/features/{slug}/data-model.md +
@@ -17,7 +17,7 @@ description: >
   missing.
 ---
 
-# Skill: generate-data-model
+# Skill: generate-data-model (SDLC stage 06)
 
 End-to-end runner for the persistence cut: design + schema changes + drift check. Stack-agnostic by design — it detects whether the project is relational, document-store, or has no migration tool at all, and adapts its output accordingly. Never assumes SQL. Output is **shippable**: real schema-change files (or a real schema-change plan, when that's what the project's stack actually supports), not an abstract plan.
 
@@ -162,9 +162,9 @@ These defaults are baked into the skill and into the baseline `.claude/rules/mig
     - **Drift findings:** if any (with proposed fixes under `_drift/`).
     - **Breaking changes decomposed:** if any 3-step sequence was generated.
     - **TBDs:** every `<!-- TBD -->` in `data-model.md` with file:line.
-    - **Next stage:** `define-api <slug>` (stage 10).
+    - **Next stage:** `api-forge <slug>` (stage 07).
 
-15. **Propose commit.** `08+09: data-model + schema changes for <slug>` + next owner (Backend Lead → stage 10 API contracts via `define-api`).
+15. **Propose commit.** `06: data-model + schema changes for <slug>` + next owner (Backend Lead → stage 07 API contracts via `api-forge`).
 
 ## Questions for discussion
 

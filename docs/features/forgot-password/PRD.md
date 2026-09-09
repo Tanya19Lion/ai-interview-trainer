@@ -1,6 +1,6 @@
 ---
 status: Draft
-owner: "Tanya (product/eng)"
+owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-09"
 feature_size: S
