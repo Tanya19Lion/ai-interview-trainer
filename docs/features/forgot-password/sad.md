@@ -199,6 +199,165 @@ sequenceDiagram
     API-->>Client: Explains account signs in with Google, offers Google sign-in
 ```
 
+<!-- Added by complete-sequence-diagrams — coverage audit found no "### US-N:" headed sequences;
+     "Critical flow 1/2" above cover happy-path only and are left untouched (additive-only rule).
+     These 5 close the error-branch gap flagged by api-forge's drift finding 5. -->
+
+### US-01: Request a password reset
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor JobSeeker
+    participant Client
+    participant API
+    participant PasswordResetService
+    participant DB
+    participant EmailProvider
+    JobSeeker->>Client: Enters email, submits "Forgot password"
+    Client->>API: POST /api/auth/password-reset/request {email}
+    API->>DB: Look up User by email
+    alt unknown email (AC-02)
+        DB-->>API: No matching User
+        API-->>Client: 200 generic confirmation (no existence leak)
+    else known Local account, under rate limit
+        DB-->>API: User has passwordHash
+        API->>PasswordResetService: Check rate limit for this account (<=3/hour)
+        PasswordResetService->>DB: Count recent PasswordReset docs for userId
+        DB-->>PasswordResetService: count < limit
+        PasswordResetService->>PasswordResetService: Generate raw token, hash it (sha256)
+        PasswordResetService->>DB: Store PasswordReset {userId, tokenHash, expiresAt: now+15m}
+        PasswordResetService->>EmailProvider: Send reset-link email (raw token)
+        EmailProvider-->>JobSeeker: Delivers email
+        API-->>Client: 200 generic confirmation (AC-01)
+    else known Local account, rate limit exceeded
+        PasswordResetService->>DB: Count recent PasswordReset docs for userId
+        DB-->>PasswordResetService: count >= limit
+        API-->>Client: 429 password_reset.rate_limited
+    else known Google-only account, no passwordHash (AC-05)
+        DB-->>API: User has no passwordHash
+        API-->>Client: 200 {message, hint: google_account} — no token generated
+    end
+    Note over Client, API: Postcondition: no response ever reveals whether the email is registered, except the deliberate Google-account hint (AC-05)
+```
+
+### US-02: Set a new password via reset link
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor JobSeeker
+    participant Client
+    participant API
+    participant PasswordResetService
+    participant DB
+    JobSeeker->>Client: Follows emailed reset link, submits new password
+    Client->>API: POST /api/auth/password-reset/confirm {token, newPassword}
+    API->>PasswordResetService: Verify and consume token
+    PasswordResetService->>PasswordResetService: Hash raw token (sha256)
+    PasswordResetService->>DB: findOneAndDelete PasswordReset {tokenHash}
+    alt token found and not expired (AC-01)
+        DB-->>PasswordResetService: Deleted document (single-use consumed)
+        PasswordResetService->>DB: Set User.passwordHash, increment User.tokenVersion
+        DB-->>PasswordResetService: Ok
+        PasswordResetService-->>API: Success
+        API-->>Client: 200 password updated, prompts login
+    else token missing, already used, or expired (AC-03)
+        DB-->>PasswordResetService: No document matched (TTL-expired or already consumed)
+        PasswordResetService-->>API: Not found
+        API-->>Client: 400 password_reset.invalid_or_expired_token
+    end
+    Note over PasswordResetService, DB: findOneAndDelete is atomic — two concurrent confirms for the same token can never both succeed (data-model.md single-use enforcement)
+```
+
+### US-03: Change password while logged in
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor JobSeeker
+    participant Client
+    participant API
+    participant DB
+    Note over JobSeeker, API: Precondition: JobSeeker has an active session (requireAuth)
+    JobSeeker->>Client: Submits current + new password on profile screen
+    Client->>API: POST /api/auth/change-password {currentPassword, newPassword}
+    API->>DB: Find User by req.userId
+    alt account has no passwordHash (Google-only, AC-05)
+        DB-->>API: User.passwordHash is unset
+        API-->>Client: 409 auth.google_account_no_password
+    else currentPassword does not match (AC-04)
+        DB-->>API: User.passwordHash set
+        API->>API: bcrypt.compare(currentPassword, User.passwordHash) -> false
+        API-->>Client: 400 auth.invalid_current_password (passwordHash left unchanged)
+    else currentPassword matches (AC-06)
+        API->>API: bcrypt.compare(currentPassword, User.passwordHash) -> true
+        API->>DB: Set User.passwordHash = hash(newPassword), increment User.tokenVersion
+        DB-->>API: Ok
+        API-->>Client: 200 password updated
+    end
+    Note over API, DB: tokenVersion bump invalidates every other active session on next requireAuth check (AC-06, ADR-0002)
+```
+
+### US-04: Understand why reset doesn't apply to a Google account
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor JobSeeker
+    participant Client
+    participant API
+    participant DB
+    Note over JobSeeker: Account signs in via Google OAuth — passwordHash is unset
+    alt entry via "Forgot password" (US-01)
+        JobSeeker->>Client: Clicks "Forgot password", submits email
+        Client->>API: POST /api/auth/password-reset/request {email}
+        API->>DB: Look up User by email
+        DB-->>API: User.passwordHash unset
+        API-->>Client: 200 {message, hint: google_account} — no reset attempt generated
+    else entry via change-password screen (US-03)
+        JobSeeker->>Client: Opens change-password screen while logged in
+        Client->>API: POST /api/auth/change-password {...}
+        API->>DB: Find User by req.userId
+        DB-->>API: User.passwordHash unset
+        API-->>Client: 409 auth.google_account_no_password
+    end
+    Client-->>JobSeeker: Shows "This account signs in with Google" + Google sign-in CTA
+    Note over Client, API: Postcondition: no dead end — every entry point ends in an explicit explanation, never a generic error (AC-05, idea-brief §7 Approach C)
+```
+
+### US-05: Reset link expires or becomes invalid
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor JobSeeker
+    participant Client
+    participant API
+    participant PasswordResetService
+    participant DB
+    Note over DB: PasswordReset.expiresAt has a TTL index (expireAfterSeconds: 0)
+    alt link expired (TTL passed)
+        Note over DB: MongoDB TTL index auto-deletes the document once expiresAt passes
+        JobSeeker->>Client: Follows an old reset link, submits new password
+        Client->>API: POST /api/auth/password-reset/confirm {token, newPassword}
+        API->>PasswordResetService: Verify and consume token
+        PasswordResetService->>DB: findOneAndDelete PasswordReset {tokenHash}
+        DB-->>PasswordResetService: No document (already TTL-deleted)
+        API-->>Client: 400 password_reset.invalid_or_expired_token
+    else link already used (single-use consumed)
+        Note over JobSeeker: JobSeeker already completed a reset with this token, or a second tab/request raced the first
+        JobSeeker->>Client: Follows the same reset link again
+        Client->>API: POST /api/auth/password-reset/confirm {token, newPassword}
+        API->>PasswordResetService: Verify and consume token
+        PasswordResetService->>DB: findOneAndDelete PasswordReset {tokenHash}
+        DB-->>PasswordResetService: No document (already deleted on first use)
+        API-->>Client: 400 password_reset.invalid_or_expired_token
+    end
+    Client-->>JobSeeker: "This reset link is invalid or has expired. Request a new one."
+    Note over Client, API: Postcondition: JobSeeker is told to request a new link, never left wondering why the form silently failed (AC-03)
+```
+
 ## 7. Deployment view
 
 <!-- N/A: feature reuses the existing deployment unit — no new infra unit, no new replicas. -->

@@ -84,6 +84,7 @@ behaviorally identical).
 | `userId` | ObjectId | required, `ref: 'User'` | The account this reset attempt belongs to |
 | `tokenHash` | String | required, unique, `maxlength: 64` | SHA-256 hex digest of the raw token emailed to the job-seeker — never store the raw token (same "hash, don't store the secret" discipline as `User.passwordHash`) |
 | `expiresAt` | Date | required | Set to issuance time + 15 minutes (PRD §6 NFR: token validity window ≤ 15 min) |
+| `attemptsRemaining` | Number | required, default = 3 | Decremented on each reset request for the same `userId` within the rolling hour window (PRD §6 NFR: ≤3 req/hour/email); surfaced to the caller so the client can show a countdown instead of a bare 429 |
 | `createdAt` | Date | required, default = now, immutable | `createdAt`-only per this skill's default — no `updatedAt`: a `PasswordReset` document is never mutated after creation, only read (to verify) and then deleted (to consume) |
 
 **Single-use enforcement (deliberately no `used`/`consumed` boolean field):** consuming a token
@@ -146,6 +147,18 @@ enforced at the DB layer (Mongoose has no FK constraint) — ownership is enforc
 - **Rollback:** delete `src/models/PasswordReset.ts` and drop the collection
   (`db.passwordresets.drop()`). Safe at any time — the collection holds only short-lived,
   in-flight reset attempts, never durable account state.
+
+### 2026-09-09 — add attemptsRemaining to PasswordReset
+
+- **Change:** add `attemptsRemaining: { type: Number, required: true, default: 3 }` to
+  `src/models/PasswordReset.ts`. Justified by PRD §6 NFR (≤3 reset requests/hour/email) — surfaces
+  the remaining-attempts count to the caller instead of only a bare 429 once the limit is hit.
+- **Backfill:** none needed — Mongoose applies the schema `default: 3` to every document read
+  back; the collection's documents are short-lived (TTL-expired within 15 minutes), so no existing
+  document outlives this change.
+- **Rollback:** remove the `attemptsRemaining` field definition from `PasswordReset.ts`. Existing
+  documents keep the stray field until TTL-expiry (harmless, unread by the application) — no
+  cleanup script needed given the collection's short document lifetime.
 
 ## Test fixtures
 

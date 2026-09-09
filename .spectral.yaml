@@ -1,0 +1,7 @@
+extends: spectral:oas
+
+rules:
+  # This project's contracts don't use OpenAPI tags (see docs/features/*/contracts/openapi.yaml) —
+  # not a gap to fix, just not part of api-forge's output shape.
+  operation-tag-defined: off
+  operation-tags: off

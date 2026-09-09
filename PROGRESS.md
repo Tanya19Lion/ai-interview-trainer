@@ -309,4 +309,22 @@ Explore-скан репо (brownfield) → чорновий драфт §1-§12 
 **Наступний крок:** stage 06 — `complete-sequence-diagrams`, коли будеш готова продовжувати. Перед
 `break-tasks` не забути закрити відкрите anti-FOUC-рішення з §11.
 
+---
+
+# forgot-password — SDLC-статус
+
+## Stage 10 — API contract (`api-forge`, готово, з відкритим follow-up)
+
+`docs/features/forgot-password/contracts/openapi.yaml` + `api-sync-report.md` згенеровано
+(scenario A). Переглянуто й звірено з реальним кодом (`src/controllers/auth.controller.ts`,
+`src/middleware/auth.ts`) за запитом користувача.
+
+**⚠ Знайдено й зафіксовано розходження, не помічене першим проходом скіла:** наявні auth-ендпоінти
+(`register`/`login`/`googleLogin`/`me`/`requireAuth`) сьогодні повертають помилки як
+`{error: string}`, а контракт forgot-password використовує `{code, message, details?}` (дефолт
+`api-forge`). **Рішення користувача (2026-09-09):** `{code, message, details?}` — цільовий
+формат; наявні ендпоінти треба мігрувати на нього **під час реалізації цієї фічі**, а не залишати
+неузгодженими. Зафіксовано в `openapi.yaml`'s `info.description` і в `api-sync-report.md` →
+Deviations, щоб не загубилось при переході до `break-tasks`/імплементації.
+
 
