@@ -1,9 +1,14 @@
 ---
-status: Draft
+type: Epic
 owner: "<Tech Lead name>"
 reviewers: []
+project: '<Project folder>'
+feature: <slug>
+created: "<YYYY-MM-DD>"
 updated_at: "<YYYY-MM-DD>"
 feature_size: <XS|S|M|L>
+stories_total:	<>
+waves: <>
 stage: "08"
 ticket: "<TBD>"
 ---

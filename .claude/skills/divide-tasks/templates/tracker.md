@@ -1,5 +1,6 @@
 ---
-status: Draft
+type: tracker
+feature: <slug>
 owner: "<Tech Lead name>"
 reviewers: []
 updated_at: "<YYYY-MM-DD>"
