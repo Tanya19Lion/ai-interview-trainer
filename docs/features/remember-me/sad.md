@@ -96,28 +96,35 @@ AC-07).
 <!-- 📌 Приклад: «зовнішні — нема (свідома відмова від third-party у v1)» — це теж рішення.   -->
 <!-- Кордон довіри (trust boundary) — лінія, за якою ти не довіряєш даним без перевірки.       -->
 
-<Business context in 2-3 sentences. What the system does for whom.>
+Job-seekers (the product's single user role) log in to `ai-interview-trainer` to practice
+technical interviews. remember-me lets a job-seeker opt into a persistent login (checkbox at sign
+in) instead of today's silent always-7-day default; the system authenticates via email/password or
+Google OAuth, and stores the resulting session as a JWT in an httpOnly cookie.
 
 **External systems (in / out):**
 
 | Actor or system | Type | Interaction |
 |---|---|---|
-| <e.g. IC> | Person | Creates goals, adds checkpoints |
-| <e.g. notification-service> | System (internal) | Receives cron registration |
-| <e.g. Identity Provider> | System (external) | Provides JWT tokens |
+| Job-seeker | Person | Logs in (email/password or Google), checks "remember me", logs out |
+| Google OAuth | System (external) | Verifies the Google `idToken` presented during the `googleLogin` path |
+| MongoDB | System (data store) | Stores `User` documents (`passwordHash`, `googleId`, and the incoming `tokenVersion` field this feature depends on) |
 
 **C4 Context (L1):**
 
 ```mermaid
 C4Context
-    title <system> — System Context
+    title remember-me — System Context
 
-    Person(user, "<User>", "<role + intent>")
-    System(system, "<Our System>", "<one-sentence description>")
-    System_Ext(ext, "<External system>", "<one-sentence description>")
+    Person(jobseeker, "Job-seeker", "Practices technical interviews; logs in, optionally checks 'remember me', logs out")
 
-    Rel(user, system, "<interaction>", "<protocol>")
-    Rel(system, ext, "<interaction>", "<protocol>")
+    System(app, "ai-interview-trainer", "Express + React app; issues the session cookie, enforces remember-me duration and revocation")
+
+    System_Ext(google, "Google OAuth", "Verifies Google idToken during login")
+    SystemDb(mongo, "MongoDB", "Stores User docs: passwordHash, googleId, tokenVersion")
+
+    Rel(jobseeker, app, "Logs in, sets remember-me, logs out", "HTTPS")
+    Rel(app, google, "Verifies idToken", "HTTPS")
+    Rel(app, mongo, "Reads/writes User", "Mongoose")
 ```
 
 ## 4. Solution strategy
