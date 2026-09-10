@@ -3,7 +3,7 @@ status: Draft
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
-feature_size: S
+feature_size: M
 stage: "04-05"
 ticket: "TBD"
 ---
@@ -137,9 +137,21 @@ C4Context
 
 **Top-3 strategic choices (the seeds for ADRs):**
 
-1. **<e.g. Module isolation through events>** — <2-3 sentences rationale referencing Quality Goals and constraints>.
-2. **<e.g. Single-store persistence (Postgres)>** — <2-3 sentences>.
-3. **<e.g. Server-rendered dashboard>** — <2-3 sentences>.
+1. **Extend the `User.tokenVersion` counter to also cover logout** (ADR-0001) — reuses the
+   session-revocation mechanism `forgot-password` already decided (ADR 0002, Accepted but not yet
+   implemented) for password-reset invalidation, adding logout as a second trigger for the same
+   counter bump. Satisfies QG-1 and PRD AC-04/AC-07 with one revocation code path in `requireAuth`
+   instead of two.
+2. **Issue a separate refresh token for remembered sessions** (ADR-0002) — `issueSession()` always
+   issues a short-lived access JWT; a checked "remember me" additionally issues a longer-lived
+   (7-day, fixed, non-rolling) refresh token. **Deliberate scope override** (PRD §1 ¶4,
+   2026-09-10): this supersedes the simpler single-cookie-toggle option idea-brief §14 implicitly
+   assumed, raising `feature_size` from S to M in exchange for shrinking the access-token exposure
+   window from up to 7 days to minutes — directly strengthening QG-1.
+3. **Mongo-backed counter with TTL index for login rate limiting** (ADR-0003) — a new
+   `LoginAttempt` collection tracks ≤ 5 attempts / 15 min per email (PRD §6), surviving process
+   restarts unlike an in-memory counter, with no new infrastructure beyond the MongoDB the app
+   already depends on.
 
 Each tactical decision in later sections should be traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surface them in §11 Risks.
 
@@ -264,8 +276,9 @@ sequenceDiagram
 
 | # | Title | Status | Section |
 |---|---|---|---|
-| <NNNN> | <imperative — e.g. "Use sliding window for rate limiting"> | Accepted | §<N> |
-| <NNNN> | <imperative — e.g. "Co-locate outbox worker in API process"> | Accepted | §<N> |
+| 0001 | Extend the User.tokenVersion counter to also cover logout | Accepted | §4 |
+| 0002 | Issue a separate refresh token for remembered sessions | Accepted | §4 |
+| 0003 | Use a Mongo-backed counter with TTL index for login rate limiting | Accepted | §4 |
 
 ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 
