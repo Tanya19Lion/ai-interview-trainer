@@ -294,6 +294,196 @@ sequenceDiagram
     web-->>jobseeker: Clear "your session expired, please log in again" message (no silent redirect)
 ```
 
+<!-- Added by complete-sequence-diagrams (2026-09-10) — endpoint-level sequences with alt-blocks,
+     one per PRD §4 user story. Additive only; Critical flows 1-4 above are untouched. -->
+
+### US-01: Choose to stay signed in
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker is on the login form (AC-01)
+    jobseeker->>web: Checks "remember me", submits email + password
+    web->>api: login (rememberMe: true)
+    api->>mongo: Check LoginAttempt for this email (ADR-0003)
+    mongo-->>api: count <= 5 within 15-min window
+    api->>mongo: Verify credentials against User
+    mongo-->>api: User found, password matches
+    api->>api: Issue access JWT + 7-day refresh token, both embed current tokenVersion (ADR-0001, ADR-0002)
+    api-->>web: 200, Set-Cookie: token + refreshToken (openapi.yaml login)
+    web-->>jobseeker: Signed in
+    alt missing email or password
+        api-->>web: 400 auth.missing_credentials
+        web-->>jobseeker: Show validation error
+    else invalid credentials
+        api-->>web: 401 auth.invalid_credentials
+        web-->>jobseeker: Show "invalid email or password"
+    else rate limit exceeded (ADR-0003)
+        mongo-->>api: count > 5 within 15-min window
+        api-->>web: 429 auth.rate_limited
+        web-->>jobseeker: Show "too many attempts, try again later"
+    end
+    Note over jobseeker,api: Postcondition: Job-seeker stays signed in past browser close, for the remembered-session period (AC-01)
+```
+
+### US-02: Understand why I was signed out
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker previously chose "remember me", the remembered session has since ended (AC-02)
+    jobseeker->>web: Returns to the app
+    web->>api: refreshSession (refreshToken cookie)
+    alt refresh token past its 7-day expiry (AC-03)
+        api->>api: Check server clock + token's own embedded timestamp only (AC-05, QG-3)
+        api-->>web: 401 auth.refresh_token_expired
+        web-->>jobseeker: Clear "your session expired, please sign in again" message
+    else tokenVersion mismatch — revoked by a later logout/password reset (AC-04, AC-07)
+        api->>mongo: Compare refresh token's tokenVersion vs User.tokenVersion
+        mongo-->>api: mismatch
+        api-->>web: 401 auth.session_revoked
+        web-->>jobseeker: Clear "your session was ended, please sign in again" message
+    end
+    Note over jobseeker,api: Postcondition: no silent redirect — Job-seeker sees why they must sign in again (AC-02, AC-03)
+```
+
+### US-03: Trust that resetting my password protects my account
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker has an active remembered session created with the old password (AC-04)
+    jobseeker->>web: Requests a password reset, confirms new password
+    web->>api: confirmPasswordReset (forgot-password feature, cross-feature dependency)
+    api->>mongo: Set new passwordHash, bump User.tokenVersion (ADR-0001, shared with forgot-password ADR-0002)
+    mongo-->>api: tokenVersion bumped
+    api-->>web: 200, password updated
+    web-->>jobseeker: "Password updated. Please log in again."
+
+    Note over jobseeker,api: Later: the old remembered session (issued before the bump) is replayed
+    jobseeker->>web: App attempts a silent refresh using the old refreshToken cookie
+    web->>api: refreshSession (old refreshToken)
+    api->>mongo: Compare old token's tokenVersion vs current User.tokenVersion
+    mongo-->>api: mismatch (bumped by the reset above)
+    api-->>web: 401 auth.session_revoked
+    web-->>jobseeker: "Your session was ended. Please sign in again."
+    alt attacker replays the same captured refreshToken
+        web->>api: refreshSession (captured refreshToken)
+        api-->>web: 401 auth.session_revoked
+        Note over api,mongo: Rejected regardless of who presents the old token (AC-04) — no grace period
+    end
+    Note over jobseeker,api: Postcondition: no remembered session created before the reset can still authenticate (AC-04)
+```
+
+### US-04: Get the same choice regardless of how I log in
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant google as Google OAuth
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker checks "remember me" and picks any supported sign-in method (AC-06)
+    jobseeker->>web: Checks "remember me", picks a sign-in method
+    alt Google OAuth
+        web->>api: googleLogin (idToken, rememberMe: true)
+        api->>google: Verify idToken
+        google-->>api: Valid, payload.sub + email
+        api->>mongo: Find or link User by googleId/email
+    else Email + password (login)
+        web->>api: login (email, password, rememberMe: true)
+        api->>mongo: Verify credentials against User
+    else Email + password (register, new account)
+        web->>api: register (email, password, name, rememberMe: true)
+        api->>mongo: Create User
+    end
+    mongo-->>api: User resolved
+    api->>api: Issue access JWT + 7-day refresh token, both embed current tokenVersion (ADR-0001, ADR-0002) — same rule regardless of method
+    api-->>web: 200, Set-Cookie: token + refreshToken
+    web-->>jobseeker: Signed in
+    Note over jobseeker,api: Postcondition: the same remembered-session rule applied, regardless of which method was used (AC-06)
+```
+
+### US-05: Default to a short session
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker is on the login form, "remember me" left unchecked (AC-02, 2026-09-10 decision override, this is now the default)
+    jobseeker->>web: Submits email + password, does not check "remember me"
+    web->>api: login (rememberMe: false or omitted)
+    api->>mongo: Verify credentials against User
+    mongo-->>api: User found, password matches
+    api->>api: Issue access JWT only, embeds current tokenVersion (ADR-0001) — no refresh token issued (ADR-0002)
+    api-->>web: 200, Set-Cookie: token only (no refreshToken)
+    web-->>jobseeker: Signed in
+    alt missing email or password
+        api-->>web: 400 auth.missing_credentials
+        web-->>jobseeker: Show validation error
+    else invalid credentials
+        api-->>web: 401 auth.invalid_credentials
+        web-->>jobseeker: Show "invalid email or password"
+    end
+    Note over jobseeker,web: Job-seeker closes the browser
+    Note over web: token cookie is a session cookie (no Max-Age) — browser discards it on close, no server round-trip needed
+    jobseeker->>web: Reopens the app later
+    web-->>jobseeker: Not signed in — must log in again (AC-02)
+    Note over jobseeker,api: Postcondition: no refreshToken ever existed for this login, so there is nothing to silently renew past browser close
+```
+
+### US-06: Trust that logging out ends my remembered session
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    Note over jobseeker,api: Precondition: Job-seeker has an active remembered session (AC-07)
+    jobseeker->>web: Clicks "log out"
+    web->>api: logout
+    alt valid token cookie present
+        api->>mongo: Increment User.tokenVersion (ADR-0001)
+        mongo-->>api: tokenVersion bumped
+        api-->>web: 200 ok, clears token + refreshToken cookies
+    else no valid token cookie (already signed out)
+        api-->>web: 200 ok, clears cookies anyway (graceful no-op — not an error)
+    end
+    web-->>jobseeker: Signed out
+    Note over jobseeker,api: Later: the old (pre-logout) refreshToken is replayed
+    jobseeker->>web: (attacker or stale tab) attempts a silent refresh with the captured refreshToken
+    web->>api: refreshSession (old refreshToken)
+    api->>mongo: Compare old token's tokenVersion vs current User.tokenVersion
+    mongo-->>api: mismatch (bumped at logout)
+    api-->>web: 401 auth.session_revoked
+    Note over jobseeker,api: Postcondition: the same session cookie can no longer authenticate, even if replayed (AC-07) — no grace period
+```
+
 ## 7. Deployment view
 
 <!-- N/A: remember-me adds no new deployable unit — all changes (tokenVersion field, LoginAttempt
@@ -401,20 +591,7 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 ## 12. Glossary
 
-<!-- 🎯 Навіщо: ⭐ СЛОВНИК ДОМЕНУ, який припиняє суперечки через рік («checkpoint —      -->
-<!--           weekly чи biweekly? Quarter — календарний чи фіскальний?»).                -->
-<!-- 📋 Що писати: таблиця термін / значення. Бізнес-терміни + технічні вперемішку.       -->
-<!--           Один термін може мати дві мови у заголовку: «Goal (Обʼєктив)».              -->
-<!-- 📌 Приклад: «Lesson | урок усередині курсу, що складається з блоків (text, video)». -->
+All terms used in this SAD are defined in CONTEXT.md, not duplicated here:
 
-| Term | Meaning |
-|---|---|
-| Job-seeker | The single end-user role of the product (project `docs/CONTEXT.md`, `CONTEXT.md`) — logs in, optionally checks "remember me". |
-| Remembered session | The fixed ~7-day session a Job-seeker gets after checking "remember me" at login (`CONTEXT.md`), with no rolling extension (AC-05). |
-| Access token | The short-lived JWT issued on every login, verified on every protected request via `requireAuth`; its lifetime is minutes, not days (ADR-0002). NOT the refresh token. |
-| Refresh token | The longer-lived (fixed 7-day, non-rolling) token issued only when "remember me" is checked; exchanged for a new access token without re-prompting for credentials (ADR-0002, Critical flow 2). NOT the access token. |
-| `tokenVersion` | An integer counter on `User`, bumped on logout (ADR-0001) or password reset (`forgot-password` ADR 0002); embedded in both access and refresh tokens at issuance and compared against the current `User.tokenVersion` in `requireAuth` — a mismatch means the token was issued before a revocation event and is rejected. |
-
-<!-- New terms surfaced during this SAD pass (access token / refresh token / tokenVersion) are not
-     yet in docs/features/remember-me/CONTEXT.md — worth adding there via the fix-term skill so
-     they stay canonical for future features touching auth. -->
+- `Job-seeker` — root `docs/CONTEXT.md` `## Glossary`.
+- `Remembered session`, `Access token`, `Refresh token`, `tokenVersion` — `docs/features/remember-me/CONTEXT.md` `## Glossary`.
