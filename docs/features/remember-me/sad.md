@@ -344,19 +344,28 @@ ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 
 Each top-3 goal from §1 expanded into a full scenario:
 
-**QG-1. <quality attribute>**
-- **When:** <trigger condition>
-- **Then:** <expected behavior with numbers from PRD NFR>
-- **How verify:** <test / chaos drill / load test / observability>
+**QG-1. Session-revocation security**
+- **When:** a Job-seeker logs out or resets their password (bumping `User.tokenVersion`, ADR-0001).
+- **Then:** any access or refresh token issued before the bump is rejected by `requireAuth` on
+  its next use, per PRD AC-04 and AC-07 — no grace period.
+- **How verify:** integration test — log in, capture the access+refresh tokens, bump
+  `tokenVersion` (simulating logout or password reset), replay the captured tokens against a
+  protected route, assert 401.
 
-**QG-2. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-2. Login/session-check latency**
+- **When:** a Job-seeker submits login credentials, or the client calls `/me` to check session
+  state.
+- **Then:** login p95 ≤ 300 ms; session-check (`/me`) p95 ≤ 150 ms (PRD §6, verbatim).
+- **How verify:** k6 smoke test against both endpoints, per PRD §6's "Throughput" measurement row
+  (k6 smoke in CI).
 
-**QG-3. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
+**QG-3. Cross-instance expiry consistency**
+- **When:** the remembered-session (refresh-token) expiry check runs on any server instance.
+- **Then:** the check stays consistent across instances within ±1 minute clock-skew tolerance
+  (PRD §6, verbatim) — expiry is evaluated server-side against the token's embedded timestamp, not
+  against client-reported time.
+- **How verify:** unit test asserting the expiry comparison uses server clock + token timestamp
+  only (no client-supplied time value accepted anywhere in the refresh/verify path).
 - **How verify:** <how>
 
 ## 11. Risks and technical debt
