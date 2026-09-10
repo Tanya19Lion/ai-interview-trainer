@@ -41,8 +41,8 @@ Tech Lead.
 
 1. **Prereq check (hard).** `test -f docs/features/<slug>/PRD.md && test -f docs/features/<slug>/sad.md && ls docs/features/<slug>/adr/*.md` → exit ≠ 0 = refuse with the missing artefact.
 2. **Read upstream artefacts DIRECTLY.** PRD AC + NFR (what to deliver), sad.md §5 (module boundaries — task scope) + §6 (runtime flows) + §9 (ADR index), each Accepted ADR (constraints), data-model.md (invariants if DB), openapi.yaml (contract). No intermediate index — each story will link back to the section it derives from.
-3. **Scaffold output.** `mkdir -p docs/features/<slug>/tasks/` → create `tasks/_epic.md` (epic summary + links to PRD/SAD/ADRs), `tasks/tracker.md` (status table per task), and one `tasks/<task-slug>.md` per task (story body).
-4. **Identify work-items by layer.** Typical layers: migration (DB), domain/entity, infra/repo, app/service, ports/handler, tests, docs. List 8-20 items depending on M+/S+.
+3. **Scaffold output.** `mkdir -p docs/features/<slug>/tasks/` → create `tasks/_epic.md` (epic summary + links to PRD/SAD/ADRs, from `./templates/epic.md`), `tasks/tracker.md` (status table per task, from `./templates/tracker.md`), and one `tasks/<task-slug>.md` per task (story body, from `./templates/task-story.md`) — see "File naming" under Template below for the slug convention.
+4. **Identify work-items by layer.** Typical layers: migration (DB), domain/entity, infra/repo, app/service, ports/handler, tests, docs. List 8-20 items depending on M+/S+. **Tests are their own layer, not an inline DoD bullet on implementation tasks** — a shared unit-test story (implementation tasks reference it in their own DoD, e.g. `Unit tests (unit-tests-<topic>.md) pass.`), plus an integration-test story and, when the feature has a user-facing happy path, an e2e story. Cross-check `sad.md` §10's "How verify" line for every Quality Goal (QG-N) — each one names a specific test type (unit / integration / k6 / manual); every QG-N's named test type must map to an actual task, not just be assumed covered by whichever test task happens to exist.
 5. **Atomic check.** Each task — ≤1 working day. If more — split. If PR > 500 LOC — suspect a task that is too wide.
 6. **Dependencies graph.** For each task — `deps: [task_a, task_b]`. Identify parallel branches (e.g., migration and API can go in parallel if both land in domain test later).
 7. **Per-task DoD.** Each task — testable: "tests pass", "migration applied on staging", "API responds 200 on example from openapi". Without DoD per task — subjective "when I decide myself".
@@ -50,7 +50,7 @@ Tech Lead.
 9. **Ownership.** For each task — named owner (placeholder `<TBD lead>` is OK for open). Without owner — task doesn't start.
 10. **Tickets export (optional).** If MCP is available to Jira / Linear / GitHub Issues — propose creating tickets from `tasks/_epic.md` + `tasks/<task>.md`. Otherwise — copy-paste hints.
 11. **Fill draft.** Fill divide; `<!-- TBD -->` for unknown estimates (reserve a spike).
-12. **Self-check against DoD.** Each task ≤1 day, dependency graph visible, DoD per task, owners assigned.
+12. **Self-check against DoD.** Each task ≤1 day, dependency graph visible, DoD per task, owners assigned, every `sad.md` §10 QG-N's named "How verify" test type has a corresponding task (not folded silently into an unrelated task's DoD).
 13. **Propose commit.** `08: task-divide for <slug>` + next owner (Tech Lead → stage 09 claude-context).
 
 ## Questions for discussion
@@ -83,7 +83,16 @@ Tech Lead.
 
 ## Template
 
-→ [./templates/task-divide.md](./templates/task-divide.md)
+→ [./templates/epic.md](./templates/epic.md) — `tasks/_epic.md` shape.
+→ [./templates/tracker.md](./templates/tracker.md) — `tasks/tracker.md` shape.
+→ [./templates/task-story.md](./templates/task-story.md) — per-task `tasks/<task-slug>.md` shape.
+
+**File naming:** `<task-slug>` is a descriptive kebab-case name for WHAT the task does
+(`require-auth-tokenversion.md`, `client-forgot-password-form.md`, `unit-tests-token-service.md`,
+`e2e-happy-path.md`) — never the numeric ID (`t1-...`, `t2-...`). The task ID (`T1`, `T2`, ...)
+lives only in the `_epic.md`/`tracker.md` tables and in the story file's own `# T<N> — <title>`
+heading. A skipped ID number (a task folded into another one) is fine — note why in `_epic.md`'s
+Notes section rather than renumbering everything.
 
 ## Example invocation
 
