@@ -221,25 +221,75 @@ C4Container
 <!--           ендпоінт-рівневі sequence-діаграми — це вже наступний крок (API design), не цей skill. -->
 <!-- 📌 Приклад: «methodist → web-app: складає чорновик → web-app → content-api: зберегти». -->
 
-**Critical flow 1: <flow name>**
+**Critical flow 1: Login with "remember me" checked**
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant API
-    participant Service
-    participant DB
-    User->>API: <request>
-    API->>Service: <call>
-    Service->>DB: <write tx>
-    DB-->>Service: ok
-    Service-->>API: result
-    API-->>User: 201
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    jobseeker->>web: Checks "remember me", submits credentials
+    web->>api: Login request (rememberMe: true)
+    api->>mongo: Verify credentials against User
+    mongo-->>api: User found, password matches
+    api->>api: Issue short-lived access JWT + 7-day refresh token (ADR-0002), both embed current tokenVersion (ADR-0001)
+    api-->>web: Set access + refresh cookies
+    web-->>jobseeker: Signed in
 ```
 
-<!-- For XS/S: 1 flow above is enough. For M+: add 2-4 more (e.g. failure-mode flow, async flow). -->
+**Critical flow 2: Silent access-token renewal**
 
-**Critical flow 2: <e.g. async event propagation>** — <if applicable, otherwise N/A>.
+```mermaid
+sequenceDiagram
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    jobseeker->>web: Returns to the app (access token near/past expiry)
+    web->>api: Refresh request using refresh-token cookie
+    api->>mongo: Look up User, compare refresh token's tokenVersion
+    mongo-->>api: tokenVersion matches (not revoked)
+    api->>api: Issue new short-lived access JWT
+    api-->>web: Set renewed access cookie
+    web-->>jobseeker: Session continues, no re-login prompt
+```
+
+**Critical flow 3: Logout revokes the remembered session (AC-07)**
+
+```mermaid
+sequenceDiagram
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    jobseeker->>web: Clicks "log out"
+    web->>api: Logout request
+    api->>mongo: Increment User.tokenVersion (ADR-0001)
+    mongo-->>api: tokenVersion bumped
+    api-->>web: Clear access + refresh cookies
+    web-->>jobseeker: Signed out
+    note over api,mongo: Any later request replaying the old refresh or access token now fails tokenVersion comparison in requireAuth
+```
+
+**Critical flow 4: Returning with an expired remembered session (AC-03)**
+
+```mermaid
+sequenceDiagram
+    actor jobseeker as Job-seeker
+    participant web as Web app
+    participant api as API server
+    participant mongo as MongoDB
+
+    jobseeker->>web: Returns to the app (refresh token past its 7-day expiry)
+    web->>api: Refresh request using expired refresh-token cookie
+    api->>api: Reject — refresh token expired
+    api-->>web: 401, "session expired"
+    web-->>jobseeker: Clear "your session expired, please log in again" message (no silent redirect)
+```
 
 ## 7. Deployment view
 
