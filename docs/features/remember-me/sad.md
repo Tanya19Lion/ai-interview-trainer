@@ -310,13 +310,13 @@ sequenceDiagram
 
 | Concept | Convention | Where defined |
 |---|---|---|
-| Logging | <e.g. structured slog, fields `module=<name>`> | <CLAUDE.md §X or here> |
-| Authentication | <e.g. JWT via session middleware> | <CLAUDE.md §X> |
-| Error handling | <e.g. domain sentinel → ports/errors.go → apperr JSON> | <CLAUDE.md §X> |
-| ID strategy | <e.g. UUID v7 in app layer> | <CLAUDE.md §X> |
-| Internationalisation | <e.g. N/A, English only> | — |
-| Observability | <e.g. OpenTelemetry on HTTP boundaries> | — |
-| Outbox / events | <module-specific patterns, if any> | <here> |
+| Logging | Plain `console.log`/`console.error`, no structured logging library — matches existing `src/index.ts`, `src/config/db.ts` | Existing code (no CLAUDE.md section) |
+| Authentication | Two-token JWT (short-lived access + fixed-7-day refresh, ADR-0002), `tokenVersion` revocation check in `requireAuth` (ADR-0001) | `.claude/rules/backend/auth.md` + this SAD §4, ADR-0001, ADR-0002 |
+| Error handling | Simple `{ error: string }` JSON on 4xx/5xx responses — matches existing `auth.controller.ts` handlers (e.g. `res.status(401).json({ error: 'Invalid email or password' })`) | Existing code |
+| ID strategy | Mongo native `_id` (`ObjectId`) — no app-generated UUIDs, per `.claude/rules/migrations.md` | `.claude/rules/migrations.md` |
+| Internationalisation | N/A on the backend (English error strings only, matches existing auth handlers); frontend already has i18next but no remember-me-specific strings decided at this stage | — |
+| Observability | None beyond `console.error` — no APM/tracing exists yet (PRD §6 already notes this as a project-wide gap) | — |
+| Rate limiting | Mongo-backed `LoginAttempt` counter with TTL index (ADR-0003), ≤ 5 attempts / 15 min per email | ADR-0003 |
 
 ## 9. Architecture decisions
 
