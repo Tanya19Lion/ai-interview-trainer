@@ -366,7 +366,6 @@ Each top-3 goal from §1 expanded into a full scenario:
   against client-reported time.
 - **How verify:** unit test asserting the expiry comparison uses server clock + token timestamp
   only (no client-supplied time value accepted anywhere in the refresh/verify path).
-- **How verify:** <how>
 
 ## 11. Risks and technical debt
 
@@ -383,12 +382,19 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| <e.g. Outbox lag may reach hours during downstream outage> | Medium | <Alert >10 min, on-call playbook, retry backoff> | <DevOps> |
-| <e.g. No event schema versioning in v1> | Medium | <ADR-NNNN planned for v2, graceful handling of unknown fields> | <Backend> |
-| Open architectural decision: <decision-headline> | Open question | Resolve before <stage trigger or YYYY-MM-DD>; <inline rationale from Step-7 Save-as-OQ> | <owner> |
+| `tokenVersion` is decided (forgot-password ADR 0002, Accepted) but not yet implemented in `User.ts`/`requireAuth` (confirmed via repo scan, 2026-09-10) — two features (remember-me, forgot-password) now depend on the same field | Medium | Whichever feature ships first implements the field + `requireAuth` check; the other reuses it verbatim. Cross-linked in both features' ADRs (ADR-0001 ↔ forgot-password ADR 0002) to prevent divergent implementations. | Tech Lead |
+| Logging out on one device invalidates every device's session for that Job-seeker (ADR-0001 consequence) — a user with two open tabs who logs out in one is signed out of both | Medium | Documented, known, and accepted behavior — per-device logout is explicitly out of scope (PRD §3 Non-goals, idea-brief §5). Revisit only if device/session management becomes a future feature. | PM |
+| Two cookies (access + refresh) instead of one (ADR-0002) introduce new attack surface — refresh-token replay/theft | High | PRD §6.1 already marks Security review as Required; both cookies are httpOnly + `sameSite: lax` + `secure` in production, matching the existing single-cookie convention. Refresh-token theft still bounded by `tokenVersion` revocation (ADR-0001) on logout/password-reset. | Tech Lead / Security review |
+| Rate-limit check adds a MongoDB round-trip to every login attempt (ADR-0003) — latency risk against QG-2's login p95 ≤ 300 ms target | Low | Index on `LoginAttempt.email` keeps the lookup O(1); QG-2's k6 smoke test (§10) already covers this by measuring the full login path, not just the credential check. | Backend |
+| No live analytics/APM exists to validate PRD §7 KPIs (remember-me adoption, post-expiry confusion) — same gap idea-brief §11 Confidence already flagged | Low | Accepted for v1 — PRD §7 KPIs are measured post-release once analytics exist; not a blocker for this SAD. | PM |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
-- <e.g. Goal entity is not versioned (immutable) — OK for v1, may need audit versioning in v2>
+- Single-device logout precision is not supported — logout always ends every remembered session
+  for that Job-seeker via the shared `tokenVersion` counter (ADR-0001). Acceptable per PRD §3
+  Non-goals; would need a per-session `Sessions` collection (ADR-0001's rejected Option 2) if
+  revisited.
+- No formal availability SLO for login/session endpoints — resolved as "no SLO" in PRD §8
+  (2026-09-10), consistent with the project having no live monitoring/APM yet.
 
 ## 12. Glossary
 
