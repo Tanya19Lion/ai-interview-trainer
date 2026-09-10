@@ -5,7 +5,7 @@ status: Accepted
 owner: "Tanya (architect/eng)"
 reviewers: []
 updated_at: "2026-09-10"
-feature_size: S
+feature_size: M
 stage: "04-05"
 ticket: "TBD"
 ---
@@ -35,8 +35,12 @@ counter or gets its own mechanism.
   regress while remember-me implements the field for the first time.
 - SAD §2 Constraints: no Redis or session store exists; `requireAuth` is the single chokepoint for
   every protected route.
-- SAD §2 Constraints: remember-me is feature_size S (~2 person-weeks, idea-brief §11) — a second
-  parallel revocation mechanism is disproportionate effort for this size.
+- SAD §2 Constraints: remember-me was originally feature_size S (~2 person-weeks, idea-brief §11)
+  when this decision was made — a second parallel revocation mechanism was disproportionate effort
+  for that size. The later §4 Decision 2 override (ADR-0002) raised the feature to size M for
+  unrelated reasons (the two-token refresh model); it does not reopen this decision — reusing the
+  single `tokenVersion` counter is still the lower-effort, single-code-path option regardless of
+  feature size, so the outcome below holds independent of the size bump.
 
 ## Considered options
 

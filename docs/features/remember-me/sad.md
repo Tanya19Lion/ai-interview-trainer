@@ -65,10 +65,13 @@ AC-07).
   remember-me's rate-limit NFR (PRD §6) introduces a new dependency.
 
 **Organisational.**
-- Effort budget: ~2 person-weeks (idea-brief §11 RICE Effort), feature_size S.
+- Effort budget: originally ~2 person-weeks (idea-brief §11 RICE Effort, feature_size S); revised
+  to feature_size M after the §4 Decision 2 override (PRD §1 ¶4, ADR-0002) added a two-token
+  refresh model on top of the original single-cookie-toggle estimate.
 - No hard deadline — proactive UX/security work (idea-brief §4), not incident- or contract-driven.
-- Team composition: not specified in PRD; assume 1 backend-leaning engineer given the S size and
-  single reference module.
+- Team composition: not specified in PRD; assume 1 backend-leaning engineer, though the M-size
+  surface (two-token issuance/verification, new `LoginAttempt` collection, frontend silent-refresh
+  logic) is larger than a single engineer's typical S-size scope.
 
 **Conventions.**
 - `.claude/rules/backend/auth.md` — three login paths (`googleLogin`, `register`, `login`) all
