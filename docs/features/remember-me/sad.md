@@ -21,21 +21,29 @@ ticket: "TBD"
 <!-- 📋 Що писати: 1 абзац intent + 3 рядки топ-3 якості + таблиця stakeholders.        -->
 <!-- 📌 Приклад: «QG-1: швидкість редагування блоку p95 ≤500 мс»                         -->
 
-**Intent.** <One paragraph from PRD §Goals — what we're building and for whom.>
+**Intent.** Job-seekers explicitly choose whether their login session persists across browser
+closes ("remember me"), closing today's silent always-persistent default (PRD §2). The
+remembered-session duration is communicated only when it matters — at expiry, not shown as a
+forward-looking date. Session-security posture stays intact when a job-seeker resets their
+password or logs out — no long-lived remembered session outlives either event (PRD §2, AC-04,
+AC-07).
 
 **Top-3 quality goals (1-liners; full scenarios in §10):**
 
-1. <e.g. "Availability under partial failure of downstream module">
-2. <e.g. "Performance for EM dashboard under team-scale growth">
-3. <e.g. "Recoverability of checkpoints with <30 min RTO">
+1. QG-1 — Session-revocation security: a remembered-session token must stop working immediately
+   after a password reset or a logout, even if replayed (PRD AC-04, AC-07; idea-brief §10 top
+   risk).
+2. QG-2 — Login/session-check latency: login p95 ≤ 300 ms, session-check (`/me`) p95 ≤ 150 ms
+   (PRD §6).
+3. QG-3 — Cross-instance expiry consistency: remembered-session expiry check stays consistent
+   across server instances within ±1 minute clock-skew tolerance (PRD §6).
 
 **Stakeholders.**
 
 | Role | Interest | Sign-off owner? |
 |---|---|---|
-| <e.g. IC> | <feature usage> | No |
-| <e.g. EM> | <dashboard reads> | No |
-| <e.g. Tech Lead> | <SAD approval> | Yes |
+| Job-seeker (CONTEXT glossary — single end-user role) | Uses "remember me" at login; trusts logout/password-reset to end old sessions | No |
+| Tech Lead | SAD approval; owns implementing the `tokenVersion` invalidation mechanism (shared with `forgot-password`) and the login rate limit | Yes |
 
 ## 2. Constraints
 
