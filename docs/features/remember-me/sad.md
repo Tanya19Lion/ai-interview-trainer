@@ -53,23 +53,40 @@ AC-07).
 <!-- 📌 Приклад: «Postgres 18» (не «Postgres»); «дедлайн Q3 — жорсткий» (не «бажано»).    -->
 
 **Technical.**
-- <Language + version, e.g. Go 1.26>
-- <Framework + version, e.g. chi v5.1, pgx v5.7>
-- <Datastore + version, e.g. Postgres 18>
-- <Architecture convention, e.g. hexagonal per CLAUDE.md>
+- TypeScript, ESM (`"type": "module"`) on both backend and frontend.
+- Backend: Node + Express 4.21, `mongoose` 8.9, `jsonwebtoken` 9.0, `bcryptjs` 3.0,
+  `cookie-parser` 1.4, `google-auth-library` 9.15. Run via `tsx watch src/index.ts` (dev) / `tsc`
+  (build).
+- Frontend: Vite 8 + React 19.2, `react-router-dom` 7.18, `@tanstack/react-query` 5.101,
+  `@react-oauth/google` 0.13.5.
+- Datastore: MongoDB via Mongoose only — no session/refresh-token collection exists today;
+  sessions are stateless JWTs in an httpOnly cookie.
+- No rate-limiting package (`express-rate-limit` or equivalent) exists in `package.json` today —
+  remember-me's rate-limit NFR (PRD §6) introduces a new dependency.
 
 **Organisational.**
-- <Effort budget, e.g. 3 person-weeks>
-- <Deadline, e.g. 2026-Q3 hard>
-- <Team composition, e.g. 1 backend + 0.5 frontend>
+- Effort budget: ~2 person-weeks (idea-brief §11 RICE Effort), feature_size S.
+- No hard deadline — proactive UX/security work (idea-brief §4), not incident- or contract-driven.
+- Team composition: not specified in PRD; assume 1 backend-leaning engineer given the S size and
+  single reference module.
 
 **Conventions.**
-- <Link to CLAUDE.md or project conventions>
-- <Naming, ID strategy, error-handling pattern>
+- `.claude/rules/backend/auth.md` — three login paths (`googleLogin`, `register`, `login`) all
+  funnel through the single `issueSession(res, user)` choke point in `auth.controller.ts`, which
+  signs the JWT and sets the httpOnly `token` cookie. Any remember-me variant must extend this one
+  function, not add a second cookie-issuing path.
+- Layering: routes → controllers → models directly for auth today (no separate services layer in
+  `src/controllers/auth.controller.ts` — controllers call `UserModel` directly). This differs from
+  the project's general `routes → controllers → services → models` convention documented in root
+  `docs/sad.md` — auth is a pre-existing exception, not something this feature should "fix"
+  unprompted.
+- `requireAuth` (`src/middleware/auth.ts`) is the single verification chokepoint for all protected
+  routes — currently signature/expiry check only, no DB lookup (no revocation check exists yet).
 
 **Regulatory / external.**
-- <e.g. GDPR — user deletion behavior per ADR-NNNN>
-- <e.g. SOC2, PCI — applicable controls>
+- PRD §6.1: data classification confidential (the session token governs access to a job-seeker's
+  stored interview history/answers); security review required before release.
+- No GDPR/SOC2/PCI-specific requirement identified in PRD or CONTEXT for this feature.
 
 ## 3. Context and scope
 
