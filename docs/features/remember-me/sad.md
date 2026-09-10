@@ -163,39 +163,53 @@ Each tactical decision in later sections should be traceable to one of these str
 <!--           дерево папок + Mermaid C4Container.                                       -->
 <!-- 📌 Приклад: «web-app, content-api, media-worker, postgres, s3, cdn».                -->
 
-<One paragraph: layered / hexagonal / clean / event-driven. Why.>
+Layered (routes → controllers → models), no hexagonal/clean-architecture split — matches the
+project's existing auth code, which already skips the general `services/` layer documented in
+root `docs/sad.md` (SAD §2 Constraints). remember-me extends the existing auth files rather than
+introducing a new module: `LoginAttempt.ts` is the one genuinely new file, because a new Mongoose
+collection cannot live inside an existing model file.
 
 **Internal decomposition:**
 
 ```
-<e.g. internal/modules/goals/>
-├── domain/       <entities + sentinel errors>
-├── app/          <use cases / services>
-├── infra/        <repository + outbox impl>
-├── ports/        <HTTP handlers, DTOs, error mapping>
-└── module.go     <self-wiring>
+src/
+├── models/
+│   ├── User.ts            (+ tokenVersion: number)
+│   └── LoginAttempt.ts     NEW — { email, windowStart, count }, TTL index (ADR-0003)
+├── controllers/
+│   └── auth.controller.ts (issueSession() issues access+refresh (ADR-0002);
+│                            + refreshToken handler; logout bumps tokenVersion (ADR-0001))
+├── middleware/
+│   └── auth.ts             (requireAuth compares JWT tokenVersion vs User.tokenVersion)
+└── routes/
+    └── auth.routes.ts      (+ POST /refresh route; rate-limit middleware on /login)
+
+client/src/
+├── api/auth.ts              (+ refresh call, rememberMe param on login/register)
+├── hooks/useAuth.ts          (silent access-token renewal before expiry)
+└── pages/LoginPage.tsx       (+ "remember me" checkbox)
 ```
 
 **C4 Container (L2):**
 
 ```mermaid
 C4Container
-    title <system> — Containers
+    title remember-me — Containers
 
-    Person(user, "<User>")
+    Person(jobseeker, "Job-seeker")
 
-    Container_Boundary(boundary, "<Our System>") {
-        Container(web, "<Web/API container>", "<technology>", "<purpose>")
-        Container(svc, "<Service container>", "<technology>", "<purpose>")
-        ContainerDb(db, "<DB>", "<technology>", "<purpose>")
+    Container_Boundary(app, "ai-interview-trainer") {
+        Container(web, "Web app", "Vite + React 19", "LoginPage checkbox, silent access-token renewal")
+        Container(api, "API server", "Node + Express 4.21", "auth.controller.ts, auth.ts, auth.routes.ts")
     }
 
-    System_Ext(ext, "<External>", "<purpose>")
+    ContainerDb(mongo, "MongoDB", "Mongoose 8.9", "User (+tokenVersion), LoginAttempt (TTL)")
+    System_Ext(google, "Google OAuth", "Verifies idToken")
 
-    Rel(user, web, "<interaction>", "<protocol>")
-    Rel(web, svc, "<service calls>")
-    Rel(svc, db, "<reads/writes>", "<driver>")
-    Rel(svc, ext, "<emits>", "<protocol>")
+    Rel(jobseeker, web, "Logs in, sets remember-me", "HTTPS")
+    Rel(web, api, "POST /api/auth/login, /refresh, /logout", "HTTPS, cookies")
+    Rel(api, mongo, "Reads/writes User, LoginAttempt", "Mongoose")
+    Rel(api, google, "Verifies idToken", "HTTPS")
 ```
 
 ## 6. Runtime view
