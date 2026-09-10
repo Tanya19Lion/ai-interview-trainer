@@ -1,0 +1,398 @@
+openapi: 3.1.0
+info:
+  title: Remember-me Session API
+  version: 0.1.0
+  description: |
+    Lets a job-seeker opt into a persistent ("remember me") login at sign-in, replacing today's
+    silent always-7-day default with an explicit choice (PRD.md §2; idea-brief.md §4). A checked
+    "remember me" issues a short-lived access token plus a longer-lived (fixed 7-day, non-rolling)
+    refresh token (ADR-0002); an unchecked login now ends at browser close (AC-02, §1 Decision
+    override 2026-09-10).
+
+    Security posture (PRD.md §6, §6.1): logging out or resetting a password bumps
+    `User.tokenVersion` (ADR-0001, shared with the `forgot-password` feature's ADR-0002),
+    immediately invalidating any access/refresh token issued before the bump, even if replayed
+    (AC-04, AC-07). Login is rate-limited to ≤5 attempts / 15 min per email (ADR-0003). Refresh
+    expiry is checked server-side only, never against client-reported time (AC-05, QG-3).
+
+servers:
+  - url: http://localhost:3000
+    description: Local (matches this project's existing /api/auth/* mount, no URL version prefix)
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Log in with email + password
+      operationId: login
+      description: |
+        Extended for remember-me: an optional `rememberMe` flag on the existing endpoint (AC-01,
+        AC-02). Rate-limited server-side to ≤5 attempts / 15 min per email (ADR-0003) — a new
+        behavior this feature adds to the existing `/login` route only, not `/register` or
+        `/google` (sad.md §5 Building block view: "rate-limit middleware on /login").
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+            example:
+              email: jobseeker@example.test
+              password: correct-horse-battery-staple
+              rememberMe: true
+      responses:
+        "200":
+          description: >-
+            Signed in. Sets the `token` (access) cookie always; sets the `refreshToken` cookie
+            only when `rememberMe` was true (AC-01, AC-02). Unchecked → session ends at browser
+            close, no `refreshToken` cookie issued.
+          headers:
+            Set-Cookie:
+              description: >-
+                Two cookies on a rememberMe:true login (`token` — httpOnly, short-lived access
+                JWT; `refreshToken` — httpOnly, fixed 7-day, non-rolling, ADR-0002), one cookie
+                (`token` only) on rememberMe:false or omitted. OpenAPI 3.1 does not model repeated
+                same-name response headers; documented here in prose instead.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                user:
+                  id: "66f1a2b3c4d5e6f7a8b9c0d1"
+                  email: jobseeker@example.test
+                  name: Test User
+                  avatarUrl: null
+        "400":
+          description: Missing email or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.missing_credentials
+                message: email and password are required
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.invalid_credentials
+                message: Invalid email or password
+        "429":
+          description: Login attempt rate limit exceeded for this email (PRD.md §6 NFR — ≤5/15 min, ADR-0003)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.rate_limited
+                message: Too many login attempts for this email. Try again later.
+        "4XX":
+          $ref: "#/components/responses/Error"
+
+  /api/auth/register:
+    post:
+      summary: Register with email + password
+      operationId: register
+      description: >-
+        Extended for remember-me: an optional `rememberMe` flag on the existing endpoint (AC-01,
+        AC-06 — same behavior regardless of login method). Not rate-limited (ADR-0003 scopes the
+        limiter to `/login` only).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+            example:
+              email: jobseeker@example.test
+              password: correct-horse-battery-staple
+              name: Test User
+              rememberMe: false
+      responses:
+        "200":
+          description: >-
+            Registered and signed in. Same cookie-issuance rule as `/login` (see above).
+          headers:
+            Set-Cookie:
+              description: Same as `/login` 200 — see there for the two-cookie / one-cookie rule.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                user:
+                  id: "66f1a2b3c4d5e6f7a8b9c0d1"
+                  email: jobseeker@example.test
+                  name: Test User
+                  avatarUrl: null
+        "400":
+          description: Missing fields, or password under 8 characters (unchanged existing rule)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.invalid_registration
+                message: email, password and name are required
+        "409":
+          description: Email is already registered (unchanged existing rule)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.email_already_registered
+                message: email is already registered
+        "4XX":
+          $ref: "#/components/responses/Error"
+
+  /api/auth/google:
+    post:
+      summary: Log in or register via Google OAuth
+      operationId: googleLogin
+      description: >-
+        Extended for remember-me: an optional `rememberMe` flag on the existing endpoint (AC-06 —
+        same behavior regardless of login method). Not rate-limited (ADR-0003 scopes the limiter
+        to `/login` only — Google's own abuse protection covers this path).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleLoginBody"
+            example:
+              idToken: eyJhbGciOiJSUzI1NiIsImtpZCI6...
+              rememberMe: true
+      responses:
+        "200":
+          description: Signed in via Google. Same cookie-issuance rule as `/login` (see above).
+          headers:
+            Set-Cookie:
+              description: Same as `/login` 200 — see there for the two-cookie / one-cookie rule.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                user:
+                  id: "66f1a2b3c4d5e6f7a8b9c0d1"
+                  email: jobseeker@example.test
+                  name: Test User
+                  avatarUrl: https://lh3.googleusercontent.com/example
+        "400":
+          description: Missing idToken (unchanged existing rule)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.missing_id_token
+                message: idToken is required
+        "401":
+          description: Invalid Google token (unchanged existing rule)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: auth.invalid_google_token
+                message: Invalid Google token
+        "4XX":
+          $ref: "#/components/responses/Error"
+
+  /api/auth/refresh:
+    post:
+      summary: Silently renew the access token using the refresh-token cookie
+      operationId: refreshSession
+      description: |
+        New endpoint (ADR-0002). Reads the `refreshToken` cookie only — no request body. Compares
+        the refresh token's embedded `tokenVersion` against the current `User.tokenVersion`
+        (ADR-0001); a mismatch means the session was revoked by a later logout or password reset
+        (AC-04, AC-07) and is rejected the same way an expired token is (sad.md §6 Critical flow
+        4). Expiry is evaluated against the server clock and the token's own embedded timestamp
+        only — never a client-supplied time value (AC-05, QG-3).
+      security:
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Access token renewed; session continues with no re-login prompt.
+          headers:
+            Set-Cookie:
+              description: Renewed `token` (access) cookie only — `refreshToken` is left untouched (fixed 7-day, non-rolling, AC-05 — no extension on use).
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          description: >-
+            No `refreshToken` cookie, refresh token past its 7-day expiry (AC-03), or
+            `tokenVersion` mismatch from a later logout/password reset (AC-04, AC-07). All three
+            get the same client treatment: clear message, no silent redirect (AC-03).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                expired:
+                  summary: Refresh token past its 7-day expiry (AC-03)
+                  value:
+                    code: auth.refresh_token_expired
+                    message: Your session has expired. Please sign in again.
+                revoked:
+                  summary: tokenVersion mismatch — session ended by logout/password reset (AC-04, AC-07)
+                  value:
+                    code: auth.session_revoked
+                    message: Your session was ended. Please sign in again.
+        "4XX":
+          $ref: "#/components/responses/Error"
+
+  /api/auth/logout:
+    post:
+      summary: Log out and revoke the current session server-side
+      operationId: logout
+      description: |
+        Extended (ADR-0001, AC-07): now bumps `User.tokenVersion` when a valid `token` cookie is
+        present, so any access or refresh token issued before this point — captured or not — stops
+        working immediately, even if replayed (sad.md §6 Critical flow 3). Clears both the `token`
+        and `refreshToken` cookies. A request with no valid cookie is a graceful no-op 200, not an
+        error — logging out of an already-ended session isn't a failure case.
+      security: []
+      responses:
+        "200":
+          description: >-
+            Signed out. `User.tokenVersion` bumped only if a valid `token` cookie identified a
+            user; both cookies cleared unconditionally.
+          headers:
+            Set-Cookie:
+              description: Clears both `token` and `refreshToken` (Max-Age=0).
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+components:
+  securitySchemes:
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: >-
+        httpOnly JWT cookie set by issueSession (src/controllers/auth.controller.ts) — matches
+        this project's existing requireAuth middleware; not the skill-default BearerAuth (see
+        api-sync-report.md Deviations). `refreshSession` additionally reads the separate
+        `refreshToken` cookie, which has no dedicated security scheme entry since OpenAPI models
+        one bearer credential per scheme and the refresh cookie is read directly by that one
+        operation, not a general auth gate for other endpoints.
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: "auth.session_revoked" }
+        message: { type: string }
+        details: { type: object }
+
+    RememberMe:
+      type: boolean
+      default: false
+      description: >-
+        origin: PRD.md AC-01/AC-02, US-01/US-05 (2026-09-10 decision override: default is now
+        off — a session with rememberMe omitted or false ends at browser close). Not a
+        data-model.md field — a request-time flag that decides whether a refreshToken cookie is
+        issued (ADR-0002), never itself persisted.
+
+    LoginBody:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: "origin: data-model.md User.email (existing, required, unique)"
+        password:
+          type: string
+          description: "origin: existing /login contract — compared against User.passwordHash, never stored"
+        rememberMe:
+          $ref: "#/components/schemas/RememberMe"
+
+    RegisterBody:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+          description: "origin: data-model.md User.email (existing, required, unique)"
+        password:
+          type: string
+          minLength: 8
+          description: >-
+            origin: existing /register contract, PASSWORD_MIN_LENGTH in
+            src/controllers/auth.controller.ts. Write-only — never stored raw, only as
+            User.passwordHash.
+        name:
+          type: string
+          description: "origin: data-model.md User.name (existing, required)"
+        rememberMe:
+          $ref: "#/components/schemas/RememberMe"
+
+    GoogleLoginBody:
+      type: object
+      required: [idToken]
+      properties:
+        idToken:
+          type: string
+          description: "origin: existing /google contract — verified via google-auth-library, never stored"
+        rememberMe:
+          $ref: "#/components/schemas/RememberMe"
+
+    UserResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          required: [id, email, name]
+          properties:
+            id:
+              type: string
+              description: "origin: data-model.md User._id (Mongo ObjectId, serialized as string)"
+            email:
+              type: string
+              format: email
+              description: "origin: data-model.md User.email"
+            name:
+              type: string
+              description: "origin: data-model.md User.name"
+            avatarUrl:
+              type: [string, "null"]
+              description: "origin: data-model.md User.avatarUrl (optional)"
+          description: >-
+            Unchanged existing shape (src/controllers/auth.controller.ts issueSession /
+            AuthUser in client/src/api/auth.ts). tokenVersion is deliberately never included —
+            it must not reach the client (PRD §6.1), matching data-model.md's drift-check note.
+
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean, enum: [true] }
+
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
