@@ -1,9 +1,14 @@
 ---
-status: Draft
+type: Epic
 owner: "Tanya19Lion"
 reviewers: []
+project: 'ai-interview-trainer'
+feature: theme-toggle
+created: "2026-09-10"
 updated_at: "2026-09-10"
 feature_size: S
+stories_total: 11
+waves: 5
 stage: "08"
 ticket: "<TBD>"
 ---

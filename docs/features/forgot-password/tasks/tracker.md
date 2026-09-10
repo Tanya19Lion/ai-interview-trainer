@@ -1,5 +1,6 @@
 ---
-status: Draft
+type: tracker
+feature: forgot-password
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
