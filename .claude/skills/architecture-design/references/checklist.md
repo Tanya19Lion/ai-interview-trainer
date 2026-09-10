@@ -48,7 +48,7 @@ A section may be marked `<!-- N/A: <one-line reason> -->` only when both: (a) th
 - **§7 Deployment** — N/A allowed for XS/S that reuses existing deployment unit with no changes to replicas / scaling thresholds / monitoring. Reason text required: `<!-- N/A: feature reuses existing deployment unit, no replica/scaling/monitoring change -->`.
 - **§9 Architecture decisions** — N/A allowed only if no ADRs spawned (typically XS features with only convention-level decisions). Reason text required: `<!-- N/A: no decisions crossed blast-radius threshold this pass -->`. **More common case** is §9 has 2-15 rows, not N/A.
 - **§11 Risks** — never N/A. If no Save-as-OQ rows AND no risks identified from PRD §8 / Explore, document at least one risk that brownfield drift might invalidate Step-3 Explore findings before merge.
-- **§12 Glossary** — never N/A. Pull from CONTEXT.md + sad.md content; at minimum the domain terms used in sad.md body must be defined here.
+- **§12 Glossary** — never N/A. Pull from CONTEXT.md + sad.md content; at minimum every domain term used in sad.md body must be defined in CONTEXT.md (feature-level or root), with sad.md §12 citing it — see [draft-generation.md](./draft-generation.md) §12 Glossary.
 
 Other sections (§1, §4, §5, §8, §10) are mandatory — no N/A.
 

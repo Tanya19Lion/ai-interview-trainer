@@ -95,7 +95,13 @@ The item-banks below are guidance — the skill picks how many items to draft ba
   - **Severity column** accepts literal `Open question` value for OQ rows (in addition to Low/Medium/High for regular risks).
 
 - **§12 Glossary.**
-  - Auto-extract from CONTEXT.md glossary terms that appear in sad.md body + add domain terms surfaced during Step 7 Socratic that aren't in CONTEXT (flag those to the user as new terms worth adding to the project's glossary, if it keeps one).
+  - Auto-extract from CONTEXT.md glossary terms that appear in sad.md body. sad.md §12 stays a
+    read-only rollup — it cites terms, it does not originate them.
+  - Domain terms surfaced during Step 7 Socratic that aren't in CONTEXT yet: don't just flag them
+    in a comment — write them to `docs/features/<slug>/CONTEXT.md` `## Glossary` directly (root
+    `docs/CONTEXT.md` instead, if the term is project-wide rather than feature-internal), same
+    definition format as `fix-term`, before the Step 7e commit for §12. Then cite the now-canonical
+    term in sad.md §12 pointing at CONTEXT.md, don't duplicate its definition inline.
 
 ## Pre-Socratic hygiene
 
