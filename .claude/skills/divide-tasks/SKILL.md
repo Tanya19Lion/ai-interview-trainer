@@ -4,7 +4,7 @@ description: >
   Use when user wants to divide implementation into atomic tasks per SDLC
   stage 08 (task-divide) protocol. Triggers on "task divide for
   {slug}", "divide down tasks for {feature}", "tasks for {slug}", "sprint plan
-  for {feature}", "stage 13 for {slug}", "/divide-tasks {slug}". Output:
+  for {feature}", "stage 08 for {slug}", "/divide-tasks {slug}". Output:
   docs/features/{slug}/tasks/_epic.md + tasks/tracker.md + tasks/<task>.md
   with atomic tasks ≤1 day each + dependency graph + DoD per task.
   Prerequisite: docs/features/{slug}/PRD.md + sad.md + ≥1 Accepted ADR — hard
@@ -26,7 +26,7 @@ Tech Lead.
 
 ## When to use
 
-- "task divide for <slug>", "divide down tasks for <feature>", "sprint plan for <feature>", "run stage 13".
+- "task divide for <slug>", "divide down tasks for <feature>", "sprint plan for <feature>", "run stage 08".
 - User has PRD + sad.md + Accepted ADRs and is about to create tickets in Jira / Linear / Issues.
 - `/divide-tasks <slug>` as explicit invocation.
 - Skip if task-divide exists and tickets are already created in the tracker.
@@ -79,7 +79,7 @@ Tech Lead.
 - Tasks without owner — task doesn't start or everyone thinks the other will start.
 - Sizing without reference (S/M/L). If team has no calibration — explain that S = 2h, M = half-day, L = day, otherwise split.
 - Tasks that divide Hard Rules from PRD §NFR / sad.md §11 — e.g. "change module/<other>" when the architecture forbids it.
-- Story body duplicates PRD AC / SAD §6 / data-model verbatim — should LINK, not paste. ("story лінкує, не дублює" — Lecture 6.7.)
+- Story body duplicates PRD AC / SAD §6 / data-model verbatim — should LINK, not paste. ("story лінкує, не дублює").
 
 ## Template
 
@@ -100,4 +100,4 @@ Tech Lead.
 > 8. Estimate: T1=S, T2=M, T7=L, ... total ~9 person-days.
 > 9. Owners: T1-T4 — @alice; T5-T8 — @bob; T9-T10 — @charlie.
 > 10. Self-check DoD → atomic ✅, deps ✅, DoD per task ✅.
-> 11. Commit: `13: task-divide for rate-limiting-per-user`.
+> 11. Commit: `08: task-divide for rate-limiting-per-user`.
