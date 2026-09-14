@@ -17,7 +17,7 @@ ticket: "<TBD>"
 |----|-------|--------|-------|----------|------------|
 | T1 | ThemeContext + useTheme hook | Merged | Tanya19Lion | XS | — |
 | T2 | ThemeProvider: resolution logic + anti-FOUC | Merged | Tanya19Lion | S | T1 |
-| T3 | Wire ThemeProvider into main.tsx | Not started | Tanya19Lion | XS | T2 |
+| T3 | Wire ThemeProvider into main.tsx | Merged | Tanya19Lion | XS | T2 |
 | T4 | Light-theme design tokens | Not started | Tanya19Lion | S | — |
 | T5 | ThemeToggle component + rapid-toggle debounce | Not started | Tanya19Lion | S | T1, T4 |
 | T7 | i18n labels for ThemeToggle | Not started | Tanya19Lion | XS | T5 |
