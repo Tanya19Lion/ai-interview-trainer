@@ -11,6 +11,7 @@ import {
 	LevelChip,
 	Reveal,
 	ScoreChip,
+	ThemeToggle,
 } from '../components';
 import { buttonClassName } from '../components/Button/buttonClassName';
 import { LEVELS, TOPICS, type Level, type Topic } from '../types/interview';
@@ -130,6 +131,7 @@ export function LandingPage() {
 								/>
 							</svg>
 						</button>
+						<ThemeToggle />
 						<Link to="/login" state={location.state} className={buttonClassName({ variant: 'primary' })}>
 							{t('nav.login')}
 						</Link>

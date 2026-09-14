@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useLogout, useMe } from '../../hooks/useAuth';
 import type { InterviewFocusState } from '../../lib/interviewFocus';
 import { ProgressSegments } from '../ProgressSegments/ProgressSegments';
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import styles from './AppShell.module.css';
 
 const NAV_ITEMS = [
@@ -75,6 +76,7 @@ function MainNav({ user, onLogout }: MainNavProps) {
 				</div>
 
 				<div className={styles.right} ref={menuRef}>
+					<ThemeToggle />
 					<button
 						type="button"
 						className={styles.avatarBtn}
