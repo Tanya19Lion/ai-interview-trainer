@@ -29,7 +29,7 @@ None.
 ## DoD
 
 - [ ] PR merged.
-- [ ] `npm run typecheck` (client) green.
+- [ ] `npm run build` (client) green — no `typecheck` script exists, `build` (`tsc -b && vite build`) is the typecheck-equivalent.
 - [ ] `useTheme()` throws a clear error when called outside `ThemeProvider`.
 
 ## Out of scope

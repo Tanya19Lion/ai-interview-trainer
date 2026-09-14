@@ -56,7 +56,7 @@ flowchart LR
 
 | ID | Title | DoR | DoD | Deps | Estimate | Owner |
 |----|-------|-----|-----|------|----------|-------|
-| T1 | [ThemeContext + useTheme hook](./theme-context-and-hook.md) | ADR-0001 Accepted | PR merged, typecheck green | — | XS | Tanya19Lion |
+| T1 | [ThemeContext + useTheme hook](./theme-context-and-hook.md) | ADR-0001 Accepted | PR merged, build green | — | XS | Tanya19Lion |
 | T2 | [ThemeProvider: resolution logic + anti-FOUC](./theme-provider-resolution.md) | T1 done | PR merged, unit tests green | T1 | S | Tanya19Lion |
 | T3 | [Wire ThemeProvider into main.tsx](./wire-theme-provider.md) | T2 done | PR merged, app boots with no console errors | T2 | XS | Tanya19Lion |
 | T4 | [Light-theme design tokens](./light-theme-tokens.md) | SAD §5 token mapping locked | PR merged, `[data-theme="light"]` block matches SAD §5 table | — | S | Tanya19Lion |
