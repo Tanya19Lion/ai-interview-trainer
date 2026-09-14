@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { resolveInitialTheme } from './ThemeProvider';
+import { resolveInitialTheme } from './resolveInitialTheme';
 
 const STORAGE_KEY = 'diff-theme';
 
