@@ -15,7 +15,7 @@ ticket: "<TBD>"
 
 | ID | Title | Status | Owner | Estimate | Blocked by |
 |----|-------|--------|-------|----------|------------|
-| T1 | ThemeContext + useTheme hook | Not started | Tanya19Lion | XS | — |
+| T1 | ThemeContext + useTheme hook | Merged | Tanya19Lion | XS | — |
 | T2 | ThemeProvider: resolution logic + anti-FOUC | Not started | Tanya19Lion | S | T1 |
 | T3 | Wire ThemeProvider into main.tsx | Not started | Tanya19Lion | XS | T2 |
 | T4 | Light-theme design tokens | Not started | Tanya19Lion | S | — |
