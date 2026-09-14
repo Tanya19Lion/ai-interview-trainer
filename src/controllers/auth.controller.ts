@@ -22,30 +22,44 @@ function getOAuthClient(): OAuth2Client {
 	return oauthClient;
 }
 
-function signToken(userId: string): string {
+const REMEMBER_ME_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function signToken(userId: string, tokenVersion: number, expiresIn: jwt.SignOptions['expiresIn']): string {
 	const secret = process.env.JWT_SECRET;
 	if (!secret) {
 		throw new Error('JWT_SECRET is not set');
 	}
-	const expiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
-	return jwt.sign({ userId }, secret, { expiresIn });
+	return jwt.sign({ userId, tokenVersion }, secret, { expiresIn });
 }
 
-function issueSession(res: Response, user: HydratedDocument<User>): void {
-	const token = signToken(user.id);
+export function issueSession(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
+	const tokenVersion = user.tokenVersion ?? 0;
+	const accessExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
+	const token = signToken(user.id, tokenVersion, accessExpiresIn);
 	res.cookie('token', token, {
 		httpOnly: true,
 		sameSite: 'lax',
 		secure: process.env.NODE_ENV === 'production',
-		maxAge: 7 * 24 * 60 * 60 * 1000,
+		...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE_MS } : {}),
 	});
+
+	if (rememberMe) {
+		const refreshToken = signToken(user.id, tokenVersion, '7d');
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
+			maxAge: REMEMBER_ME_MAX_AGE_MS,
+		});
+	}
+
 	res.json({
 		user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl },
 	});
 }
 
 export async function googleLogin(req: Request, res: Response): Promise<void> {
-	const { idToken } = req.body as { idToken?: string };
+	const { idToken, rememberMe } = req.body as { idToken?: string; rememberMe?: boolean };
 	if (!idToken) {
 		res.status(400).json({ error: 'idToken is required' });
 		return;
@@ -81,11 +95,16 @@ export async function googleLogin(req: Request, res: Response): Promise<void> {
 		return;
 	}
 
-	issueSession(res, user);
+	issueSession(res, user, rememberMe);
 }
 
 export async function register(req: Request, res: Response): Promise<void> {
-	const { email, password, name } = req.body as { email?: string; password?: string; name?: string };
+	const { email, password, name, rememberMe } = req.body as {
+		email?: string;
+		password?: string;
+		name?: string;
+		rememberMe?: boolean;
+	};
 	if (!email || !password || !name) {
 		res.status(400).json({ error: 'email, password and name are required' });
 		return;
@@ -104,11 +123,11 @@ export async function register(req: Request, res: Response): Promise<void> {
 	const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 	const user = await UserModel.create({ email, name, passwordHash });
 
-	issueSession(res, user);
+	issueSession(res, user, rememberMe);
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
-	const { email, password } = req.body as { email?: string; password?: string };
+	const { email, password, rememberMe } = req.body as { email?: string; password?: string; rememberMe?: boolean };
 	if (!email || !password) {
 		res.status(400).json({ error: 'email and password are required' });
 		return;
@@ -120,7 +139,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 		return;
 	}
 
-	issueSession(res, user);
+	issueSession(res, user, rememberMe);
 }
 
 export function logout(_req: Request, res: Response): void {
