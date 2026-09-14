@@ -19,14 +19,14 @@
 	padding: 0.9rem 1rem;
 	border-radius: var(--radius-m);
 	border: 1px solid var(--line);
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	cursor: pointer;
 	transition:
 		border-color 0.15s ease,
 		background 0.15s ease;
 }
 .card:hover {
-	border-color: var(--slate);
+	border-color: var(--text-soft);
 }
 .card.selected {
 	border-color: var(--green);
@@ -36,12 +36,12 @@
 .tag {
 	font-family: var(--font-mono);
 	font-size: 1rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 .desc {
 	margin-top: 0.4rem;
 	font-size: 0.82rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	line-height: 1.5;
 }

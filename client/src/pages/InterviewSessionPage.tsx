@@ -94,7 +94,7 @@ export function InterviewSessionPage() {
 	if (!sessionId) {
 		return (
 			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
-				<p style={{ color: 'var(--slate)' }}>Сесія не знайдена — почни нову.</p>
+				<p style={{ color: 'var(--text-soft)' }}>Сесія не знайдена — почни нову.</p>
 				<Button variant="primary" onClick={() => navigate('/interview/new')}>
 					Нова сесія
 				</Button>
@@ -134,7 +134,7 @@ export function InterviewSessionPage() {
 	if (!bootstrap) {
 		return (
 			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
-				<p style={{ color: 'var(--slate)' }}>
+				<p style={{ color: 'var(--text-soft)' }}>
 					Ця сесія недоступна — можливо, вона вже неактивна. Почни нову.
 				</p>
 				<Button variant="primary" onClick={() => navigate('/interview/new')}>

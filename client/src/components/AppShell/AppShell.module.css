@@ -18,7 +18,7 @@
 	position: sticky;
 	top: 0;
 	z-index: 10;
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border-bottom: 1px solid var(--line);
 }
 
@@ -34,7 +34,7 @@
 .logo {
 	font-family: var(--font-display);
 	font-weight: 700;
-	color: var(--off-white);
+	color: var(--text-strong);
 	white-space: nowrap;
 }
 .cursor {
@@ -61,17 +61,17 @@
 .tab {
 	font-family: var(--font-mono);
 	font-size: 0.82rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	text-decoration: none;
 	padding: 0.5rem 0.85rem;
 	border-radius: var(--radius-s);
 }
 .tab:hover {
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .tabActive {
-	color: var(--off-white);
-	background: var(--ink-3);
+	color: var(--text-strong);
+	background: var(--canvas-3);
 }
 
 .right {
@@ -106,8 +106,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--ink-3);
-	color: var(--off-white);
+	background: var(--canvas-3);
+	color: var(--text-strong);
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
 }
@@ -117,7 +117,7 @@
 	top: calc(100% + 0.5rem);
 	right: 0;
 	min-width: 200px;
-	background: var(--ink-3);
+	background: var(--canvas-3);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-m);
 	box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.6);
@@ -128,11 +128,11 @@
 	border-bottom: 1px solid var(--line);
 }
 .menuName {
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-size: 0.86rem;
 }
 .menuEmail {
-	color: var(--slate);
+	color: var(--text-soft);
 	font-size: 0.76rem;
 }
 .menuItem {
@@ -149,7 +149,7 @@
 	cursor: pointer;
 }
 .menuItem:hover {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 }
 
 @media (max-width: 700px) {
@@ -164,7 +164,7 @@
 	position: sticky;
 	top: 0;
 	z-index: 10;
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border-bottom: 1px solid var(--line);
 }
 
@@ -194,7 +194,7 @@
 .focusCounter {
 	font-family: var(--font-mono);
 	font-size: 0.76rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	white-space: nowrap;
 }
 
@@ -202,7 +202,7 @@
 	appearance: none;
 	border: 1px solid var(--line);
 	background: transparent;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-family: var(--font-mono);
 	font-size: 0.78rem;
 	padding: 0.45rem 0.8rem;

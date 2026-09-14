@@ -6,7 +6,7 @@
 .label {
 	font-family: var(--font-mono);
 	font-size: 0.76rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 
 .input {
@@ -14,8 +14,8 @@
 	padding: 0.62rem 0.9rem;
 	border-radius: var(--radius-s);
 	border: 1px solid var(--line);
-	background: var(--ink-2);
-	color: var(--off-white);
+	background: var(--canvas-2);
+	color: var(--text-strong);
 	font-family: var(--font-body);
 	font-size: 0.92rem;
 }

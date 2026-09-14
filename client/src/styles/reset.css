@@ -20,8 +20,8 @@ html {
 
 body {
 	margin: 0;
-	background: var(--ink);
-	color: var(--off-white);
+	background: var(--canvas);
+	color: var(--text-strong);
 	font-family: var(--font-body);
 	font-size: 16px;
 	line-height: 1.55;
@@ -53,7 +53,7 @@ h3 {
 
 ::selection {
 	background: var(--amber-soft);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 :focus-visible {

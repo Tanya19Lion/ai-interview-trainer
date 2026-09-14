@@ -28,7 +28,7 @@
 	padding: 0.2rem 0.2rem;
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 .thinkingRow::before {
 	content: '';

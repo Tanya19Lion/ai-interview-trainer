@@ -4,15 +4,15 @@
 	font-size: 0.78rem;
 	padding: 0.4rem 0.75rem;
 	border-radius: 999px;
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
-	color: var(--off-white);
+	color: var(--text-strong);
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4rem;
 }
 .key {
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 .good {
 	border-color: rgba(76, 154, 93, 0.4);
@@ -31,8 +31,8 @@
 	padding: 0.32rem 0.7rem;
 	border: 1px solid var(--line);
 	border-radius: 999px;
-	color: var(--slate);
-	background: var(--ink-2);
+	color: var(--text-soft);
+	background: var(--canvas-2);
 }
 
 /* ---------- ScoreChip / LevelChip: пігулки всередині EditorWindow (світле тло) ---------- */

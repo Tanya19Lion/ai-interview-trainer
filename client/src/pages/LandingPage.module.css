@@ -1,6 +1,6 @@
 .page {
-	background: var(--ink);
-	color: var(--off-white);
+	background: var(--canvas);
+	color: var(--text-strong);
 }
 
 /* ---------- NAV ---------- */
@@ -8,7 +8,7 @@
 	position: sticky;
 	top: 0;
 	z-index: 50;
-	background: rgba(20, 23, 31, 0.85);
+	background: var(--nav-bg);
 	backdrop-filter: blur(10px);
 	border-bottom: 1px solid var(--line);
 }
@@ -25,7 +25,7 @@
 	font-family: var(--font-mono);
 	font-weight: 600;
 	font-size: 1.15rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 	text-decoration: none;
 	display: flex;
 	align-items: center;
@@ -57,14 +57,14 @@
 	margin: 0;
 	padding: 0;
 	font-size: 0.92rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 .navLinks a {
 	text-decoration: none;
 	transition: color 0.15s ease;
 }
 .navLinks a:hover {
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 .navActions {
@@ -76,7 +76,7 @@
 	display: none;
 	background: none;
 	border: 1px solid var(--line);
-	color: var(--off-white);
+	color: var(--text-strong);
 	width: 38px;
 	height: 38px;
 	border-radius: var(--radius-s);
@@ -90,7 +90,7 @@
 		position: fixed;
 		inset: 64px 0 auto 0;
 		flex-direction: column;
-		background: var(--ink);
+		background: var(--canvas);
 		border-bottom: 1px solid var(--line);
 		padding: 1.2rem 1.25rem;
 		gap: 1rem;
@@ -141,7 +141,7 @@
 	font-family: var(--font-mono);
 	font-size: 0.86rem;
 	color: var(--green);
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	display: inline-flex;
 	align-items: center;
@@ -150,7 +150,7 @@
 	margin-bottom: var(--space-3);
 }
 .prompt {
-	color: var(--slate);
+	color: var(--text-soft);
 	margin-right: 0.6em;
 }
 .typeCursor {
@@ -170,7 +170,7 @@
 	font-size: clamp(2.3rem, 1.4rem + 3.2vw, 3.6rem);
 	line-height: 1.06;
 	max-width: 14ch;
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .hl {
 	color: var(--green);
@@ -178,7 +178,7 @@
 .heroSub {
 	margin-top: var(--space-3);
 	font-size: 1.06rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	max-width: 46ch;
 }
 .heroCta {
@@ -198,7 +198,7 @@
 .topicsLabel {
 	font-family: var(--font-mono);
 	font-size: 0.78rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 
 /* ---------- SECTION GENERIC ---------- */
@@ -219,11 +219,11 @@
 	letter-spacing: -0.01em;
 	margin: 0;
 	font-size: clamp(1.7rem, 1.2rem + 1.8vw, 2.4rem);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .sectionP {
 	margin-top: 0.8rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-size: 1.02rem;
 	max-width: 56ch;
 }
@@ -254,7 +254,7 @@
 	height: 9px;
 	border-radius: 50%;
 	background: var(--amber);
-	box-shadow: 0 0 0 4px var(--ink);
+	box-shadow: 0 0 0 4px var(--canvas);
 }
 .logHash {
 	font-family: var(--font-mono);
@@ -267,12 +267,12 @@
 	font-family: var(--font-body);
 	font-weight: 600;
 	font-size: 1.08rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 	margin: 0 0 0.35rem 0;
 }
 .logP {
 	margin: 0;
-	color: var(--slate);
+	color: var(--text-soft);
 	max-width: 56ch;
 	font-size: 0.96rem;
 }
@@ -311,7 +311,7 @@
 }
 
 .pickerCard {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-m);
 	padding: var(--space-4);
@@ -319,7 +319,7 @@
 .pickerH3 {
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-weight: 500;
 	margin: 0 0 0.9rem 0;
 	text-transform: lowercase;
@@ -336,19 +336,19 @@
 	padding: 0.45rem 0.85rem;
 	border-radius: var(--radius-s);
 	border: 1px solid var(--line);
-	color: var(--slate);
+	color: var(--text-soft);
 	cursor: pointer;
 	background: transparent;
 	transition: all 0.15s ease;
 }
 .pill:hover {
-	border-color: var(--slate);
-	color: var(--off-white);
+	border-color: var(--text-soft);
+	color: var(--text-strong);
 }
 .pillActive {
 	background: var(--green-soft);
 	border-color: var(--green);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .pillLvl.pillActive {
 	background: var(--amber-soft);
@@ -361,7 +361,7 @@
 }
 .pickerNote {
 	font-size: 0.85rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	line-height: 1.6;
 }
 
@@ -400,7 +400,7 @@
 
 .heatmapCard,
 .levelLegendCard {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-m);
 	padding: var(--space-4);
@@ -415,7 +415,7 @@
 }
 .heatCount {
 	font-family: var(--font-mono);
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-size: 0.95rem;
 }
 .heatCount b {
@@ -427,13 +427,13 @@
 	gap: 0.35rem;
 	font-family: var(--font-mono);
 	font-size: 0.72rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 .legendSwatch {
 	width: 10px;
 	height: 10px;
 	border-radius: 2px;
-	background: var(--ink-3);
+	background: var(--canvas-3);
 }
 .legendSwatch[data-level='1'] {
 	background: rgba(76, 154, 93, 0.28);
@@ -456,7 +456,7 @@
 }
 .heatCell {
 	border-radius: 2px;
-	background: var(--ink-3);
+	background: var(--canvas-3);
 }
 .heatCell[data-level='1'] {
 	background: rgba(76, 154, 93, 0.28);
@@ -490,10 +490,10 @@
 	font-size: 0.88rem;
 }
 .statK {
-	color: var(--slate);
+	color: var(--text-soft);
 }
 .statV {
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-weight: 500;
 }
 .statPos {
@@ -522,12 +522,12 @@
 .levelName {
 	font-family: var(--font-mono);
 	font-size: 0.86rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 	min-width: 5.5em;
 }
 .levelDesc {
 	font-size: 0.83rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 
 /* ---------- HISTORY LOG TABLE ---------- */
@@ -541,7 +541,7 @@
 	font-family: var(--font-mono);
 	font-weight: 500;
 	font-size: 0.76rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	padding: 0.6rem 0.9rem;
@@ -550,14 +550,14 @@
 .historyTable tbody td {
 	padding: 0.9rem;
 	border-bottom: 1px solid var(--line-soft);
-	color: var(--off-white);
+	color: var(--text-strong);
 	vertical-align: middle;
 }
 .historyTable tbody tr {
 	transition: background 0.15s ease;
 }
 .historyTable tbody tr:hover {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 }
 .statusBadge {
 	font-family: var(--font-mono);
@@ -579,7 +579,7 @@
 }
 .topicCell {
 	font-family: var(--font-mono);
-	color: var(--slate);
+	color: var(--text-soft);
 }
 @media (max-width: 700px) {
 	.historyTable thead {
@@ -606,7 +606,7 @@
 	}
 	.historyTable tbody td::before {
 		content: attr(data-label);
-		color: var(--slate-2);
+		color: var(--text-faint);
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
 	}
@@ -624,10 +624,10 @@
 	font-size: clamp(1.8rem, 1.2rem + 2.2vw, 2.7rem);
 	max-width: 18ch;
 	margin-inline: auto;
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .ctaP {
-	color: var(--slate);
+	color: var(--text-soft);
 	margin-top: var(--space-2);
 	max-width: 44ch;
 	margin-inline: auto;
@@ -640,7 +640,7 @@
 	margin-top: var(--space-3);
 	font-family: var(--font-mono);
 	font-size: 0.78rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 
 /* ---------- FOOTER ---------- */
@@ -661,7 +661,7 @@
 .footerTag {
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 }
 .footerLinks {
 	display: flex;
@@ -670,13 +670,13 @@
 	padding: 0;
 	margin: 0;
 	font-size: 0.85rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 .footerLinks a {
 	text-decoration: none;
 }
 .footerLinks a:hover {
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {

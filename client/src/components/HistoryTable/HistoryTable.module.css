@@ -8,7 +8,7 @@
 	font-family: var(--font-mono);
 	font-weight: 500;
 	font-size: 0.74rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	padding: 0.6rem 0.9rem;
@@ -17,14 +17,14 @@
 .table tbody td {
 	padding: 0.85rem 0.9rem;
 	border-bottom: 1px solid var(--line-soft);
-	color: var(--off-white);
+	color: var(--text-strong);
 	vertical-align: middle;
 }
 .table tbody tr {
 	transition: background 0.15s ease;
 }
 .table tbody tr:hover {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 }
 
 .statusBadge {
@@ -48,13 +48,13 @@
 }
 .topic {
 	font-family: var(--font-mono);
-	color: var(--slate);
+	color: var(--text-soft);
 }
 
 .reviewLink {
 	background: none;
 	border: none;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
 	cursor: pointer;
@@ -63,13 +63,13 @@
 	padding: 0;
 }
 .reviewLink:hover {
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 .empty {
 	text-align: center;
 	padding: var(--space-5) 0;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	font-family: var(--font-mono);
 	font-size: 0.88rem;
 }
@@ -100,7 +100,7 @@
 	}
 	.table tbody td::before {
 		content: attr(data-label);
-		color: var(--slate-2);
+		color: var(--text-faint);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 	}

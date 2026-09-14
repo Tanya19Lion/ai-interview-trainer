@@ -10,9 +10,9 @@
  */
 :root {
 	/* ---------- поверхні (темна тема) ---------- */
-	--ink: #14171f;
-	--ink-2: #1b1f29;
-	--ink-3: #232838;
+	--canvas: #14171f;
+	--canvas-2: #1b1f29;
+	--canvas-3: #232838;
 
 	/* ---------- поверхні (світлі "паперові" картки — код/diff) ---------- */
 	--paper: #f6f0e4;
@@ -31,13 +31,19 @@
 	--plum-soft: rgba(156, 107, 147, 0.18);
 
 	/* ---------- нейтральні / текст на темному тлі ---------- */
-	--off-white: #f4f1e8;
-	--slate: #9aa1b4;
-	--slate-2: #666e82;
+	--text-strong: #f4f1e8;
+	--text-soft: #9aa1b4;
+	--text-faint: #666e82;
 
 	/* ---------- розділювачі ---------- */
 	--line: rgba(244, 241, 232, 0.1);
 	--line-soft: rgba(244, 241, 232, 0.06);
+
+	/* ---------- навігація ---------- */
+	--nav-bg: rgba(20, 23, 31, 0.85);
+
+	/* ---------- тінь editor-window ---------- */
+	--shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55);
 
 	/* ---------- типографіка ---------- */
 	--font-display: 'Onest', sans-serif;
@@ -60,4 +66,24 @@
 
 	/* ---------- layout ---------- */
 	--container: 1220px;
+}
+
+/*
+ * Світла тема — theme-toggle (docs/features/theme-toggle/sad.md §5).
+ * Лише "canvas"-токени сторінки: --paper, --green, --rust, --amber, --plum
+ * (editor-window, diff-рядки, чіпи) навмисно НЕ перевизначені тут, бо вони
+ * спільні з code-diff-контентом (EditorWindow/CodeDiffLine) — їх зміна
+ * порушила б вимогу "editor-window незмінний" (SAD §5, QG-4). Це відкрите
+ * питання, див. tracker.md Blocked notes.
+ */
+[data-theme='light'] {
+	--canvas: #fbf8f1;
+	--canvas-2: #f1eada;
+	--canvas-3: #e9e0cc;
+	--line: rgba(35, 38, 47, 0.1);
+	--nav-bg: rgba(251, 248, 241, 0.88);
+	--text-strong: #23262f;
+	--text-soft: #5b5b52;
+	--text-faint: #8a8577;
+	--shadow: 0 30px 60px -20px rgba(35, 30, 20, 0.35);
 }

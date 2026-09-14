@@ -34,7 +34,7 @@ export function NewSessionPage() {
 		<div style={{ display: 'grid', gap: 'var(--space-4)', maxWidth: 760, marginInline: 'auto' }}>
 			<div>
 				<Eyebrow>нова співбесіда</Eyebrow>
-				<h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--off-white)' }}>
+				<h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-strong)' }}>
 					Обери тему та рівень складності
 				</h1>
 			</div>

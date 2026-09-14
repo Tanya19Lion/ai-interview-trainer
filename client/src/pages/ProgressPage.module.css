@@ -17,10 +17,10 @@
 }
 .h1 {
 	font-family: var(--font-display);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .subtitle {
-	color: var(--slate);
+	color: var(--text-soft);
 	max-width: 640px;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .card {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-m);
 	padding: var(--space-4);
@@ -39,12 +39,12 @@
 .cardTitle {
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-weight: 500;
 	margin: 0 0 var(--space-3) 0;
 }
 .empty {
-	color: var(--slate);
+	color: var(--text-soft);
 	font-size: 0.88rem;
 }
 
@@ -69,13 +69,13 @@
 	font-family: var(--font-mono);
 	width: 7em;
 	flex-shrink: 0;
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-size: 0.83rem;
 }
 .track {
 	flex: 1;
 	height: 8px;
-	background: var(--ink-3);
+	background: var(--canvas-3);
 	border-radius: 4px;
 	overflow: hidden;
 }
@@ -97,7 +97,7 @@
 	font-family: var(--font-mono);
 	width: 3em;
 	text-align: right;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-size: 0.8rem;
 	flex-shrink: 0;
 }
@@ -110,7 +110,7 @@
 	justify-content: space-between;
 	font-family: var(--font-mono);
 	font-size: 0.74rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	margin-top: 0.5rem;
 }
 
@@ -133,11 +133,11 @@
 	font-family: var(--font-mono);
 	font-weight: 600;
 	font-size: 0.88rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .recoDesc {
 	font-size: 0.85rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	margin-top: 0.3rem;
 	line-height: 1.55;
 }
@@ -163,7 +163,7 @@
 	gap: 0.4rem;
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 .legendDot {
 	width: 9px;
@@ -175,6 +175,6 @@
 	margin-top: var(--space-2);
 	font-family: var(--font-mono);
 	font-size: 0.76rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	text-align: center;
 }

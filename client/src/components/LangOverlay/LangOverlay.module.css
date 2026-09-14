@@ -18,7 +18,7 @@
 	max-width: 380px;
 	width: 100%;
 	text-align: center;
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-l);
 	padding: 2.2rem 1.9rem;
@@ -48,14 +48,14 @@
 	font-family: var(--font-display);
 	font-weight: 700;
 	font-size: 1.3rem;
-	color: var(--off-white);
+	color: var(--text-strong);
 	margin: 0;
 	line-height: 1.35;
 }
 .questionSub {
 	margin: 0.35rem 0 0 0;
 	font-size: 0.95rem;
-	color: var(--slate);
+	color: var(--text-soft);
 	line-height: 1.5;
 }
 
@@ -67,10 +67,10 @@
 }
 .langBtn {
 	width: 100%;
-	background: var(--ink-3);
+	background: var(--canvas-3);
 	border: 1.5px solid var(--line);
 	border-radius: var(--radius-s);
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-family: var(--font-body);
 	font-weight: 600;
 	font-size: 0.98rem;
@@ -82,5 +82,5 @@
 }
 .langBtn:hover {
 	border-color: var(--amber);
-	background: var(--ink-2);
+	background: var(--canvas-2);
 }

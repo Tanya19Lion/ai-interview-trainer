@@ -12,12 +12,12 @@
 	font-family: var(--font-display);
 	font-size: 3rem;
 	font-weight: 700;
-	color: var(--off-white);
+	color: var(--text-strong);
 	line-height: 1;
 }
 .lbl {
 	font-family: var(--font-mono);
-	color: var(--slate);
+	color: var(--text-soft);
 	font-size: 0.9rem;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .question {
-	color: var(--off-white);
+	color: var(--text-strong);
 	font-size: 0.88rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -52,7 +52,7 @@
 .weakLabel {
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
-	color: var(--slate);
+	color: var(--text-soft);
 }
 
 .actions {

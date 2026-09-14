@@ -11,10 +11,10 @@
 }
 .h1 {
 	font-family: var(--font-display);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .subtitle {
-	color: var(--slate);
+	color: var(--text-soft);
 	max-width: 640px;
 }
 
@@ -32,7 +32,7 @@
 .fl {
 	font-family: var(--font-mono);
 	font-size: 0.74rem;
-	color: var(--slate-2);
+	color: var(--text-faint);
 	margin-right: 0.3rem;
 }
 .chip {
@@ -41,19 +41,19 @@
 	padding: 0.35rem 0.7rem;
 	border-radius: var(--radius-s);
 	border: 1px solid var(--line);
-	color: var(--slate);
+	color: var(--text-soft);
 	background: transparent;
 	cursor: pointer;
 	transition: all 0.15s ease;
 }
 .chip:hover {
-	color: var(--off-white);
-	border-color: var(--slate);
+	color: var(--text-strong);
+	border-color: var(--text-soft);
 }
 .chipActive {
 	background: var(--green-soft);
 	border-color: var(--green);
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 .chipLvl.chipActive {
 	background: var(--amber-soft);
@@ -61,7 +61,7 @@
 }
 
 .tableCard {
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-m);
 	padding: 0;

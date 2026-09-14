@@ -1,7 +1,7 @@
 .tabs {
 	display: inline-flex;
 	padding: 0.25rem;
-	background: var(--ink-2);
+	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	border-radius: 999px;
 	gap: 0.2rem;
@@ -11,7 +11,7 @@
 	appearance: none;
 	border: none;
 	background: transparent;
-	color: var(--slate);
+	color: var(--text-soft);
 	font-family: var(--font-body);
 	font-weight: 500;
 	font-size: 0.85rem;
@@ -24,7 +24,7 @@
 }
 
 .tab:hover {
-	color: var(--off-white);
+	color: var(--text-strong);
 }
 
 .active {
