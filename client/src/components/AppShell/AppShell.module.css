@@ -142,7 +142,7 @@
 	appearance: none;
 	border: none;
 	background: transparent;
-	color: var(--rust);
+	color: var(--rust-text);
 	font-family: var(--font-mono);
 	font-size: 0.82rem;
 	padding: 0.7rem 0.9rem;

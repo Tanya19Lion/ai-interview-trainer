@@ -36,11 +36,11 @@
 }
 .pass {
 	background: var(--green-soft);
-	color: var(--green);
+	color: var(--green-text);
 }
 .retry {
 	background: var(--rust-soft);
-	color: var(--rust);
+	color: var(--rust-text);
 }
 
 .score {

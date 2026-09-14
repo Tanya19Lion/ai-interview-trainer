@@ -7,7 +7,7 @@ function isTheme(value: string | null): value is Theme {
   return value === 'light' || value === 'dark';
 }
 
-function resolveInitialTheme(): Theme {
+export function resolveInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (isTheme(stored)) {
     return stored;

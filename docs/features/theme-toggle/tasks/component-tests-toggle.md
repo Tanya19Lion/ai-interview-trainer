@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-14"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -29,4 +29,4 @@ T5, T7.
 ## DoD
 
 - [ ] PR merged.
-- [ ] Tests above pass.
+- [x] Tests above pass.

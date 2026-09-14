@@ -24,13 +24,13 @@
 	border-radius: 50%;
 }
 .dot1 {
-	background: var(--rust);
+	background: var(--diff-rust);
 }
 .dot2 {
-	background: var(--amber);
+	background: var(--diff-amber);
 }
 .dot3 {
-	background: var(--green);
+	background: var(--diff-green);
 }
 
 .titlebarName {

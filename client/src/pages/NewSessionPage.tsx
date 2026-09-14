@@ -43,7 +43,7 @@ export function NewSessionPage() {
 			<LevelPicker value={level} onChange={setLevel} />
 
 			{startSession.isError && (
-				<p style={{ color: 'var(--rust)' }}>Не вдалося створити сесію. Спробуй ще раз.</p>
+				<p style={{ color: 'var(--rust-text)' }}>Не вдалося створити сесію. Спробуй ще раз.</p>
 			)}
 
 			<Button

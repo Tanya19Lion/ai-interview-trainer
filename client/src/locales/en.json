@@ -81,5 +81,7 @@
 	"lang.q": "Which language would you like to use?",
 	"lang.qSub": "Якою мовою бажаєш спілкуватись?",
 	"lang.uk": "Українська",
-	"lang.en": "English"
+	"lang.en": "English",
+	"theme.enableLight": "Switch to light theme",
+	"theme.enableDark": "Switch to dark theme"
 }

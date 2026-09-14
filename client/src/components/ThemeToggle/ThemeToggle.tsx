@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Moon, Sun } from 'lucide-react';
 import { buttonClassName } from '../Button/buttonClassName';
 import { useTheme } from '../../context/theme/useTheme';
@@ -9,6 +10,7 @@ const TOGGLE_DEBOUNCE_MS = 300;
 /** Перемикач теми (світла/темна), дебаунсить швидкі повторні кліки (PRD §6.1). */
 export function ThemeToggle() {
 	const { theme, setTheme } = useTheme();
+	const { t } = useTranslation();
 	const lastToggleRef = useRef(0);
 
 	function handleClick() {
@@ -25,9 +27,9 @@ export function ThemeToggle() {
 			type="button"
 			className={buttonClassName({ variant: 'ghost', size: 'md', className: styles.toggle })}
 			onClick={handleClick}
-			aria-label={theme === 'dark' ? 'Увімкнути світлу тему' : 'Увімкнути темну тему'}
+			aria-label={theme === 'dark' ? t('theme.enableLight') : t('theme.enableDark')}
 		>
-			{theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+			{theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
 		</button>
 	);
 }

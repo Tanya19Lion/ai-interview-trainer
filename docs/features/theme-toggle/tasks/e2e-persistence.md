@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-14"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -26,4 +26,14 @@ T3, T5.
 ## DoD
 
 - [ ] PR merged.
-- [ ] E2E test green, asserts persistence exactly as PRD §6 describes (not just "theme looks right" — must assert the localStorage-driven re-render).
+- [x] E2E test green, asserts persistence exactly as PRD §6 describes (not just "theme looks right" — must assert the localStorage-driven re-render).
+
+## Notes
+
+- No e2e framework existed in the repo yet — added Playwright (`@playwright/test`, chromium only)
+  as `client/`'s first e2e infra: `client/playwright.config.ts`, `client/e2e/`, `npm run test:e2e`.
+- Test: `client/e2e/theme-persistence.spec.ts`, runs against `LandingPage` (`/`, public route, no
+  backend needed). Pre-seeds `localStorage['diff-lang-chosen']` via `addInitScript` to skip
+  `LangOverlay` (see `.claude/rules/frontend/components.md`), clicks the toggle
+  (`getByRole('button', { name: /тему/i })` — matches both `theme.enableLight`/`enableDark` uk
+  labels), asserts `<html data-theme>` and `localStorage['diff-theme']`, reloads, re-asserts both.

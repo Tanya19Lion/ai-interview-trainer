@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-14"
 feature_size: XS
 stage: "08"
 ticket: "<TBD>"
@@ -25,4 +25,4 @@ T5.
 ## DoD
 
 - [ ] PR merged.
-- [ ] Toggle's `aria-label` renders correctly in both `uk` and `en` locales.
+- [x] Toggle's `aria-label` renders correctly in both `uk` and `en` locales.

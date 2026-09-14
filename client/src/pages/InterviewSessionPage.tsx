@@ -233,7 +233,7 @@ export function InterviewSessionPage() {
 			)}
 
 			{submitAnswer.isError && (
-				<p style={{ color: 'var(--rust)' }}>Не вдалося перевірити відповідь. Спробуй ще раз.</p>
+				<p style={{ color: 'var(--rust-text)' }}>Не вдалося перевірити відповідь. Спробуй ще раз.</p>
 			)}
 		</div>
 	);

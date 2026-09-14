@@ -497,10 +497,10 @@
 	font-weight: 500;
 }
 .statPos {
-	color: var(--green);
+	color: var(--green-text);
 }
 .statNeg {
-	color: var(--rust);
+	color: var(--rust-text);
 }
 
 .levelRow {
@@ -568,11 +568,11 @@
 }
 .pass {
 	background: var(--green-soft);
-	color: var(--green);
+	color: var(--green-text);
 }
 .retry {
 	background: var(--rust-soft);
-	color: var(--rust);
+	color: var(--rust-text);
 }
 .scoreCell {
 	font-family: var(--font-mono);

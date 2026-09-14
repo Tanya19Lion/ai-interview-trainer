@@ -36,7 +36,7 @@
 
 .ghost {
 	background: transparent;
-	color: var(--text-strong);
+	color: inherit;
 	border-color: var(--line);
 }
 .ghost:hover {

@@ -30,10 +30,24 @@
 	--plum: #9c6b93;
 	--plum-soft: rgba(156, 107, 147, 0.18);
 
+	/* ---------- diff/editor-window: завжди ті самі значення, що --green/--rust/--amber
+	   мали до появи light-теми — editor-window навмисно не перефарбовується (SAD §5, QG-4).
+	   Не перевизначені під [data-theme='light']. ---------- */
+	--diff-green: #4c9a5d;
+	--diff-rust: #c1543a;
+	--diff-amber: #e7a93b;
+
+	/* ---------- ті самі акценти, але як WCAG AA-читабельний текст (≥4.5:1) на canvas-
+	   поверхнях — --green/--rust/--amber самі лишаються некерованими текстовими кольорами
+	   (вони й досі фон кнопок/бордери/крапки), тому для тексту окремі -text-варіанти. ---------- */
+	--green-text: #56ac69;
+	--rust-text: #d58673;
+	--amber-text: #e7a93b;
+
 	/* ---------- нейтральні / текст на темному тлі ---------- */
 	--text-strong: #f4f1e8;
 	--text-soft: #9aa1b4;
-	--text-faint: #666e82;
+	--text-faint: #7e88a1;
 
 	/* ---------- розділювачі ---------- */
 	--line: rgba(244, 241, 232, 0.1);
@@ -70,11 +84,14 @@
 
 /*
  * Світла тема — theme-toggle (docs/features/theme-toggle/sad.md §5).
- * Лише "canvas"-токени сторінки: --paper, --green, --rust, --amber, --plum
+ * "canvas"-токени сторінки: --paper, --green, --rust, --amber, --plum
  * (editor-window, diff-рядки, чіпи) навмисно НЕ перевизначені тут, бо вони
  * спільні з code-diff-контентом (EditorWindow/CodeDiffLine) — їх зміна
  * порушила б вимогу "editor-window незмінний" (SAD §5, QG-4). Це відкрите
- * питання, див. tracker.md Blocked notes.
+ * питання, див. tracker.md Blocked notes. --diff-green/--diff-rust/--diff-amber
+ * теж навмисно не перевизначені тут (те саме обмеження).
+ * --green-text/--rust-text/--amber-text — читабельні-як-текст варіанти акцентів
+ * (WCAG AA-аудит, 2026-09-14) — ЦІ перевизначені, бо не торкаються diff-контенту.
  */
 [data-theme='light'] {
 	--canvas: #fbf8f1;
@@ -84,6 +101,9 @@
 	--nav-bg: rgba(251, 248, 241, 0.88);
 	--text-strong: #23262f;
 	--text-soft: #5b5b52;
-	--text-faint: #8a8577;
+	--text-faint: #6d695e;
 	--shadow: 0 30px 60px -20px rgba(35, 30, 20, 0.35);
+	--green-text: #32653d;
+	--rust-text: #94402c;
+	--amber-text: #76500e;
 }
