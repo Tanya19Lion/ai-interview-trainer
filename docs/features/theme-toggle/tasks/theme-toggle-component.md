@@ -1,5 +1,5 @@
 ---
-status: Todo
+status: Merged
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
@@ -29,9 +29,15 @@ T1, T4 (component needs finished tokens to be visually verifiable in both themes
 
 ## DoD
 
-- [ ] PR merged.
-- [ ] Manual click-through in both themes — icon and visual state match the active theme.
-- [ ] Debounce verified: rapid repeated clicks do not fire `setTheme()` faster than the debounce window.
+- [x] PR merged.
+- [ ] Manual click-through in both themes — icon and visual state match the active theme. **Not
+      live-verified**: `npm run build`/`npm run lint` pass, but the Playwright browser tool
+      requires an interactive permission grant unavailable in this autonomous run — same
+      "unverified against a live render" gap already tracked for other screens in `PROGRESS.md`.
+      Needs a manual pass before this is treated as fully closed.
+- [x] Debounce verified: `handleClick` guards on a `lastToggleRef` timestamp (300ms window) and
+      returns early without calling `setTheme()` for clicks inside that window — confirmed by
+      code inspection (`ThemeToggle.tsx`).
 
 ## Out of scope
 
