@@ -170,7 +170,7 @@ export function LandingPage() {
 							</div>
 							<div className={styles.heroTopics}>
 								<span className={styles.topicsLabel}>{t('hero.topicsLabel')}</span>
-								{TOPICS.slice(0, 4).map((topic) => (
+								{TOPICS.slice(0).map((topic) => (
 									<Chip key={topic}>#{TOPIC_LABEL[topic]}</Chip>
 								))}							
 							</div>
@@ -221,7 +221,7 @@ export function LandingPage() {
 					<ol className={styles.logList}>
 						{HOW_STEPS.map((step, index) => (
 							<li key={step.h3} className={styles.logItem}>
-								<Reveal style={{ transitionDelay: `${index * 150}ms` }}>
+								<Reveal style={{ transitionDelay: `${index * 250}ms` }}>
 									<span className={styles.logHash}>{step.cmd}</span>
 									<h3 className={styles.logH3}>{t(step.h3)}</h3>
 									<p className={styles.logP}>{t(step.p)}</p>
