@@ -3,7 +3,7 @@ type: tracker
 feature: forgot-password
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-15"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -17,7 +17,7 @@ ticket: "<TBD>"
 |----|-------|--------|-------|----------|------------|
 | T0 | Spike: decide email-delivery provider | Not started | Tanya19Lion | S | — |
 | T1 | Add User.tokenVersion field | Not started | Tanya19Lion | XS | — |
-| T2 | Create PasswordReset collection | Not started | Tanya19Lion | S | — |
+| T2 | Create PasswordReset collection | Merged | Tanya19Lion | S | — |
 | T3 | passwordReset.service.ts: issue/verify/consume/rate-limit | Not started | Tanya19Lion | S | T2 |
 | T4 | requireAuth: tokenVersion check | Not started | Tanya19Lion | S | T1 |
 | T5 | sendResetEmail implementation | Not started | Tanya19Lion | S | T0 |

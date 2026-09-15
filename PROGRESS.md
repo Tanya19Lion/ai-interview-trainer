@@ -306,8 +306,29 @@ Explore-скан репо (brownfield) → чорновий драфт §1-§12 
   взагалі не змінює контраст. Це рішення закрило останні 2 відкриті питання PRD §8 (точні
   кольори, реалістичність ≤100мс NFR) прямо під час Step 8 critic-проходу, а не відкладанням.
 
-**Наступний крок:** stage 06 — `complete-sequence-diagrams`, коли будеш готова продовжувати. Перед
-`break-tasks` не забути закрити відкрите anti-FOUC-рішення з §11.
+## Stage 08 — Реалізація (в процесі)
+
+`docs/features/theme-toggle/tasks/tracker.md` (оновлено 2026-09-14, `stage: "08"`) — задачі
+розбито й більшість базової імплементації вже влита в `main`:
+
+- **Merged:** T1 (`ThemeContext`+`useTheme`), T2 (`ThemeProvider`: resolution logic + anti-FOUC —
+  відкрите з SAD §11 рішення вже закрито в коді, деталі дивись у самому `ThemeProvider`), T3
+  (`main.tsx` wiring), T4 (light-theme токени), T5 (`ThemeToggle` компонент з debounce).
+- **In review:** T7 (i18n-лейбли для `ThemeToggle`), T8 (unit-тести resolution-логіки), T9
+  (component-тести `ThemeToggle`), T10 (E2E-тест персистентності теми).
+- **Not started:** T11 (ручний QA: WCAG AA contrast audit), T12 (ручний QA: perf-верифікація
+  QG-1/QG-2).
+
+**Відкритий, задокументований у трекері хвіст (T4, "resolved 2026-09-14", але з подальшим
+follow-up):** токени `--green`/`--rust`/`--amber`/`--plum` (+ soft-варіанти) і
+`--btn-primary-*` навмисно залишені без light-theme варіанту — вони спільні для diff-карток
+(`CodeDiffLine`/`EditorWindow`, які мають лишатись незмінними за QG-4) і для звичайних
+badge/chip-компонентів. Перед закриттям T11 потрібне явне рішення: або дати diff-елементам власні
+theme-invariant токени, або прийняти amber як primary-колір і переглянути пропозицію SAD §5 —
+див. "Blocked notes" у `tracker.md` для повного контексту.
+
+**Наступний крок:** довести T7–T10 до `Merged`, ухвалити рішення з accent-токенами вище, потім
+T11/T12.
 
 ---
 
@@ -327,4 +348,53 @@ Explore-скан репо (brownfield) → чорновий драфт §1-§12 
 неузгодженими. Зафіксовано в `openapi.yaml`'s `info.description` і в `api-sync-report.md` →
 Deviations, щоб не загубилось при переході до `break-tasks`/імплементації.
 
+## Stage 08 — Реалізація (щойно почалась)
 
+`docs/features/forgot-password/tasks/tracker.md` (оновлено 2026-09-10) розбитий на 17 задач
+(T0–T16). З них влито лише:
+
+- **T2 (Merged, коміт `9714e28`, 2026-09-15):** `src/models/PasswordReset.ts` — колекція
+  `PasswordReset` створена.
+
+Решта (T0 spike email-провайдера, T1 `User.tokenVersion`, T3 `passwordReset.service.ts`, T4
+`requireAuth`-перевірка tokenVersion, T5–T16 роути/клієнт/тести) — ще **Not started** за самим
+трекером. `tracker.md` синхронізовано 2026-09-15 (T2 → `Merged`).
+
+---
+
+# remember-me — SDLC-статус
+
+`docs/features/remember-me/` — PRD, SAD, 3 ADR (`0001` — поширення tokenVersion-лічильника на
+logout, `0002` — окремий refresh-токен для "запам'ятованих" сесій, `0003` — Mongo-лічильник для
+login-рейтліміту) і `docs/features/remember-me/tasks/tracker.md` (`stage: "08"`, `feature_size: M`,
+13 задач T1–T13) — усе вже існує, хоча в цьому файлі ця фіча раніше не згадувалась.
+
+**Фактично реалізовано в коді (за git-історією 2026-09-14/15); `tracker.md` синхронізовано
+2026-09-15:**
+
+- **T2** (issueSession: access+refresh токени, параметр `rememberMe`) — коміт `098f796`
+  (2026-09-14): `src/controllers/auth.controller.ts` видає refresh-токен-cookie, коли
+  `rememberMe: true`; тест `auth.controller.test.ts`.
+- **T5** (login rate-limit middleware) — коміт `bfc3c14` (2026-09-15): новий
+  `src/middleware/rateLimit.ts` + `rateLimit.test.ts`, підключено в `src/routes/auth.routes.ts`.
+- **T8** (client `api/auth.ts`: rememberMe + refresh) — коміт `bdf5e72` (2026-09-15):
+  `client/src/api/auth.ts` отримав параметр `rememberMe` і функцію `refreshSession`.
+
+**Ще Not started (за трекером, і немає ознак реалізації в коді):** T1 (`requireAuth`:
+tokenVersion-перевірка), T3 (`POST /api/auth/refresh`-хендлер), T4 (logout підвищує
+tokenVersion), T6/T7/T12/T13 (тести), T9 (`useAuth.ts` silent renewal), T10 (чекбокс "запам'ятати
+мене" на `LoginPage`), T11 — **сам цей пункт трекера явно каже:** "Manual QA: live-Mongo
+verification + PROGRESS.md update", заблокований усіма іншими задачами — тобто повне оновлення
+цього розділу PROGRESS.md за задумом автора мало відбутись лише після T1/T3/T4/T5/T6/T7/T9/T10/
+T12/T13. Цей запис — проміжний знімок за станом коду, а не той фінальний T11-апдейт.
+
+---
+
+# interview-flow — статус ведеться окремо
+
+`docs/features/interview-flow/STATUS.md` тепер виконує для цієї фічі ту саму роль, що
+`PROGRESS.md` — для репозиторію в цілому (сказано прямо в першому рядку файлу). Актуальний стан:
+повний цикл сесії (старт → до 5 AI-оцінених відповідей → завершення) реалізовано end-to-end,
+історичний баг з `correctAnswer` виправлено; **не перевірено** — жодна authenticated-фіча, включно
+з цією, проти живого Mongo+`.env` з часу auth/AppShell-робіт. Дивись сам `STATUS.md` для деталей,
+а не дублюй його тут.
