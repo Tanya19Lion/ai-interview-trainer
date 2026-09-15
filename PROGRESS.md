@@ -398,3 +398,21 @@ T12/T13. Цей запис — проміжний знімок за станом
 історичний баг з `correctAnswer` виправлено; **не перевірено** — жодна authenticated-фіча, включно
 з цією, проти живого Mongo+`.env` з часу auth/AppShell-робіт. Дивись сам `STATUS.md` для деталей,
 а не дублюй його тут.
+
+---
+
+# Тестова інфраструктура
+
+**✅ Виправлено (коміт `02ab980`, 2026-09-15):** кореневий `npm run test` не мав власного
+`vitest.config.ts`, тож дефолтний глоб vitest підхоплював тести `client/` (яким для роботи
+потрібне `environment: 'jsdom'`, наявне лише в `client/vitest.config.ts`), Playwright-специфікацію
+`client/e2e/theme-persistence.spec.ts` (падала одразу — vitest не вміє виконувати Playwright'ів
+`test()`) і дубльований тест з осиротілого git-worktree `.claude/worktrees/theme-toggle-t1`.
+Додано корінний `vitest.config.ts` (`include: src/**/*.test.ts`, `exclude` клієнта й worktrees) —
+`npm run test` тепер запускає лише бекенд (3 файли/11 тестів, чисто). Заодно додано
+`make test-client` (`cd client && npm run test`) як симетричну до `dev`/`dev-client` команду для
+клієнтських тестів, і прибрано git-метадані worktree `theme-toggle-t1` (сама папка на диску
+видалена вручну користувачем окремо).
+
+**Команди верифікації тепер:** `npm run test` (корінь, бекенд) і `cd client && npm run test`
+(або `make test-client`) — окремо, а не одна кореневою командою на весь репозиторій.
