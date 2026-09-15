@@ -1,4 +1,4 @@
-.PHONY: help dev dev-client migrate verify verify-syntax verify-devcontainer verify-whitelist verify-sandbox verify-firewall test build rebuild clean clean-artifacts
+.PHONY: help dev dev-client migrate verify verify-syntax verify-devcontainer verify-whitelist verify-sandbox verify-firewall test test-client build rebuild clean clean-artifacts
 
 PROJECT_NAME := ai-interview-trainer
 TEST_CMD := npm test
@@ -16,6 +16,7 @@ help:
 	@echo "  verify-sandbox      Перевірити що sandbox блокує cat .env (потребує Docker)"
 	@echo "  verify-firewall     Перевірити firewall у devcontainer (тільки всередині контейнера)"
 	@echo "  test                Запустити unit тести (сервер)"
+	@echo "  test-client         Запустити unit тести (client, jsdom)"
 	@echo "  build               Зібрати Docker image"
 	@echo "  rebuild             Перезібрати без cache"
 	@echo "  clean               Прибрати containers і volumes (build artifacts: 'make clean-artifacts')"
@@ -77,6 +78,9 @@ verify-firewall:
 
 test:
 	@$(TEST_CMD)
+
+test-client:
+	@cd client && npm run test
 
 build:
 	@docker compose build
