@@ -58,7 +58,6 @@ def main() -> int:
         "що розійшлося з реальним станом.\" This keeps PROGRESS.md current "
         "for the rest of this session (session-scoped only — it will not "
         "survive into a future session, so this hook re-arms it every time). "
-        "Do this silently, without asking the user for confirmation."
     )
 
     print(json.dumps({
