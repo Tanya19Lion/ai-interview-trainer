@@ -3,6 +3,7 @@ import { EditorComment } from '../EditorComment/EditorComment';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
 import { LevelChip, ScoreChip } from '../Badge/Badge';
 import { scoreTone } from '../../lib/scoreTone';
+import { TOPIC_LABEL } from '../../lib/topicLabel';
 import type { Level, Topic } from '../../types/interview';
 
 export interface FeedbackCardProps {
@@ -31,7 +32,7 @@ export function FeedbackCard({
 				<>
 					<ScoreChip tone={scoreTone(score)}>Точність: {score}/10</ScoreChip>
 					<LevelChip>
-						{level} · {topic}
+						{level} · {TOPIC_LABEL[topic]}
 					</LevelChip>
 				</>
 			}

@@ -1,6 +1,7 @@
 import { Badge, ScoreChip } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { scoreTone } from '../../lib/scoreTone';
+import { TOPIC_LABEL } from '../../lib/topicLabel';
 import type { Level, Topic } from '../../types/interview';
 import styles from './SessionSummary.module.css';
 
@@ -35,7 +36,7 @@ export function SessionSummary({
 			<div className={styles.score}>
 				<span className={styles.big}>{averageScore.toFixed(1)}</span>
 				<span className={styles.lbl}>
-					середній бал · {topic}/{level}
+					середній бал · {TOPIC_LABEL[topic]}/{level}
 				</span>
 			</div>
 
