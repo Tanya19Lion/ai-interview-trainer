@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-16"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -36,11 +36,13 @@ None.
 ## DoD
 
 - [ ] PR merged.
-- [ ] `requireAuth` rejects a request whose token's `tokenVersion` doesn't match the current
+- [x] `requireAuth` rejects a request whose token's `tokenVersion` doesn't match the current
       `User.tokenVersion` with 401 + the `{code, message}` shape agreed for new/changed auth
       surface (see [../contracts/api-sync-report.md](../contracts/api-sync-report.md) Deviations).
-- [ ] Existing `/me` behavior unaffected for a token issued after the current `tokenVersion`.
-- [ ] Unit tests ([unit-tests-token-and-rate-limit.md](./unit-tests-token-and-rate-limit.md)) pass.
+- [x] Existing `/me` behavior unaffected for a token issued after the current `tokenVersion`.
+- [x] Unit tests ([unit-tests-token-and-rate-limit.md](./unit-tests-token-and-rate-limit.md)) pass
+      — `requireAuth`'s tokenVersion-comparison slice added in `src/middleware/auth.test.ts`; the
+      remaining T12 groups (issueSession, refresh expiry, rate limit) are covered separately.
 
 ## Out of scope
 

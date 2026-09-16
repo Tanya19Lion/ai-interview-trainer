@@ -3,7 +3,7 @@ type: tracker
 feature: remember-me
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-15"
+updated_at: "2026-09-16"
 feature_size: M
 stage: "08"
 ticket: "<TBD>"
@@ -15,7 +15,7 @@ ticket: "<TBD>"
 
 | ID | Title | Status | Owner | Estimate | Blocked by |
 |----|-------|--------|-------|----------|------------|
-| T1 | requireAuth: tokenVersion check | Not started | Tanya19Lion | S | — |
+| T1 | requireAuth: tokenVersion check | In review | Tanya19Lion | S | — |
 | T2 | issueSession: access+refresh tokens, rememberMe param | Merged | Tanya19Lion | M | — |
 | T3 | POST /api/auth/refresh handler | Not started | Tanya19Lion | M | T1, T2 |
 | T4 | logout bumps tokenVersion | Not started | Tanya19Lion | S | T2 |
