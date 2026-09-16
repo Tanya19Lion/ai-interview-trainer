@@ -181,8 +181,26 @@ export async function refreshSession(req: Request, res: Response): Promise<void>
 	res.json({ ok: true });
 }
 
-export function logout(_req: Request, res: Response): void {
+export async function logout(req: Request, res: Response): Promise<void> {
+	const token = req.cookies?.token as string | undefined;
+	if (token) {
+		const secret = process.env.JWT_SECRET;
+		if (!secret) {
+			throw new Error('JWT_SECRET is not set');
+		}
+		let payload: { userId: string } | undefined;
+		try {
+			payload = jwt.verify(token, secret) as { userId: string };
+		} catch {
+			// Invalid/expired token — nothing to revoke; fall through to the no-op clear below.
+		}
+		if (payload) {
+			await UserModel.findByIdAndUpdate(payload.userId, { $inc: { tokenVersion: 1 } });
+		}
+	}
+
 	res.clearCookie('token');
+	res.clearCookie('refreshToken');
 	res.json({ ok: true });
 }
 

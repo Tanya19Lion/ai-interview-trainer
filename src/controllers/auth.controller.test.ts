@@ -15,10 +15,18 @@ vi.mock('../models/User.js', () => ({
 			const user = users.get(id);
 			return user ? { id, ...user } : null;
 		}),
+		findByIdAndUpdate: vi.fn(async (id: string, update: { $inc?: { tokenVersion?: number } }) => {
+			const existing = users.get(id) ?? {};
+			const inc = update.$inc?.tokenVersion ?? 0;
+			const updated = { ...existing, tokenVersion: (existing.tokenVersion ?? 0) + inc };
+			users.set(id, updated);
+			return { id, ...updated };
+		}),
 	},
 }));
 
-const { issueSession, refreshSession } = await import('./auth.controller.js');
+const { issueSession, refreshSession, logout } = await import('./auth.controller.js');
+const { requireAuth } = await import('../middleware/auth.js');
 
 function makeUser(overrides: Partial<{ id: string; email: string; name: string; avatarUrl: string; tokenVersion: number }> = {}) {
 	return {
@@ -190,5 +198,85 @@ describe('refreshSession (integration, mounted on POST /api/auth/refresh)', () =
 		expect(options?.clockTimestamp).toBeUndefined();
 
 		verifySpy.mockRestore();
+	});
+});
+
+describe('logout (integration, mounted on POST /api/auth/logout + a protected route)', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+
+	beforeEach(async () => {
+		process.env.JWT_SECRET = 'test-secret';
+		users.clear();
+
+		const app = express();
+		app.use(express.json());
+		app.use(cookieParser());
+		app.post('/api/auth/logout', logout);
+		app.get('/api/protected', requireAuth, (_req, res) => res.json({ ok: true }));
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	it('valid token cookie → bumps tokenVersion, clears both cookies, 200 ok', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const token = jwt.sign({ userId: 'user-1', tokenVersion: 0 }, 'test-secret');
+
+		const res = await fetch(`${baseUrl}/api/auth/logout`, {
+			method: 'POST',
+			headers: { Cookie: `token=${token}` },
+		});
+
+		expect(res.status).toBe(200);
+		await expect(res.json()).resolves.toEqual({ ok: true });
+		expect(users.get('user-1')?.tokenVersion).toBe(1);
+
+		const setCookie = res.headers.getSetCookie ? res.headers.getSetCookie() : [res.headers.get('set-cookie') ?? ''];
+		expect(setCookie.some((c) => c.startsWith('token=;') || c.startsWith('token=,'))).toBe(true);
+		expect(setCookie.some((c) => c.startsWith('refreshToken=;') || c.startsWith('refreshToken=,'))).toBe(true);
+	});
+
+	it('no token cookie → graceful 200 no-op, does not throw', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/logout`, { method: 'POST' });
+
+		expect(res.status).toBe(200);
+		await expect(res.json()).resolves.toEqual({ ok: true });
+	});
+
+	it('invalid token cookie → graceful 200 no-op, does not throw', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/logout`, {
+			method: 'POST',
+			headers: { Cookie: 'token=not-a-real-jwt' },
+		});
+
+		expect(res.status).toBe(200);
+		await expect(res.json()).resolves.toEqual({ ok: true });
+	});
+
+	it('replaying the pre-logout access token against a protected route → 401', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const preLogoutToken = jwt.sign({ userId: 'user-1', tokenVersion: 0 }, 'test-secret');
+
+		await fetch(`${baseUrl}/api/auth/logout`, {
+			method: 'POST',
+			headers: { Cookie: `token=${preLogoutToken}` },
+		});
+
+		const replay = await fetch(`${baseUrl}/api/protected`, {
+			headers: { Cookie: `token=${preLogoutToken}` },
+		});
+
+		expect(replay.status).toBe(401);
+		await expect(replay.json()).resolves.toEqual({
+			code: 'auth.session_revoked',
+			message: 'Your session was ended. Please sign in again.',
+		});
 	});
 });

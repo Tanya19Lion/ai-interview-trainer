@@ -18,7 +18,7 @@ ticket: "<TBD>"
 | T1 | requireAuth: tokenVersion check | In review | Tanya19Lion | S | — |
 | T2 | issueSession: access+refresh tokens, rememberMe param | Merged | Tanya19Lion | M | — |
 | T3 | POST /api/auth/refresh handler | In review | Tanya19Lion | M | T1, T2 |
-| T4 | logout bumps tokenVersion | Not started | Tanya19Lion | S | T2 |
+| T4 | logout bumps tokenVersion | In review | Tanya19Lion | S | T2 |
 | T5 | Login rate-limit middleware (LoginAttempt) | Merged | Tanya19Lion | M | — |
 | T6 | Integration test: session revocation (QG-1) | Not started | Tanya19Lion | M | T1, T2, T4 |
 | T7 | k6 latency smoke test (QG-2) | Not started | Tanya19Lion | S | T2, T3 |

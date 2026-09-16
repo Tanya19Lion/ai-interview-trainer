@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-16"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -36,11 +36,11 @@ T2.
 ## DoD
 
 - [ ] PR merged.
-- [ ] Valid `token` cookie → `User.tokenVersion` bumped, both cookies cleared, matches
+- [x] Valid `token` cookie → `User.tokenVersion` bumped, both cookies cleared, matches
       `openapi.yaml`'s `logout` 200 response.
-- [ ] No/invalid `token` cookie → still 200, clears cookies, does not throw.
-- [ ] Integration test: log in, log out, replay the pre-logout access token against a protected
-      route → 401.
+- [x] No/invalid `token` cookie → still 200, clears cookies, does not throw.
+- [x] Integration test: log in, log out, replay the pre-logout access token against a protected
+      route → 401 (`src/controllers/auth.controller.test.ts`, `logout` describe block).
 
 ## Out of scope
 
