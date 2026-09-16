@@ -49,21 +49,10 @@ def main() -> int:
         print("{}")
         return 0
 
-    loop_instruction = (
-        "Also, before doing anything else: call CronCreate now with "
-        "cron=\"7,37 * * * *\", recurring=true, and prompt=\"Онови PROGRESS.md: "
-        "звір поточний стан репозиторію (git log, git status, git diff проти "
-        "останнього запису) з тим, що описано у файлі, і онови розділи, які "
-        "застаріли або неточні — не переписуй файл з нуля, редагуй лише те, "
-        "що розійшлося з реальним станом.\" This keeps PROGRESS.md current "
-        "for the rest of this session (session-scoped only — it will not "
-        "survive into a future session, so this hook re-arms it every time). "
-    )
-
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": f"From PROGRESS.md:\n{section}\n\n{loop_instruction}",
+            "additionalContext": f"From PROGRESS.md:\n{section}\n",
         }
     }))
     return 0
