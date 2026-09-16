@@ -378,8 +378,7 @@ logout, `0002` — окремий refresh-токен для "запам'ятов
 login-рейтліміту) і `docs/features/remember-me/tasks/tracker.md` (`stage: "08"`, `feature_size: M`,
 13 задач T1–T13) — усе вже існує, хоча в цьому файлі ця фіча раніше не згадувалась.
 
-**Фактично реалізовано в коді (за git-історією 2026-09-14/15); `tracker.md` синхронізовано
-2026-09-15:**
+**Фактично реалізовано в коді; `tracker.md` синхронізовано 2026-09-16:**
 
 - **T2** (issueSession: access+refresh токени, параметр `rememberMe`) — коміт `098f796`
   (2026-09-14): `src/controllers/auth.controller.ts` видає refresh-токен-cookie, коли
@@ -388,14 +387,37 @@ login-рейтліміту) і `docs/features/remember-me/tasks/tracker.md` (`st
   `src/middleware/rateLimit.ts` + `rateLimit.test.ts`, підключено в `src/routes/auth.routes.ts`.
 - **T8** (client `api/auth.ts`: rememberMe + refresh) — коміт `bdf5e72` (2026-09-15):
   `client/src/api/auth.ts` отримав параметр `rememberMe` і функцію `refreshSession`.
+- **T1** (`requireAuth`: tokenVersion-перевірка) — коміт `76a4e6b` (2026-09-16): `requireAuth`
+  тепер async, звіряє `tokenVersion` токена з `User.tokenVersion` через новий
+  `hasValidTokenVersion` (`src/middleware/auth.ts`); тест `auth.test.ts` (5/5). Статус у
+  `tracker.md`: `In review` (закомічено в `main` локально, PR/push ще не робились).
+- **T3** (`POST /api/auth/refresh`-хендлер) — коміт `6638fbc` (2026-09-16): новий
+  `refreshSession` у `auth.controller.ts` + роут у `auth.routes.ts`; перевіряє
+  `refreshToken`-кукі й `tokenVersion` (перевикористовує T1), видає лише нову `token`-кукі. 8
+  тестів (2 401-гілки, happy path, QG-3 clock-only перевірка через spy на `jwt.verify`). Статус:
+  `In review`.
+- **T4** (logout підвищує tokenVersion) — коміт `21a156e` (2026-09-16): `logout` тепер async,
+  верифікує `token`-кукі й інкрементує `User.tokenVersion` (`$inc`) перед очищенням обох кук.
+  4 тести, включно з "replay pre-logout access token → 401" (доводить наскрізний ланцюжок
+  T1↔T2↔T4). Статус: `In review`.
 
-**Ще Not started (за трекером, і немає ознак реалізації в коді):** T1 (`requireAuth`:
-tokenVersion-перевірка), T3 (`POST /api/auth/refresh`-хендлер), T4 (logout підвищує
-tokenVersion), T6/T7/T12/T13 (тести), T9 (`useAuth.ts` silent renewal), T10 (чекбокс "запам'ятати
-мене" на `LoginPage`), T11 — **сам цей пункт трекера явно каже:** "Manual QA: live-Mongo
-verification + PROGRESS.md update", заблокований усіма іншими задачами — тобто повне оновлення
-цього розділу PROGRESS.md за задумом автора мало відбутись лише після T1/T3/T4/T5/T6/T7/T9/T10/
-T12/T13. Цей запис — проміжний знімок за станом коду, а не той фінальний T11-апдейт.
+**Три коміти (`76a4e6b`, `6638fbc`, `21a156e`) є в локальному `main`, попереду `origin/main` —
+не запушені.** Тести T1/T3/T4 мокають `UserModel` цілком (без реального Mongo) — той самий підхід,
+що вже усталений у `rateLimit.test.ts`.
+
+**T6 (інтеграційний тест ревокації сесії, QG-1) — Not started, відкрите питання, ще не вирішене
+користувачем:** сам текст задачі вимагає тестів проти *реальної* Mongo (`UserModel.create`, без
+моків), але єдиний `MONGODB_URI` у репозиторії (`.env`) вказує на віддалений Atlas-кластер, схожий
+на реальну/dev базу — не ізольовану тестову; `mongodb-memory-server` чи інша тестова
+БД-інфраструктура в репозиторії відсутня. Запуск T6 "як написано" писав би тестових користувачів у
+цю живу базу при кожному `npm run test`. Користувачу задано питання про стратегію (додати
+`mongodb-memory-server` / перевикористати мок `UserModel` як у T1/T3/T4 / свідомо писати в
+Atlas-кластер / відкласти T6) — відповідь ще не отримана, продовжувати T6 без неї не варто.
+
+**Ще Not started:** T7/T12/T13 (тести — T12 частково вже покрито T1/T3-тестами, T7 k6-смок), T9
+(`useAuth.ts` silent renewal), T10 (чекбокс "запам'ятати мене" на `LoginPage`), T11 (Manual QA:
+live-Mongo verification + фінальний PROGRESS.md апдейт, заблокований усіма іншими задачами —
+цей запис досі проміжний знімок, а не той фінальний T11-апдейт).
 
 ---
 
