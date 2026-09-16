@@ -1,6 +1,8 @@
 export { AppShell } from './AppShell/AppShell';
 export type { AppShellProps } from './AppShell/AppShell';
 
+export { AuthAmbientBackdrop } from './AuthAmbientBackdrop/AuthAmbientBackdrop';
+
 export { Button } from './Button/Button';
 export type { ButtonProps } from './Button/Button';
 export { buttonClassName } from './Button/buttonClassName';

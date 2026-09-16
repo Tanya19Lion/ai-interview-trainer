@@ -1,17 +1,7 @@
 import { useState } from 'react';
 import type { SubmitEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import {
-	Button,
-	CodeDiffLine,
-	EditorComment,
-	EditorWindow,
-	Eyebrow,
-	LevelChip,
-	PasswordField,
-	ScoreChip,
-	TextField,
-} from '../components';
+import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, TextField } from '../components';
 import loginStyles from './LoginPage.module.css';
 import styles from './ResetPasswordPage.module.css';
 
@@ -155,38 +145,7 @@ export function ResetPasswordPage() {
 
 	return (
 		<div className={loginStyles.page}>
-			<div className={loginStyles.topbar}>
-				<Link to="/" className={loginStyles.logo}>
-					diff<span className={loginStyles.cursor} aria-hidden="true" />
-				</Link>
-			</div>
-
-			<EditorWindow
-				className={loginStyles.ambientWrap}
-				title={
-					<>
-						<b>session_04</b> · react/middle/answer.md
-					</>
-				}
-				footer={
-					<>
-						<ScoreChip tone="mid">Точність: 6/10</ScoreChip>
-						<LevelChip>Middle · React</LevelChip>
-					</>
-				}
-			>
-				<CodeDiffLine gutter="12" variant="question">
-					// Q: Чим useMemo відрізняється від useCallback?
-				</CodeDiffLine>
-				<CodeDiffLine gutter="13" variant="removed">
-					useMemo кешує функцію, а useCallback кешує значення.
-				</CodeDiffLine>
-				<CodeDiffLine gutter="13" variant="added">
-					useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не
-					створювалась заново.
-				</CodeDiffLine>
-				<EditorComment>Поширена плутанина. Memo → значення, Callback → сама функція.</EditorComment>
-			</EditorWindow>
+			<AuthAmbientBackdrop />
 
 			<main className={loginStyles.authMain}>
 				<div className={loginStyles.authCard}>

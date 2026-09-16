@@ -3,18 +3,7 @@ import type { SubmitEvent } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import type { CredentialResponse } from '@react-oauth/google';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-	Button,
-	CodeDiffLine,
-	EditorComment,
-	EditorWindow,
-	Eyebrow,
-	LevelChip,
-	PasswordField,
-	ScoreChip,
-	Tabs,
-	TextField,
-} from '../components';
+import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, Tabs, TextField } from '../components';
 import { useGoogleLogin, useLoginWithPassword, useRegister } from '../hooks/useAuth';
 import styles from './LoginPage.module.css';
 
@@ -77,38 +66,7 @@ export function LoginPage() {
 
 	return (
 		<div className={styles.page}>
-			<div className={styles.topbar}>
-				<Link to="/" className={styles.logo}>
-					diff<span className={styles.cursor} aria-hidden="true" />
-				</Link>
-			</div>
-
-			<EditorWindow
-				className={styles.ambientWrap}
-				title={
-					<>
-						<b>session_04</b> · react/middle/answer.md
-					</>
-				}
-				footer={
-					<>
-						<ScoreChip tone="mid">Точність: 6/10</ScoreChip>
-						<LevelChip>Middle · React</LevelChip>
-					</>
-				}
-			>
-				<CodeDiffLine gutter="12" variant="question">
-					// Q: Чим useMemo відрізняється від useCallback?
-				</CodeDiffLine>
-				<CodeDiffLine gutter="13" variant="removed">
-					useMemo кешує функцію, а useCallback кешує значення.
-				</CodeDiffLine>
-				<CodeDiffLine gutter="13" variant="added">
-					useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не
-					створювалась заново.
-				</CodeDiffLine>
-				<EditorComment>Поширена плутанина. Memo → значення, Callback → сама функція.</EditorComment>
-			</EditorWindow>
+			<AuthAmbientBackdrop />
 
 			<main className={styles.authMain}>
 				<div className={styles.authCard}>
