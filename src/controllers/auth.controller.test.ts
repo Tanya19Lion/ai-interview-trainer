@@ -1,9 +1,24 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import type { AddressInfo } from 'net';
 import type { Response } from 'express';
 import type { HydratedDocument } from 'mongoose';
-import { issueSession } from './auth.controller.js';
 import type { User } from '../models/User.js';
+
+const users = new Map<string, { tokenVersion?: number }>();
+
+vi.mock('../models/User.js', () => ({
+	UserModel: {
+		findById: vi.fn(async (id: string) => {
+			const user = users.get(id);
+			return user ? { id, ...user } : null;
+		}),
+	},
+}));
+
+const { issueSession, refreshSession } = await import('./auth.controller.js');
 
 function makeUser(overrides: Partial<{ id: string; email: string; name: string; avatarUrl: string; tokenVersion: number }> = {}) {
 	return {
@@ -67,5 +82,113 @@ describe('issueSession', () => {
 
 		const [, tokenValue] = res.cookie.mock.calls[0];
 		expect(jwt.decode(tokenValue as string)).toMatchObject({ tokenVersion: 0 });
+	});
+});
+
+function makeRefreshToken(userId: string, tokenVersion: number, expiresIn: jwt.SignOptions['expiresIn'] = '7d') {
+	return jwt.sign({ userId, tokenVersion }, 'test-secret', { expiresIn });
+}
+
+describe('refreshSession (integration, mounted on POST /api/auth/refresh)', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+
+	beforeEach(async () => {
+		process.env.JWT_SECRET = 'test-secret';
+		users.clear();
+
+		const app = express();
+		app.use(express.json());
+		app.use(cookieParser());
+		app.post('/api/auth/refresh', refreshSession);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	it('no refreshToken cookie → 401 auth.refresh_token_expired', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/refresh`, { method: 'POST' });
+
+		expect(res.status).toBe(401);
+		await expect(res.json()).resolves.toEqual({
+			code: 'auth.refresh_token_expired',
+			message: 'Your session has expired. Please sign in again.',
+		});
+	});
+
+	it('expired refreshToken → 401 auth.refresh_token_expired', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const expired = makeRefreshToken('user-1', 0, -1);
+
+		const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${expired}` },
+		});
+
+		expect(res.status).toBe(401);
+		await expect(res.json()).resolves.toEqual({
+			code: 'auth.refresh_token_expired',
+			message: 'Your session has expired. Please sign in again.',
+		});
+	});
+
+	it('stale tokenVersion (revoked by logout/reset) → 401 auth.session_revoked', async () => {
+		users.set('user-1', { tokenVersion: 5 });
+		const stale = makeRefreshToken('user-1', 4);
+
+		const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${stale}` },
+		});
+
+		expect(res.status).toBe(401);
+		await expect(res.json()).resolves.toEqual({
+			code: 'auth.session_revoked',
+			message: 'Your session was ended. Please sign in again.',
+		});
+	});
+
+	it('valid refreshToken → 200, renewed token cookie only, refreshToken untouched', async () => {
+		users.set('user-1', { tokenVersion: 2 });
+		const valid = makeRefreshToken('user-1', 2);
+
+		const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${valid}` },
+		});
+
+		expect(res.status).toBe(200);
+		await expect(res.json()).resolves.toEqual({ ok: true });
+
+		const setCookie = res.headers.getSetCookie ? res.headers.getSetCookie() : [res.headers.get('set-cookie') ?? ''];
+		expect(setCookie.some((c) => c.startsWith('token='))).toBe(true);
+		expect(setCookie.some((c) => c.startsWith('refreshToken='))).toBe(false);
+
+		const tokenCookie = setCookie.find((c) => c.startsWith('token='))!;
+		const tokenValue = tokenCookie.split(';')[0].split('=')[1];
+		expect(jwt.decode(tokenValue)).toMatchObject({ userId: 'user-1', tokenVersion: 2 });
+	});
+
+	it('QG-3: expiry check never trusts a client-supplied time value', async () => {
+		const verifySpy = vi.spyOn(jwt, 'verify');
+		users.set('user-1', { tokenVersion: 0 });
+		const valid = makeRefreshToken('user-1', 0);
+
+		await fetch(`${baseUrl}/api/auth/refresh`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${valid}`, 'X-Client-Time': '2000-01-01T00:00:00Z' },
+		});
+
+		expect(verifySpy).toHaveBeenCalled();
+		const options = verifySpy.mock.calls[0][2];
+		expect(options?.clockTimestamp).toBeUndefined();
+
+		verifySpy.mockRestore();
 	});
 });

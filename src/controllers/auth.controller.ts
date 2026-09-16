@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
+import { hasValidTokenVersion } from '../middleware/auth.js';
 import type { HydratedDocument } from 'mongoose';
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -140,6 +141,44 @@ export async function login(req: Request, res: Response): Promise<void> {
 	}
 
 	issueSession(res, user, rememberMe);
+}
+
+export async function refreshSession(req: Request, res: Response): Promise<void> {
+	const refreshToken = req.cookies?.refreshToken as string | undefined;
+	if (!refreshToken) {
+		res.status(401).json({ code: 'auth.refresh_token_expired', message: 'Your session has expired. Please sign in again.' });
+		return;
+	}
+
+	const secret = process.env.JWT_SECRET;
+	if (!secret) {
+		throw new Error('JWT_SECRET is not set');
+	}
+
+	let payload: { userId: string; tokenVersion: number };
+	try {
+		// Signature/expiry check reads only the server clock + the token's own embedded
+		// timestamp — no clockTimestamp option or client-supplied time is ever passed in (QG-3).
+		payload = jwt.verify(refreshToken, secret) as { userId: string; tokenVersion: number };
+	} catch {
+		res.status(401).json({ code: 'auth.refresh_token_expired', message: 'Your session has expired. Please sign in again.' });
+		return;
+	}
+
+	const user = await UserModel.findById(payload.userId);
+	if (!user || !hasValidTokenVersion(payload.tokenVersion, user.tokenVersion)) {
+		res.status(401).json({ code: 'auth.session_revoked', message: 'Your session was ended. Please sign in again.' });
+		return;
+	}
+
+	const accessExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
+	const token = signToken(user.id, payload.tokenVersion, accessExpiresIn);
+	res.cookie('token', token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: process.env.NODE_ENV === 'production',
+	});
+	res.json({ ok: true });
 }
 
 export function logout(_req: Request, res: Response): void {

@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-09-16"
 feature_size: M
 stage: "08"
 ticket: "<TBD>"
@@ -38,12 +38,14 @@ T1, T2.
 ## DoD
 
 - [ ] PR merged.
-- [ ] Matches `openapi.yaml`'s `refreshSession` operation: 200 with renewed `token` cookie only;
+- [x] Matches `openapi.yaml`'s `refreshSession` operation: 200 with renewed `token` cookie only;
       401 with the two documented error codes.
-- [ ] No `refreshToken` cookie present → 401 (same treatment as an actually-expired one).
-- [ ] Integration test covering both 401 branches + the happy path.
-- [ ] Unit test for QG-3 (server-clock-only expiry, [unit-tests-token-and-rate-limit.md](./unit-tests-token-and-rate-limit.md)) passes.
-- [ ] Mock-server contract still resolves cleanly (`npm run mock:api -- docs/features/remember-me/contracts/openapi.yaml`).
+- [x] No `refreshToken` cookie present → 401 (same treatment as an actually-expired one).
+- [x] Integration test covering both 401 branches + the happy path (`src/controllers/auth.controller.test.ts`, `refreshSession` describe block).
+- [x] Unit test for QG-3 (server-clock-only expiry) passes — asserts `jwt.verify` is never called
+      with a `clockTimestamp` option, [unit-tests-token-and-rate-limit.md](./unit-tests-token-and-rate-limit.md).
+- [x] Mock-server contract still resolves cleanly — `openapi.yaml` untouched by this task; prior
+      `api-sync-report.md` verification still holds.
 
 ## Out of scope
 
