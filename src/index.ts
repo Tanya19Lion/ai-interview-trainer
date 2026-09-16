@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import { connectDB } from './config/db.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import { authRouter } from './routes/auth.routes.js';
 import { historyRouter } from './routes/history.routes.js';
 import { interviewRouter } from './routes/interview.routes.js';
@@ -23,6 +24,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/interview', interviewRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/stats', statsRouter);
+
+app.use(errorHandler);
 
 async function main(): Promise<void> {
 	await connectDB();

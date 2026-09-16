@@ -60,7 +60,7 @@ export async function getActiveSession(req: AuthedRequest, res: Response): Promi
 export async function submitAnswer(req: AuthedRequest, res: Response): Promise<void> {
 	const { sessionId } = req.params;
 	const { question, answer } = req.body as { question?: string; answer?: string };
-	if (!question || !answer) {
+	if (!question || answer === undefined) {
 		res.status(400).json({ error: 'question and answer are required' });
 		return;
 	}
@@ -75,7 +75,16 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 		return;
 	}
 
-	const review = await reviewAnswer(session.topic, session.level, question, answer);
+	const isLastQuestion = session.questions.length + 1 >= QUESTIONS_PER_SESSION;
+	const askedQuestions = session.questions.map((q) => q.question).concat(question);
+
+	const [review, nextQuestion] = await Promise.all([
+		reviewAnswer(session.topic, session.level, question, answer),
+		isLastQuestion
+			? Promise.resolve(undefined)
+			: generateQuestion(session.topic, session.level, askedQuestions),
+	]);
+
 	session.questions.push({
 		question,
 		answer,
@@ -84,8 +93,6 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 		correctAnswer: review.correctAnswer,
 		weakTopics: review.weakTopics,
 	});
-
-	const isLastQuestion = session.questions.length >= QUESTIONS_PER_SESSION;
 
 	if (isLastQuestion) {
 		const total = session.questions.reduce((sum, q) => sum + q.score, 0);
@@ -104,18 +111,11 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 
 	await session.save();
 
-	const askedQuestions = session.questions.map((q) => q.question);
-	const { question: nextQuestion } = await generateQuestion(
-		session.topic,
-		session.level,
-		askedQuestions,
-	);
-
 	res.json({
 		review,
 		done: false,
 		questionIndex: session.questions.length,
 		totalQuestions: QUESTIONS_PER_SESSION,
-		question: nextQuestion,
+		question: nextQuestion?.question,
 	});
 }
