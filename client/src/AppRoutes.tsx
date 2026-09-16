@@ -8,12 +8,14 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { NewSessionPage } from './pages/NewSessionPage';
 import { ProgressPage } from './pages/ProgressPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 export function AppRoutes() {
 	return (
 		<Routes>
 			<Route path="/" element={<LandingPage />} />
 			<Route path="/login" element={<LoginPage />} />
+			<Route path="/reset-password" element={<ResetPasswordPage />} />
 			<Route element={<ProtectedLayout />}>
 				<Route path="/home" element={<HomePage />} />
 				<Route path="/interview/new" element={<NewSessionPage />} />

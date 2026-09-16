@@ -157,9 +157,9 @@ export function LoginPage() {
 							<PasswordField
 								label="Пароль"
 								labelExtra={
-									<a href="#" className={styles.forgotLink}>
+									<Link to="/reset-password" className={styles.forgotLink}>
 										Забули пароль?
-									</a>
+									</Link>
 								}
 								placeholder="••••••••"
 								autoComplete="current-password"
