@@ -177,25 +177,40 @@ export async function refreshSession(req: Request, res: Response): Promise<void>
 		httpOnly: true,
 		sameSite: 'lax',
 		secure: process.env.NODE_ENV === 'production',
+		// refreshSession only ever runs for a remembered session (only rememberMe issues a
+		// refreshToken in the first place), so the renewed access cookie must stay persistent too —
+		// otherwise it silently downgrades to a session-only cookie on every refresh.
+		maxAge: REMEMBER_ME_MAX_AGE_MS,
 	});
 	res.json({ ok: true });
 }
 
+function decodeUserId(cookieValue: string | undefined, secret: string): string | undefined {
+	if (!cookieValue) {
+		return undefined;
+	}
+	try {
+		return (jwt.verify(cookieValue, secret) as { userId: string }).userId;
+	} catch {
+		return undefined;
+	}
+}
+
 export async function logout(req: Request, res: Response): Promise<void> {
 	const token = req.cookies?.token as string | undefined;
-	if (token) {
+	const refreshToken = req.cookies?.refreshToken as string | undefined;
+
+	if (token || refreshToken) {
 		const secret = process.env.JWT_SECRET;
 		if (!secret) {
 			throw new Error('JWT_SECRET is not set');
 		}
-		let payload: { userId: string } | undefined;
-		try {
-			payload = jwt.verify(token, secret) as { userId: string };
-		} catch {
-			// Invalid/expired token — nothing to revoke; fall through to the no-op clear below.
-		}
-		if (payload) {
-			await UserModel.findByIdAndUpdate(payload.userId, { $inc: { tokenVersion: 1 } });
+		// The access token may already be expired/missing while the longer-lived refreshToken is
+		// still valid — fall back to it so logout still revokes the session server-side (AC-07)
+		// instead of leaving a live refreshToken usable after the user believes they've logged out.
+		const userId = decodeUserId(token, secret) ?? decodeUserId(refreshToken, secret);
+		if (userId) {
+			await UserModel.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
 		}
 	}
 

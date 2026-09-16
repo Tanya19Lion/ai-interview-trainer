@@ -181,6 +181,9 @@ describe('refreshSession (integration, mounted on POST /api/auth/refresh)', () =
 		const tokenCookie = setCookie.find((c) => c.startsWith('token='))!;
 		const tokenValue = tokenCookie.split(';')[0].split('=')[1];
 		expect(jwt.decode(tokenValue)).toMatchObject({ userId: 'user-1', tokenVersion: 2 });
+		// refreshSession only ever runs for a remembered session — the renewed cookie must stay
+		// persistent, not silently downgrade to a browser-session cookie.
+		expect(tokenCookie).toMatch(/Max-Age=604800/i);
 	});
 
 	it('QG-3: expiry check never trusts a client-supplied time value', async () => {
@@ -278,5 +281,48 @@ describe('logout (integration, mounted on POST /api/auth/logout + a protected ro
 			code: 'auth.session_revoked',
 			message: 'Your session was ended. Please sign in again.',
 		});
+	});
+
+	it('missing/expired token cookie but a still-valid refreshToken → still bumps tokenVersion', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const refreshToken = jwt.sign({ userId: 'user-1', tokenVersion: 0 }, 'test-secret', { expiresIn: '7d' });
+
+		const res = await fetch(`${baseUrl}/api/auth/logout`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${refreshToken}` },
+		});
+
+		expect(res.status).toBe(200);
+		expect(users.get('user-1')?.tokenVersion).toBe(1);
+	});
+
+	it('replaying the pre-logout refreshToken against /api/auth/refresh → 401 auth.session_revoked', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const preLogoutRefreshToken = jwt.sign({ userId: 'user-1', tokenVersion: 0 }, 'test-secret', { expiresIn: '7d' });
+
+		await fetch(`${baseUrl}/api/auth/logout`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${preLogoutRefreshToken}` },
+		});
+
+		const refreshApp = express();
+		refreshApp.use(cookieParser());
+		refreshApp.post('/api/auth/refresh', refreshSession);
+		const refreshServer = refreshApp.listen(0);
+		await new Promise<void>((resolve) => refreshServer.once('listening', resolve));
+		const { port } = refreshServer.address() as AddressInfo;
+
+		const replay = await fetch(`http://127.0.0.1:${port}/api/auth/refresh`, {
+			method: 'POST',
+			headers: { Cookie: `refreshToken=${preLogoutRefreshToken}` },
+		});
+
+		expect(replay.status).toBe(401);
+		await expect(replay.json()).resolves.toEqual({
+			code: 'auth.session_revoked',
+			message: 'Your session was ended. Please sign in again.',
+		});
+
+		await new Promise<void>((resolve) => refreshServer.close(() => resolve()));
 	});
 });
