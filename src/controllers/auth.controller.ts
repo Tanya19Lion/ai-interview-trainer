@@ -4,7 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
-import { hasValidTokenVersion } from '../middleware/auth.js';
+import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
 import type { HydratedDocument } from 'mongoose';
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -150,17 +150,10 @@ export async function refreshSession(req: Request, res: Response): Promise<void>
 		return;
 	}
 
-	const secret = process.env.JWT_SECRET;
-	if (!secret) {
-		throw new Error('JWT_SECRET is not set');
-	}
-
-	let payload: { userId: string; tokenVersion: number };
-	try {
-		// Signature/expiry check reads only the server clock + the token's own embedded
-		// timestamp — no clockTimestamp option or client-supplied time is ever passed in (QG-3).
-		payload = jwt.verify(refreshToken, secret) as { userId: string; tokenVersion: number };
-	} catch {
+	// verifyToken's signature/expiry check reads only the server clock + the token's own embedded
+	// timestamp — no clockTimestamp option or client-supplied time is ever passed in (QG-3).
+	const payload = verifyToken(refreshToken);
+	if (!payload) {
 		res.status(401).json({ code: 'auth.refresh_token_expired', message: 'Your session has expired. Please sign in again.' });
 		return;
 	}
@@ -185,33 +178,23 @@ export async function refreshSession(req: Request, res: Response): Promise<void>
 	res.json({ ok: true });
 }
 
-function decodeUserId(cookieValue: string | undefined, secret: string): string | undefined {
+function decodeUserId(cookieValue: string | undefined): string | undefined {
 	if (!cookieValue) {
 		return undefined;
 	}
-	try {
-		return (jwt.verify(cookieValue, secret) as { userId: string }).userId;
-	} catch {
-		return undefined;
-	}
+	return verifyToken<{ userId: string }>(cookieValue)?.userId;
 }
 
 export async function logout(req: Request, res: Response): Promise<void> {
 	const token = req.cookies?.token as string | undefined;
 	const refreshToken = req.cookies?.refreshToken as string | undefined;
 
-	if (token || refreshToken) {
-		const secret = process.env.JWT_SECRET;
-		if (!secret) {
-			throw new Error('JWT_SECRET is not set');
-		}
-		// The access token may already be expired/missing while the longer-lived refreshToken is
-		// still valid — fall back to it so logout still revokes the session server-side (AC-07)
-		// instead of leaving a live refreshToken usable after the user believes they've logged out.
-		const userId = decodeUserId(token, secret) ?? decodeUserId(refreshToken, secret);
-		if (userId) {
-			await UserModel.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
-		}
+	// The access token may already be expired/missing while the longer-lived refreshToken is
+	// still valid — fall back to it so logout still revokes the session server-side (AC-07)
+	// instead of leaving a live refreshToken usable after the user believes they've logged out.
+	const userId = decodeUserId(token) ?? decodeUserId(refreshToken);
+	if (userId) {
+		await UserModel.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
 	}
 
 	res.clearCookie('token');

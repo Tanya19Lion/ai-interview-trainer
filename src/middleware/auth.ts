@@ -11,6 +11,19 @@ export function hasValidTokenVersion(tokenTokenVersion: number, userTokenVersion
 	return tokenTokenVersion === (userTokenVersion ?? 0);
 }
 
+/** Shared signature/expiry check for every cookie-borne JWT (access token or refresh token) — the one place that throws on a missing JWT_SECRET or returns undefined on an invalid/expired token, so requireAuth/refreshSession/logout can't drift on this behavior. */
+export function verifyToken<T = { userId: string; tokenVersion: number }>(token: string): T | undefined {
+	const secret = process.env.JWT_SECRET;
+	if (!secret) {
+		throw new Error('JWT_SECRET is not set');
+	}
+	try {
+		return jwt.verify(token, secret) as T;
+	} catch {
+		return undefined;
+	}
+}
+
 export async function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): Promise<void> {
 	const token = req.cookies?.token as string | undefined;
 	if (!token) {
@@ -18,15 +31,8 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
 		return;
 	}
 
-	const secret = process.env.JWT_SECRET;
-	if (!secret) {
-		throw new Error('JWT_SECRET is not set');
-	}
-
-	let payload: { userId: string; tokenVersion: number };
-	try {
-		payload = jwt.verify(token, secret) as { userId: string; tokenVersion: number };
-	} catch {
+	const payload = verifyToken(token);
+	if (!payload) {
 		res.status(401).json({ error: 'Invalid or expired token' });
 		return;
 	}
