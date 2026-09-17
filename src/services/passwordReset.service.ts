@@ -14,6 +14,10 @@ export type VerifyAndConsumeResult = { status: 'valid'; userId: Types.ObjectId }
 
 export type UnregisteredEmailRateLimitResult = { allowed: boolean };
 
+function hashToken(rawToken: string): string {
+	return createHash('sha256').update(rawToken).digest('hex');
+}
+
 export async function issuePasswordReset(userId: Types.ObjectId): Promise<IssuePasswordResetResult> {
 	const now = new Date();
 	const recentCount = await PasswordResetModel.countDocuments({
@@ -26,7 +30,7 @@ export async function issuePasswordReset(userId: Types.ObjectId): Promise<IssueP
 	}
 
 	const token = randomBytes(32).toString('hex');
-	const tokenHash = createHash('sha256').update(token).digest('hex');
+	const tokenHash = hashToken(token);
 	const expiresAt = new Date(now.getTime() + TOKEN_TTL_MS);
 
 	await PasswordResetModel.create({ userId, tokenHash, expiresAt });
@@ -35,7 +39,7 @@ export async function issuePasswordReset(userId: Types.ObjectId): Promise<IssueP
 }
 
 export async function verifyAndConsumePasswordResetToken(rawToken: string): Promise<VerifyAndConsumeResult> {
-	const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+	const tokenHash = hashToken(rawToken);
 	const doc = await PasswordResetModel.findOneAndDelete({ tokenHash });
 
 	if (!doc) {
@@ -47,11 +51,13 @@ export async function verifyAndConsumePasswordResetToken(rawToken: string): Prom
 
 const unregisteredEmailAttempts = new Map<string, number[]>();
 
+function pruneAttemptsWithinWindow(email: string, now: number): number[] {
+	return (unregisteredEmailAttempts.get(email) ?? []).filter((timestamp) => timestamp > now - RATE_LIMIT_WINDOW_MS);
+}
+
 export function checkUnregisteredEmailRateLimit(email: string): UnregisteredEmailRateLimitResult {
 	const now = Date.now();
-	const attempts = (unregisteredEmailAttempts.get(email) ?? []).filter(
-		(timestamp) => timestamp > now - RATE_LIMIT_WINDOW_MS,
-	);
+	const attempts = pruneAttemptsWithinWindow(email, now);
 
 	if (attempts.length >= RATE_LIMIT_MAX) {
 		unregisteredEmailAttempts.set(email, attempts);
