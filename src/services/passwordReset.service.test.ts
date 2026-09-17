@@ -194,6 +194,10 @@ describe('passwordReset.service — rate limit, unregistered emails (AC-02 gap, 
 	// collection.
 	const email = 'unregistered@example.test';
 
+	beforeEach(() => {
+		docs = [];
+	});
+
 	afterEach(() => {
 		// best-effort: if the implementation exposes no reset hook, each test uses a unique email
 		// to stay independent of prior tests' counters.
