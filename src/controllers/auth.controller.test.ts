@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import type { AddressInfo } from 'net';
@@ -7,7 +8,7 @@ import type { Response } from 'express';
 import type { HydratedDocument } from 'mongoose';
 import type { User } from '../models/User.js';
 
-const users = new Map<string, { tokenVersion?: number }>();
+const users = new Map<string, { tokenVersion?: number; passwordHash?: string }>();
 
 vi.mock('../models/User.js', () => ({
 	UserModel: {
@@ -15,18 +16,28 @@ vi.mock('../models/User.js', () => ({
 			const user = users.get(id);
 			return user ? { id, ...user } : null;
 		}),
-		findByIdAndUpdate: vi.fn(async (id: string, update: { $inc?: { tokenVersion?: number } }) => {
+		findByIdAndUpdate: vi.fn(async (id: string, update: { $inc?: { tokenVersion?: number }; passwordHash?: string }) => {
 			const existing = users.get(id) ?? {};
 			const inc = update.$inc?.tokenVersion ?? 0;
-			const updated = { ...existing, tokenVersion: (existing.tokenVersion ?? 0) + inc };
+			const updated = {
+				...existing,
+				tokenVersion: (existing.tokenVersion ?? 0) + inc,
+				...(update.passwordHash !== undefined ? { passwordHash: update.passwordHash } : {}),
+			};
 			users.set(id, updated);
 			return { id, ...updated };
 		}),
 	},
 }));
 
-const { issueSession, refreshSession, logout } = await import('./auth.controller.js');
+vi.mock('../services/passwordReset.service.js', () => ({
+	verifyAndConsumePasswordResetToken: vi.fn(),
+}));
+
+const { issueSession, refreshSession, logout, confirmPasswordReset } = await import('./auth.controller.js');
 const { requireAuth } = await import('../middleware/auth.js');
+const { verifyAndConsumePasswordResetToken } = await import('../services/passwordReset.service.js');
+const { UserModel } = await import('../models/User.js');
 
 function makeUser(overrides: Partial<{ id: string; email: string; name: string; avatarUrl: string; tokenVersion: number }> = {}) {
 	return {
@@ -324,5 +335,115 @@ describe('logout (integration, mounted on POST /api/auth/logout + a protected ro
 		});
 
 		await new Promise<void>((resolve) => refreshServer.close(() => resolve()));
+	});
+});
+
+describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-reset/confirm)', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+	const VALID_TOKEN = 'a'.repeat(64);
+
+	beforeEach(async () => {
+		users.clear();
+		vi.mocked(verifyAndConsumePasswordResetToken).mockReset();
+		vi.mocked(UserModel.findByIdAndUpdate).mockClear();
+
+		const app = express();
+		app.use(express.json());
+		app.post('/api/auth/password-reset/confirm', confirmPasswordReset);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	// AC-01/AC-06 (PRD): valid, unexpired, unused token + valid newPassword → consumes the token,
+	// hashes + stores newPassword on the found user, bumps tokenVersion by 1, responds 200 per
+	// openapi.yaml's ConfirmPasswordResetResponse.
+	it('valid token + valid newPassword (>=8 chars) → hashes password, bumps tokenVersion, 200 {message}', async () => {
+		users.set('user-1', { tokenVersion: 2 });
+		vi.mocked(verifyAndConsumePasswordResetToken).mockResolvedValueOnce({
+			status: 'valid',
+			userId: 'user-1' as unknown as import('mongoose').Types.ObjectId,
+		});
+
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN, newPassword: 'new-correct-horse' }),
+		});
+
+		expect(res.status).toBe(200);
+		const body = (await res.json()) as { message: string };
+		expect(typeof body.message).toBe('string');
+
+		expect(verifyAndConsumePasswordResetToken).toHaveBeenCalledWith(VALID_TOKEN);
+		expect(UserModel.findByIdAndUpdate).toHaveBeenCalled();
+		const updated = users.get('user-1');
+		expect(updated?.tokenVersion).toBe(3);
+		expect(updated?.passwordHash).toBeDefined();
+		await expect(bcrypt.compare('new-correct-horse', updated!.passwordHash!)).resolves.toBe(true);
+	});
+
+	// AC-03 (PRD): missing/expired/already-used token → 400 with the Error schema's
+	// password_reset.invalid_or_expired_token code, and no password/tokenVersion write happens.
+	it('invalid/expired token → 400 {code: password_reset.invalid_or_expired_token}, no user write', async () => {
+		users.set('user-1', { tokenVersion: 2 });
+		vi.mocked(verifyAndConsumePasswordResetToken).mockResolvedValueOnce({ status: 'invalid' });
+
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN, newPassword: 'new-correct-horse' }),
+		});
+
+		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_or_expired_token');
+		expect(typeof body.message).toBe('string');
+
+		expect(UserModel.findByIdAndUpdate).not.toHaveBeenCalled();
+		expect(users.get('user-1')?.tokenVersion).toBe(2);
+	});
+
+	// Story Scope: newPassword validated against PASSWORD_MIN_LENGTH (8), matching register — and
+	// the token must not be burned by a too-short password, since it's single-use.
+	it('newPassword shorter than 8 chars → 400, token is never consumed', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN, newPassword: 'short1' }),
+		});
+
+		expect(res.status).toBe(400);
+		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
+	});
+
+	// Story DoD: request shape matches openapi.yaml's ConfirmPasswordResetBody — both fields required.
+	it('missing token in body → 400', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ newPassword: 'new-correct-horse' }),
+		});
+
+		expect(res.status).toBe(400);
+		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
+	});
+
+	it('missing newPassword in body → 400', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN }),
+		});
+
+		expect(res.status).toBe(400);
+		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
 	});
 });
