@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
 import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
-import type { HydratedDocument } from 'mongoose';
+import type { HydratedDocument, Types } from 'mongoose';
 import { verifyAndConsumePasswordResetToken } from '../services/passwordReset.service.js';
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -213,7 +213,7 @@ function validateConfirmPasswordResetInput(token: string | undefined, newPasswor
 	return null;
 }
 
-async function applyPasswordReset(userId: string, newPassword: string): Promise<void> {
+async function applyPasswordReset(userId: Types.ObjectId, newPassword: string): Promise<void> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
 	await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
 }
