@@ -405,6 +405,22 @@ login-рейтліміту) і `docs/features/remember-me/tasks/tracker.md` (`st
 не запушені.** Тести T1/T3/T4 мокають `UserModel` цілком (без реального Mongo) — той самий підхід,
 що вже усталений у `rateLimit.test.ts`.
 
+- **T9** (`useAuth.ts` silent access-token renewal) — коміт `54dbd13` (2026-09-17, повний
+  Red-Green-Refactor TDD-цикл): новий `useTokenRenewal(enabled)` у `client/src/hooks/useAuth.ts`
+  — React Query `refetchInterval`-запит (`RENEWAL_INTERVAL_MS = 4 хв`), що періодично викликає
+  T8's `refreshSession()`; підключений у `RequireAuth.tsx` як `useTokenRenewal(me.isSuccess)`.
+  Механізм тригера (`refetchInterval` проти `setTimeout` на дубльованому `JWT_EXPIRES_IN`) — 
+  свідомо винесений на рішення користувача, обрано `refetchInterval` саме щоб уникнути жорсткого
+  зв'язку конфігурації клієнт↔сервер (токен лежить у httpOnly cookie, JS не може прочитати його
+  реальний `exp`). На справжній 401 від `refreshSession()` (відкликаний/протухлий refresh-токен)
+  інвалідує `['me']`-запит, щоб існуюча 401-обробка `RequireAuth`/`useMe()` підхопила стан, а не
+  мовчки й нескінченно ретраїла — цей кейс спершу пропустили в першій версії (знайдено
+  повторним `/code-review`, закрито другим RED/GREEN циклом до коміту).
+  Нові тести: `client/src/hooks/useAuth.test.tsx` (3), `client/src/RequireAuth.test.tsx` (3) —
+  enabled/disabled стан, 401-хендофф, інтервальний тайминг через fake timers.
+  `tsc -b`, `oxlint`, `npm run build`, повний `vitest run` (клієнт, 15/15) — чисті. Статус:
+  `In review`.
+
 **T6 (інтеграційний тест ревокації сесії, QG-1) — Not started, відкрите питання, ще не вирішене
 користувачем:** сам текст задачі вимагає тестів проти *реальної* Mongo (`UserModel.create`, без
 моків), але єдиний `MONGODB_URI` у репозиторії (`.env`) вказує на віддалений Atlas-кластер, схожий
@@ -414,8 +430,8 @@ login-рейтліміту) і `docs/features/remember-me/tasks/tracker.md` (`st
 `mongodb-memory-server` / перевикористати мок `UserModel` як у T1/T3/T4 / свідомо писати в
 Atlas-кластер / відкласти T6) — відповідь ще не отримана, продовжувати T6 без неї не варто.
 
-**Ще Not started:** T7/T12/T13 (тести — T12 частково вже покрито T1/T3-тестами, T7 k6-смок), T9
-(`useAuth.ts` silent renewal), T10 (чекбокс "запам'ятати мене" на `LoginPage`), T11 (Manual QA:
+**Ще Not started:** T7/T12/T13 (тести — T12 частково вже покрито T1/T3-тестами, T7 k6-смок), T10
+(чекбокс "запам'ятати мене" на `LoginPage`), T11 (Manual QA:
 live-Mongo verification + фінальний PROGRESS.md апдейт, заблокований усіма іншими задачами —
 цей запис досі проміжний знімок, а не той фінальний T11-апдейт).
 
