@@ -31,6 +31,10 @@ T1.
 
 ## DoD
 
-- [ ] PR merged.
-- [ ] Existing auth tests (login, protected routes) still green — this must not break any current session flow for users who haven't changed their password.
-- [ ] A JWT issued before a `tokenVersion` bump is rejected after the bump (this is the behavior T13's integration test asserts end-to-end).
+- [x] PR merged.
+- [x] Existing auth tests (login, protected routes) still green — this must not break any current session flow for users who haven't changed their password.
+- [x] A JWT issued before a `tokenVersion` bump is rejected after the bump (this is the behavior T13's integration test asserts end-to-end).
+
+**Note (2026-09-17):** already implemented and tested via the remember-me feature's T1/T9
+(`src/middleware/auth.ts`'s `requireAuth`/`hasValidTokenVersion`, `src/controllers/auth.controller.ts`'s
+`issueSession`) — same mechanism, same ADR-0002. No separate forgot-password-specific change needed.
