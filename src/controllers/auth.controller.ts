@@ -213,9 +213,10 @@ function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown)
 	return null;
 }
 
-async function applyPasswordReset(userId: Types.ObjectId, newPassword: string): Promise<void> {
+async function applyPasswordReset(userId: Types.ObjectId, newPassword: string): Promise<boolean> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
-	await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
+	const updated = await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
+	return updated !== null;
 }
 
 export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {
@@ -235,7 +236,14 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 		return;
 	}
 
-	await applyPasswordReset(result.userId, newPassword as string);
+	const applied = await applyPasswordReset(result.userId, newPassword as string);
+	if (!applied) {
+		res.status(400).json({
+			code: 'password_reset.invalid_or_expired_token',
+			message: 'This password reset link is invalid or has expired.',
+		});
+		return;
+	}
 
 	res.json({ message: 'Your password has been reset. Please sign in again.' });
 }

@@ -17,7 +17,10 @@ vi.mock('../models/User.js', () => ({
 			return user ? { id, ...user } : null;
 		}),
 		findByIdAndUpdate: vi.fn(async (id: string, update: { $inc?: { tokenVersion?: number }; passwordHash?: string }) => {
-			const existing = users.get(id) ?? {};
+			const existing = users.get(id);
+			if (!existing) {
+				return null;
+			}
 			const inc = update.$inc?.tokenVersion ?? 0;
 			const updated = {
 				...existing,
@@ -388,6 +391,26 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		expect(updated?.tokenVersion).toBe(3);
 		expect(updated?.passwordHash).toBeDefined();
 		await expect(bcrypt.compare('new-correct-horse', updated!.passwordHash!)).resolves.toBe(true);
+	});
+
+	// Edge case: the account is deleted between token issuance and confirm. The token was valid
+	// (already consumed by verifyAndConsumePasswordResetToken), but no user document remains to
+	// write the new password/tokenVersion onto — must not report success in that case.
+	it('valid token but account no longer exists → 400 {code: password_reset.invalid_or_expired_token}', async () => {
+		vi.mocked(verifyAndConsumePasswordResetToken).mockResolvedValueOnce({
+			status: 'valid',
+			userId: 'deleted-user' as unknown as import('mongoose').Types.ObjectId,
+		});
+
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN, newPassword: 'new-correct-horse' }),
+		});
+
+		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_or_expired_token');
 	});
 
 	// AC-03 (PRD): missing/expired/already-used token → 400 with the Error schema's
