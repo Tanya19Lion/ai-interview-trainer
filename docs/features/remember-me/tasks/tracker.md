@@ -23,7 +23,7 @@ ticket: "<TBD>"
 | T6 | Integration test: session revocation (QG-1) | Not started | Tanya19Lion | M | T1, T2, T4 |
 | T7 | k6 latency smoke test (QG-2) | Not started | Tanya19Lion | S | T2, T3 |
 | T8 | client api/auth.ts: rememberMe + refresh | Merged | Tanya19Lion | S | — |
-| T9 | useAuth.ts silent access-token renewal | Not started | Tanya19Lion | M | T8 |
+| T9 | useAuth.ts silent access-token renewal | In review | Tanya19Lion | M | T8 |
 | T10 | LoginPage: "remember me" checkbox | Not started | Tanya19Lion | S | T8 |
 | T11 | Manual QA: live-Mongo verification + PROGRESS.md update | Not started | Tanya19Lion | S | T1, T3, T4, T5, T6, T7, T9, T10, T12, T13 |
 | T12 | Unit tests: tokenVersion check, session issuance, refresh expiry (QG-3), rate limit | Not started | Tanya19Lion | S | T1, T2, T3, T5 |
