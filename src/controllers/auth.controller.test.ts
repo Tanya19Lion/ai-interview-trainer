@@ -413,7 +413,7 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 
 	// Story Scope: newPassword validated against PASSWORD_MIN_LENGTH (8), matching register — and
 	// the token must not be burned by a too-short password, since it's single-use.
-	it('newPassword shorter than 8 chars → 400, token is never consumed', async () => {
+	it('newPassword shorter than 8 chars → 400 {code: password_reset.invalid_request}, token is never consumed', async () => {
 		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -421,11 +421,14 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		});
 
 		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_request');
+		expect(typeof body.message).toBe('string');
 		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
 	});
 
 	// Story DoD: request shape matches openapi.yaml's ConfirmPasswordResetBody — both fields required.
-	it('missing token in body → 400', async () => {
+	it('missing token in body → 400 {code: password_reset.invalid_request}', async () => {
 		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -433,10 +436,13 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		});
 
 		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_request');
+		expect(typeof body.message).toBe('string');
 		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
 	});
 
-	it('missing newPassword in body → 400', async () => {
+	it('missing newPassword in body → 400 {code: password_reset.invalid_request}', async () => {
 		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -444,6 +450,9 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		});
 
 		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_request');
+		expect(typeof body.message).toBe('string');
 		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
 	});
 });

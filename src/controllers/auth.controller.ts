@@ -222,7 +222,7 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 	const { token, newPassword } = req.body as { token?: string; newPassword?: string };
 	const validationError = validateConfirmPasswordResetInput(token, newPassword);
 	if (validationError) {
-		res.status(400).json({ error: validationError });
+		res.status(400).json({ code: 'password_reset.invalid_request', message: validationError });
 		return;
 	}
 
