@@ -134,6 +134,20 @@ describe('passwordReset.service — verify + consume (T3, PRD AC-01/AC-03 single
 		const result = await verifyAndConsumePasswordResetToken(token);
 		expect(result.status).toBe('invalid');
 	});
+
+	// The TTL index (`expireAfterSeconds: 0` on expiresAt) only deletes documents on MongoDB's
+	// background sweep, which runs periodically rather than exactly at expiry — so a token can
+	// remain in the collection for a window after it has technically expired. verify+consume must
+	// not rely solely on document presence; it must check expiresAt itself (PRD §6 NFR: <= 15 min TTL).
+	it('returns "invalid" for a token whose document is still present but expiresAt is in the past', async () => {
+		const userId = new Types.ObjectId();
+		const { token } = (await issuePasswordReset(userId)) as { status: 'issued'; token: string };
+
+		docs[0].expiresAt = new Date(Date.now() - 1000);
+
+		const result = await verifyAndConsumePasswordResetToken(token);
+		expect(result.status).toBe('invalid');
+	});
 });
 
 describe('passwordReset.service — rate limit, registered emails (PRD §6 NFR: <= 3/hour/email)', () => {

@@ -42,7 +42,9 @@ export async function verifyAndConsumePasswordResetToken(rawToken: string): Prom
 	const tokenHash = hashToken(rawToken);
 	const doc = await PasswordResetModel.findOneAndDelete({ tokenHash });
 
-	if (!doc) {
+	// The TTL index only deletes expired documents on MongoDB's periodic background sweep, not
+	// exactly at expiresAt — don't rely on document absence alone to reject expired tokens.
+	if (!doc || doc.expiresAt.getTime() <= Date.now()) {
 		return { status: 'invalid' };
 	}
 
