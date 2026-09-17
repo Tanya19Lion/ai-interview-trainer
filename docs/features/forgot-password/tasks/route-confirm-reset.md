@@ -30,6 +30,6 @@ T3, T4.
 
 ## DoD
 
-- [ ] PR merged.
-- [ ] Response shapes match `openapi.yaml`'s `ConfirmPasswordResetResponse`/`Error` schemas.
-- [ ] `User.tokenVersion` is incremented on success (verified end-to-end by T13, but this task's own manual check should confirm the write happens).
+- [x] PR merged.
+- [x] Response shapes match `openapi.yaml`'s `ConfirmPasswordResetResponse`/`Error` schemas.
+- [x] `User.tokenVersion` is incremented on success (verified end-to-end by T13, but this task's own manual check should confirm the write happens).
