@@ -203,18 +203,30 @@ export async function logout(req: Request, res: Response): Promise<void> {
 	res.json({ ok: true });
 }
 
-export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {
-	const { token, newPassword } = req.body as { token?: string; newPassword?: string };
+function validateConfirmPasswordResetInput(token: string | undefined, newPassword: string | undefined): string | null {
 	if (!token || !newPassword) {
-		res.status(400).json({ error: 'token and newPassword are required' });
-		return;
+		return 'token and newPassword are required';
 	}
 	if (newPassword.length < PASSWORD_MIN_LENGTH) {
-		res.status(400).json({ error: `password must be at least ${PASSWORD_MIN_LENGTH} characters` });
+		return `password must be at least ${PASSWORD_MIN_LENGTH} characters`;
+	}
+	return null;
+}
+
+async function applyPasswordReset(userId: string, newPassword: string): Promise<void> {
+	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+	await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
+}
+
+export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {
+	const { token, newPassword } = req.body as { token?: string; newPassword?: string };
+	const validationError = validateConfirmPasswordResetInput(token, newPassword);
+	if (validationError) {
+		res.status(400).json({ error: validationError });
 		return;
 	}
 
-	const result = await verifyAndConsumePasswordResetToken(token);
+	const result = await verifyAndConsumePasswordResetToken(token as string);
 	if (result.status !== 'valid') {
 		res.status(400).json({
 			code: 'password_reset.invalid_or_expired_token',
@@ -223,8 +235,7 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 		return;
 	}
 
-	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
-	await UserModel.findByIdAndUpdate(result.userId, { passwordHash, $inc: { tokenVersion: 1 } });
+	await applyPasswordReset(result.userId, newPassword as string);
 
 	res.json({ message: 'Your password has been reset. Please sign in again.' });
 }
