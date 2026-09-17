@@ -348,16 +348,36 @@ T11/T12.
 неузгодженими. Зафіксовано в `openapi.yaml`'s `info.description` і в `api-sync-report.md` →
 Deviations, щоб не загубилось при переході до `break-tasks`/імплементації.
 
-## Stage 08 — Реалізація (щойно почалась)
+## Stage 08 — Реалізація (в процесі)
 
-`docs/features/forgot-password/tasks/tracker.md` (оновлено 2026-09-15) розбитий на 17 задач
-(T0–T16). З них влито лише:
+`docs/features/forgot-password/tasks/tracker.md` (оновлено 2026-09-17) розбитий на 17 задач
+(T0–T16). З них влито:
 
 - **T2 (Merged, коміт `9714e28`, 2026-09-15):** `src/models/PasswordReset.ts` — колекція
   `PasswordReset` створена.
+- **T1 (Merged, комміти `21a0ff0`/`948bee1`, 2026-09-17, повний RED/GREEN TDD-цикл через
+  `/tdd`-skill):** `src/models/User.ts` — `tokenVersion: { type: Number, required: true,
+  default: 0 }`. REFACTOR-фазу свідомо пропущено (однорядкова зміна схеми, рефакторити нічого).
+- **T3 (Merged, комміти `cb3720d`+`c440dd7`/`4d9d466`/`d26a829`, 2026-09-17, повний RGR-цикл
+  через `/tdd`-skill):** `src/services/passwordReset.service.ts` —
+  `issuePasswordReset`/`verifyAndConsumePasswordResetToken`/`checkUnregisteredEmailRateLimit`,
+  обидва rate-limit-шляхи (registered через `PasswordReset`-колекцію, unregistered через окремий
+  in-memory sliding-window лічильник per AC-02 gap). REFACTOR виніс `hashToken`,
+  `pruneAttemptsWithinWindow`. У RED-фазі знайдено й виправлено окремим fixup-коммітом
+  (`c440dd7`) реальний баг тестів — відсутній `beforeEach`-reset спільного мутованого масиву в
+  останньому `describe`-блоці, через що очікування ставало недосяжним за будь-якої коректної
+  реалізації. **Пізніше фоновий security-рев'ю коміту знайшов і закрив ще одну прогалину (коміт
+  `9f44a9e`, 2026-09-17):** `verifyAndConsumePasswordResetToken` покладався лише на наявність
+  документа в колекції, а Mongo TTL-індекс (`expireAfterSeconds: 0`) видаляє прострочені
+  документи не миттєво, а фоновою періодичною розгорткою — у цьому вікні прострочений токен
+  приймався б як валідний. Виправлено явною перевіркою `expiresAt` у сервісі (тест-спочатку:
+  новий RED-тест підтвердив вразливість, потім фікс).
+- **T4 (Merged, задокументовано коммітом `d3b4127`, 2026-09-17):** окремої реалізації не
+  знадобилось — Scope і DoD уже повністю закриті кодом remember-me T1/T9
+  (`src/middleware/auth.ts`'s `requireAuth`/`hasValidTokenVersion`,
+  `src/controllers/auth.controller.ts`'s `issueSession`), той самий механізм ADR-0002.
 
-Решта (T0 spike email-провайдера, T1 `User.tokenVersion`, T3 `passwordReset.service.ts`, T4
-`requireAuth`-перевірка tokenVersion, T5–T16 роути/клієнт/тести) — ще **Not started** за самим
+Решта (T0 spike email-провайдера, T5–T16 роути/клієнт/тести) — ще **Not started** за самим
 трекером.
 
 **⚠ Розбіжність з трекером (комміти `0ebc7f1`/`48dc118`, 2026-09-16):** зʼявився
