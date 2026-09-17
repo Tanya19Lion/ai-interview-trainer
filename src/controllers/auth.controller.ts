@@ -111,8 +111,9 @@ export async function register(req: Request, res: Response): Promise<void> {
 		res.status(400).json({ error: 'email, password and name are required' });
 		return;
 	}
-	if (password.length < PASSWORD_MIN_LENGTH) {
-		res.status(400).json({ error: `password must be at least ${PASSWORD_MIN_LENGTH} characters` });
+	const passwordError = passwordTooShort(password);
+	if (passwordError) {
+		res.status(400).json({ error: passwordError });
 		return;
 	}
 
@@ -203,20 +204,28 @@ export async function logout(req: Request, res: Response): Promise<void> {
 	res.json({ ok: true });
 }
 
+function passwordTooShort(password: string): string | null {
+	return password.length < PASSWORD_MIN_LENGTH ? `password must be at least ${PASSWORD_MIN_LENGTH} characters` : null;
+}
+
 function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown): string | null {
 	if (typeof token !== 'string' || typeof newPassword !== 'string' || !token || !newPassword) {
 		return 'token and newPassword are required';
 	}
-	if (newPassword.length < PASSWORD_MIN_LENGTH) {
-		return `password must be at least ${PASSWORD_MIN_LENGTH} characters`;
-	}
-	return null;
+	return passwordTooShort(newPassword);
 }
 
 async function applyPasswordReset(userId: Types.ObjectId, newPassword: string): Promise<boolean> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
 	const updated = await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
 	return updated !== null;
+}
+
+function sendInvalidOrExpiredToken(res: Response): void {
+	res.status(400).json({
+		code: 'password_reset.invalid_or_expired_token',
+		message: 'This password reset link is invalid or has expired.',
+	});
 }
 
 export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {
@@ -229,19 +238,13 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 
 	const result = await verifyAndConsumePasswordResetToken(token as string);
 	if (result.status !== 'valid') {
-		res.status(400).json({
-			code: 'password_reset.invalid_or_expired_token',
-			message: 'This password reset link is invalid or has expired.',
-		});
+		sendInvalidOrExpiredToken(res);
 		return;
 	}
 
 	const applied = await applyPasswordReset(result.userId, newPassword as string);
 	if (!applied) {
-		res.status(400).json({
-			code: 'password_reset.invalid_or_expired_token',
-			message: 'This password reset link is invalid or has expired.',
-		});
+		sendInvalidOrExpiredToken(res);
 		return;
 	}
 
