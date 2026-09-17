@@ -181,7 +181,7 @@ describe('passwordReset.service — rate limit, registered emails (PRD §6 NFR: 
 
 		expect(result.status).toBe('rate_limited');
 		if (result.status === 'rate_limited') {
-			expect(result.attemptsRemaining).toBeLessThanOrEqual(0);
+			expect(result.attemptsRemaining).toBe(0);
 		}
 	});
 

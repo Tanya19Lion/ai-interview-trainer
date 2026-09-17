@@ -85,4 +85,52 @@ describe('requireAuth (unit, mocked UserModel)', () => {
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.status).not.toHaveBeenCalled();
 	});
+
+	// A legacy access-token cookie signed before tokenVersion was added to the JWT payload has no
+	// tokenVersion claim at all (payload.tokenVersion === undefined at runtime, despite the type
+	// saying number). hasValidTokenVersion only coalesces the User side (?? 0), not the token side,
+	// so this fails closed: undefined !== 0 rejects the session, matching every other invalid-auth
+	// path's 401 rather than silently trusting an unversioned token.
+	it('rejects (fails closed) a token with no tokenVersion claim, even when User.tokenVersion is 0', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+		const legacyToken = jwt.sign({ userId: 'user-1' }, 'test-secret');
+		const req = { cookies: { token: legacyToken } } as unknown as Request;
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await requireAuth(req as never, res, next);
+
+		expect(next).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(401);
+		expect(res.json).toHaveBeenCalledWith({
+			code: 'auth.session_revoked',
+			message: 'Your session was ended. Please sign in again.',
+		});
+	});
+
+	it('rejects with 401 "Not authenticated" when no token cookie is present', async () => {
+		const req = { cookies: {} } as unknown as Request;
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await requireAuth(req as never, res, next);
+
+		expect(next).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(401);
+		expect(res.json).toHaveBeenCalledWith({ error: 'Not authenticated' });
+		expect(UserModel.findById).not.toHaveBeenCalled();
+	});
+
+	it('rejects with 401 "Invalid or expired token" for a malformed/unverifiable token', async () => {
+		const req = { cookies: { token: 'not-a-real-jwt' } } as unknown as Request;
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await requireAuth(req as never, res, next);
+
+		expect(next).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(401);
+		expect(res.json).toHaveBeenCalledWith({ error: 'Invalid or expired token' });
+		expect(UserModel.findById).not.toHaveBeenCalled();
+	});
 });
