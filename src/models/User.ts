@@ -7,7 +7,7 @@ const userSchema = new Schema(
 		email: { type: String, required: true, unique: true },
 		name: { type: String, required: true },
 		avatarUrl: { type: String },
-		tokenVersion: { type: Number },
+		tokenVersion: { type: Number, required: true, default: 0 },
 	},
 	{ timestamps: true },
 );
