@@ -6,6 +6,7 @@ import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
 import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
 import type { HydratedDocument } from 'mongoose';
+import { verifyAndConsumePasswordResetToken } from '../services/passwordReset.service.js';
 
 const PASSWORD_MIN_LENGTH = 8;
 const BCRYPT_SALT_ROUNDS = 10;
@@ -200,6 +201,32 @@ export async function logout(req: Request, res: Response): Promise<void> {
 	res.clearCookie('token');
 	res.clearCookie('refreshToken');
 	res.json({ ok: true });
+}
+
+export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {
+	const { token, newPassword } = req.body as { token?: string; newPassword?: string };
+	if (!token || !newPassword) {
+		res.status(400).json({ error: 'token and newPassword are required' });
+		return;
+	}
+	if (newPassword.length < PASSWORD_MIN_LENGTH) {
+		res.status(400).json({ error: `password must be at least ${PASSWORD_MIN_LENGTH} characters` });
+		return;
+	}
+
+	const result = await verifyAndConsumePasswordResetToken(token);
+	if (result.status !== 'valid') {
+		res.status(400).json({
+			code: 'password_reset.invalid_or_expired_token',
+			message: 'This password reset link is invalid or has expired.',
+		});
+		return;
+	}
+
+	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+	await UserModel.findByIdAndUpdate(result.userId, { passwordHash, $inc: { tokenVersion: 1 } });
+
+	res.json({ message: 'Your password has been reset. Please sign in again.' });
 }
 
 export async function me(req: AuthedRequest, res: Response): Promise<void> {
