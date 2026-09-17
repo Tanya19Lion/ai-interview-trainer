@@ -427,6 +427,22 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
 	});
 
+	// Regression: JSON allows non-string newPassword (e.g. a bare number); .length on a number is
+	// undefined, which used to slip past the length check and go on to burn the valid token before
+	// bcrypt.hash rejected it — token must not be consumed for a non-string newPassword either.
+	it('newPassword is a JSON number, not a string → 400, token is never consumed', async () => {
+		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ token: VALID_TOKEN, newPassword: 12345678 }),
+		});
+
+		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('password_reset.invalid_request');
+		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
+	});
+
 	// Story DoD: request shape matches openapi.yaml's ConfirmPasswordResetBody — both fields required.
 	it('missing token in body → 400 {code: password_reset.invalid_request}', async () => {
 		const res = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {

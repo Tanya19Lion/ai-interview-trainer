@@ -203,8 +203,8 @@ export async function logout(req: Request, res: Response): Promise<void> {
 	res.json({ ok: true });
 }
 
-function validateConfirmPasswordResetInput(token: string | undefined, newPassword: string | undefined): string | null {
-	if (!token || !newPassword) {
+function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown): string | null {
+	if (typeof token !== 'string' || typeof newPassword !== 'string' || !token || !newPassword) {
 		return 'token and newPassword are required';
 	}
 	if (newPassword.length < PASSWORD_MIN_LENGTH) {
