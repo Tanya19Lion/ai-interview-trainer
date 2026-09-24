@@ -107,6 +107,18 @@
 					}
 				]
 			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/block_sensitive_commit.py",
+						"timeout": 10
+					}
+				]
+			}
 		]
 	},
 	"enabledPlugins": {

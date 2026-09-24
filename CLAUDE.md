@@ -44,3 +44,11 @@ firewall policy, not for ordinary feature work.
   verification ones: `make dev` (server, `tsx watch`), `make dev-client` (client Vite dev
   server), `make test` (server unit tests), `make migrate` (currently a documentation stub — see
   `docs/adr/0001-initial-setup.md` for why there's no formal migration tool yet).
+
+  ## Git
+- Commits in Conventional Commits format: `type(scope): description`
+  (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`).
+- Branch names: `feat/<short-name>` or `fix/<short-name>`.
+- Open a pull request right after the first clean commit.
+- Add a `Co-Authored-By: Claude <noreply@anthropic.com>` trailer to commits you make.
+- Never commit `.env`. Only `.env.example` with placeholder values stays in the repo.
