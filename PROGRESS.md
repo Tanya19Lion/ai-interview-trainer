@@ -471,6 +471,30 @@ live-Mongo verification + фінальний PROGRESS.md апдейт, забл�
 
 ---
 
+# Тема `system-design` (2026-09-25)
+
+**✅ Влито в `main` (PR #3, коміт `cf6f25d`):** `'system-design'` додано в `TOPICS` на сервері
+(`src/models/InterviewSession.ts`) і клієнті (`client/src/types/interview.ts`), плюс обов'язкові
+ключі в `Record<Topic, …>`-мапах (`client/src/lib/topicLabel.ts`,
+`client/src/components/TopicPicker/TopicPicker.tsx`) і запис у Schema-change log
+(`docs/data-model.md`, 2026-09-25). `LEVELS` не змінювався.
+
+Це був навчальний експеримент з двома паралельними агентами в окремих worktree на одному
+спільному модулі: гілка A (`system-design`) влита; гілка B (рівень `staff`) свідомо **не** влита
+й видалена за рішенням користувача. Злиття A→B давало очікувані конфлікти в
+`src/models/InterviewSession.ts` і `docs/data-model.md`.
+
+**Відкриті хвости:**
+- `npm test` (сервер і клієнт) на злитому `main` не запускався — перевірено лише `tsc`/`eslint`/
+  `oxlint` і хук `check_enums.py`.
+- Опис теми в `TopicPicker.tsx` («Масштабування, компроміси, архітектура систем») і мітка
+  `'system design'` у `topicLabel.ts` написані агентом — не переглянуті людиною.
+- Ручні переліки тем, що досі закінчуються на `restapi`: `docs/features/interview-flow/`
+  (`data-model.md`, `idea-brief.md`, `openapi.yaml`, `api-sync-report.md`). `check_enums.py` їх не
+  бачить — синхронізувати вручну, якщо ці документи мають лишатись актуальними.
+
+---
+
 # Тестова інфраструктура
 
 **✅ Виправлено (коміт `02ab980`, 2026-09-15):** кореневий `npm run test` не мав власного
