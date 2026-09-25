@@ -1,5 +1,5 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
@@ -40,8 +40,9 @@ T1, T2, T4.
 ## DoD
 
 - [ ] PR merged.
-- [ ] `npm run test` (Vitest) green.
-- [ ] Both replay assertions (access token, refresh token) present and passing.
+- [x] `npm run test` (Vitest) green.
+- [x] Both replay assertions (access token, refresh token) present and passing
+  (`src/controllers/session-revocation.test.ts`).
 
 ## Out of scope
 
