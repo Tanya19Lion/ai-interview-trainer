@@ -5,7 +5,7 @@ reviewers: []
 project: 'ai-interview-trainer'
 feature: remember-me
 created: "2026-09-10"
-updated_at: "2026-09-10"
+updated_at: "2026-09-20"
 feature_size: M
 stories_total: 13
 waves: 4
@@ -116,3 +116,26 @@ flowchart LR
   "How verify: unit test" requirement (the server-clock-only expiry check) entirely. T12 and T13
   above close both gaps; T1/T2/T3/T5's DoD now reference T12 instead of embedding unit-test
   bullets.
+
+## Tooling: MCP vs CLI matrix
+
+Which tool is cheaper in total cost (context tokens, round-trips, setup, CI reuse) for this
+feature's verification work — a connected MCP server or a CLI call via Bash. Default is CLI; MCP
+only pays off where session state is needed.
+
+| Criterion | Where it applies in remember-me | Cheaper |
+|-----------|---------------------------------|---------|
+| **MCP:** session state between calls | T11 manual QA — tick checkbox, log in, close/reopen the tab, log out, all in one live session with cookies kept | MCP (Playwright / Chrome) |
+| **MCP:** structured results without text parsing | T4/T5/T11 — check `User.tokenVersion` and `LoginAttempt` counters | CLI (`mongosh --eval` + `jq`) — output is filtered before it reaches the context |
+| **MCP:** service has no CLI | n/a — `k6`, `mongosh`, `playwright`, `gh` all have one | — |
+| **MCP:** OAuth with token renewal | n/a — the refresh token here is app logic, not tool auth; `gh auth login` already covers GitHub | CLI |
+| **CLI:** one-time call, one result | T7 (`k6 run`), T12 / T1–T5 unit tests (`make test`) | CLI |
+| **CLI:** scriptable — pipes, jq, same script in CI | T13 e2e and T6 integration must run in CI on every PR without a model | CLI (`playwright test`) |
+| **CLI:** mature utility the model already knows | `k6`, `mongosh`, `gh`, test runner | CLI |
+| **CLI:** zero constant price | MCP tools are deferred here (`ToolSearch`), so the gap is smaller than usual, but Bash is still free | CLI |
+
+**Per task:** T11 → MCP (interactive walkthrough); T13 → CLI (`playwright test`, the walkthrough
+from T11 frozen as code); T6, T7, T12 and the Mongo checks in T4/T5 → CLI. CLI wins ~11 of 13 tasks.
+
+Open decision for T13: the repo has no e2e tool yet, so the choice (Playwright is the natural fit
+for CI) must be confirmed by the owner rather than assumed — see the T13 story file.
