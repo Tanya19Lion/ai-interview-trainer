@@ -128,6 +128,18 @@ no existence outside its parent session. Documented under Entities below.
   `.index()` call from `InterviewSession.ts` and let it drop on the next deploy that runs
   Mongoose's index sync (`autoIndex`, or `syncIndexes()` if the project adopts it later).
 
+### 2026-09-25 — add `system-design` to `topic` enum
+
+- **Change:** appended `'system-design'` to `TOPICS` in `src/models/InterviewSession.ts`
+  (and the mirrored `TOPICS` in `client/src/types/interview.ts`), widening the allowed values
+  of `InterviewSession.topic`.
+- **Backfill:** none needed — existing documents keep their current `topic` values, which
+  remain valid.
+- **Rollback:** remove `'system-design'` from both `TOPICS` arrays and redeploy. Before
+  doing so, check for stored sessions with `db.interviewsessions.countDocuments({ topic: 'system-design' })`;
+  if any exist, delete or migrate them by a one-off script first, since they would fail
+  enum validation on later saves.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check
