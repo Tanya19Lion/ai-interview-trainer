@@ -11,4 +11,5 @@ export const TOPIC_LABEL: Record<Topic, string> = {
 	html: 'html',
 	sql: 'sql',
 	restapi: 'REST API',
+	'system-design': 'system design',
 };
