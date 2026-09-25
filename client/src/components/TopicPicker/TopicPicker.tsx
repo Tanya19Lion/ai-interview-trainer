@@ -11,6 +11,7 @@ const TOPIC_META: Record<Topic, { tag: string; desc: string }> = {
 	html: { tag: '#html', desc: 'Семантика, доступність, форми' },
 	sql: { tag: '#sql', desc: 'Джойни, індекси, нормалізація' },
 	restapi: { tag: '#restapi', desc: 'Ресурси, статус-коди, версіонування' },
+	'system-design': { tag: '#system-design', desc: 'Масштабування, компроміси, архітектура систем' },
 };
 
 export interface TopicPickerProps {

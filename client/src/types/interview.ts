@@ -8,6 +8,7 @@ export const TOPICS = [
 	'html',
 	'sql',
 	'restapi',
+	'system-design',
 ] as const;
 export type Topic = (typeof TOPICS)[number];
 
