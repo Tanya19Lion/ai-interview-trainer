@@ -1,0 +1,2 @@
+# Shell scripts must keep LF line endings even on Windows (autocrlf would break `source w.sh`)
+*.sh text eol=lf

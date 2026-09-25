@@ -9,3 +9,5 @@ client/.env
 client/.env.local
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+.claude/worktrees/
