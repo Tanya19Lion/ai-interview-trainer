@@ -37,7 +37,7 @@ vi.mock('../services/passwordReset.service.js', () => ({
 	verifyAndConsumePasswordResetToken: vi.fn(),
 }));
 
-const { issueSession, refreshSession, logout, confirmPasswordReset } = await import('./auth.controller.js');
+const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword } = await import('./auth.controller.js');
 const { requireAuth } = await import('../middleware/auth.js');
 const { verifyAndConsumePasswordResetToken } = await import('../services/passwordReset.service.js');
 const { UserModel } = await import('../models/User.js');
@@ -493,5 +493,102 @@ describe('confirmPasswordReset (integration, mounted on POST /api/auth/password-
 		expect(body.code).toBe('password_reset.invalid_request');
 		expect(typeof body.message).toBe('string');
 		expect(verifyAndConsumePasswordResetToken).not.toHaveBeenCalled();
+	});
+});
+
+describe('changePassword (integration, mounted on POST /api/auth/change-password)', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+
+	async function post(body: unknown) {
+		return fetch(`${baseUrl}/api/auth/change-password`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+	}
+
+	beforeEach(async () => {
+		users.clear();
+		vi.mocked(UserModel.findByIdAndUpdate).mockClear();
+
+		const app = express();
+		app.use(express.json());
+		// Stands in for requireAuth, which has its own tests in middleware/auth.test.ts.
+		app.post(
+			'/api/auth/change-password',
+			(req, _res, next) => {
+				(req as import('../middleware/auth.js').AuthedRequest).userId = 'user-1';
+				next();
+			},
+			changePassword,
+		);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	// AC-06: correct currentPassword → new hash stored, tokenVersion bumped, 200 {message}.
+	it('correct currentPassword → stores new hash, bumps tokenVersion, 200 {message}', async () => {
+		const oldHash = await bcrypt.hash('old-password-123', 4);
+		users.set('user-1', { tokenVersion: 2, passwordHash: oldHash });
+
+		const res = await post({ currentPassword: 'old-password-123', newPassword: 'new-correct-horse' });
+
+		expect(res.status).toBe(200);
+		const body = (await res.json()) as { message: string };
+		expect(typeof body.message).toBe('string');
+		const updated = users.get('user-1');
+		expect(updated?.tokenVersion).toBe(3);
+		await expect(bcrypt.compare('new-correct-horse', updated!.passwordHash!)).resolves.toBe(true);
+	});
+
+	// AC-04: wrong currentPassword → 400, passwordHash byte-for-byte unchanged, no write at all.
+	it('wrong currentPassword → 400 {code: auth.invalid_current_password}, no write', async () => {
+		const oldHash = await bcrypt.hash('old-password-123', 4);
+		users.set('user-1', { tokenVersion: 2, passwordHash: oldHash });
+
+		const res = await post({ currentPassword: 'not-the-password', newPassword: 'new-correct-horse' });
+
+		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('auth.invalid_current_password');
+		expect(typeof body.message).toBe('string');
+		expect(UserModel.findByIdAndUpdate).not.toHaveBeenCalled();
+		expect(users.get('user-1')).toEqual({ tokenVersion: 2, passwordHash: oldHash });
+	});
+
+	// AC-05: Google-only account (no passwordHash) → 409, nothing written.
+	it('account without passwordHash → 409 {code: auth.google_account_no_password}, no write', async () => {
+		users.set('user-1', { tokenVersion: 0 });
+
+		const res = await post({ currentPassword: 'anything-at-all', newPassword: 'new-correct-horse' });
+
+		expect(res.status).toBe(409);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('auth.google_account_no_password');
+		expect(UserModel.findByIdAndUpdate).not.toHaveBeenCalled();
+	});
+
+	// openapi.yaml ChangePasswordBody: both fields required, newPassword minLength 8.
+	it.each([
+		['missing currentPassword', { newPassword: 'new-correct-horse' }],
+		['missing newPassword', { currentPassword: 'old-password-123' }],
+		['newPassword shorter than 8 chars', { currentPassword: 'old-password-123', newPassword: 'short1' }],
+	])('%s → 400 {code: auth.invalid_request}, no write', async (_name, payload) => {
+		users.set('user-1', { tokenVersion: 0, passwordHash: 'irrelevant' });
+
+		const res = await post(payload);
+
+		expect(res.status).toBe(400);
+		const body = (await res.json()) as { code: string; message: string };
+		expect(body.code).toBe('auth.invalid_request');
+		expect(UserModel.findByIdAndUpdate).not.toHaveBeenCalled();
 	});
 });
