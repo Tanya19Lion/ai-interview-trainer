@@ -82,3 +82,10 @@ firewall policy, not for ordinary feature work.
 - Open a pull request right after the first clean commit.
 - Add a `Co-Authored-By: Claude <noreply@anthropic.com>` trailer to commits you make.
 - Never commit `.env`. Only `.env.example` with placeholder values stays in the repo.
+
+## Pull requests
+
+- Platform: GitHub. We open PR via `gh pr create`.
+- PR title - in commit format: `type(area): description`.
+- PR body: sections "What changed"; "Why"; "How to check"; "Related issues" with the next line `Closes #<issue>`.
+- We open a new PR as `--draft` until the work is completed.

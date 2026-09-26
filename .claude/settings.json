@@ -30,9 +30,15 @@
 			"Bash(make test)",
 			"Bash(make build)",
 			"Bash(make clean)",
+			"Bash(gh pr create *)",
+			"Bash(glab mr create *)",
 			"Read",
 			"Glob",
 			"Grep"
+		],
+		"ask": [
+			"Bash(gh pr merge *)",
+			"Bash(glab mr merge *)"
 		],
 		"deny": [
 			"Bash(git push --force *)",
