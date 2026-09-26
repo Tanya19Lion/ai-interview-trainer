@@ -47,14 +47,22 @@ firewall policy, not for ordinary feature work.
   
 ## Merging worktree branches back
 
-- Merge one branch at a time, never all at once. Land the first, confirm `main`
+- Never merge a branch into local `main` with `git merge`. `main` only changes through
+  a pull request merged on GitHub; a local merge makes a second, different commit for
+  the same change, and local `main` ends up "ahead" of `origin/main` for good.
+- The cycle, per branch: (1) push the named branch, (2) open a draft PR, (3) review
+  the diff (`git diff main...<branch>`, three dots, or `/diff`) and merge the PR on
+  GitHub, (4) `git pull --ff-only` on `main`. If step 4 refuses to fast-forward,
+  local `main` has its own commits: stop and find out why, don't create a merge commit.
+- Take one branch at a time, never all at once. Land the first, pull, confirm `main`
   is intact, then take the next. That way you always know which merge broke
   something if anything does.
-- Review every branch before merging it: read the diff with `git diff main..<branch>`
-  (or `/diff` inside a session). No worktree branch enters `main` unreviewed.
-- Run `git pull` before you push, so other people's merges into `main` arrive
-  first and conflicts get resolved locally. Conflicts on shared files are the
-  normal cost of parallel work, not a surprise: plan for the resolution step.
+- Don't commit directly on `main` either. Put every change on a `feat/` or `fix/`
+  branch (or a worktree branch) and take it through the cycle above.
+- Before pushing a branch, run `git pull` (or `git fetch` and rebase) so other people's
+  merges into `main` arrive first and conflicts get resolved locally. Conflicts on
+  shared files are the normal cost of parallel work, not a surprise: plan for the
+  resolution step.
 
 ## Pushing
 
