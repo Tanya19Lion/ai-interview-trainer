@@ -215,7 +215,7 @@ function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown)
 	return passwordTooShort(newPassword);
 }
 
-async function applyPasswordReset(userId: Types.ObjectId | string,newPassword: string): Promise<boolean> {
+async function applyPasswordReset(userId: Types.ObjectId | string, newPassword: string): Promise<boolean> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
 	const updated = await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
 	return updated !== null;
