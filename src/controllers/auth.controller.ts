@@ -215,7 +215,7 @@ function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown)
 	return passwordTooShort(newPassword);
 }
 
-async function applyPasswordReset(userId: Types.ObjectId, newPassword: string): Promise<boolean> {
+async function applyPasswordReset(userId: Types.ObjectId | string, newPassword: string): Promise<boolean> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
 	const updated = await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
 	return updated !== null;
@@ -249,6 +249,39 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 	}
 
 	res.json({ message: 'Your password has been reset. Please sign in again.' });
+}
+
+export async function changePassword(req: AuthedRequest, res: Response): Promise<void> {
+	const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+	if (typeof currentPassword !== 'string' || typeof newPassword !== 'string' || !currentPassword || !newPassword) {
+		res.status(400).json({ code: 'auth.invalid_request', message: 'currentPassword and newPassword are required' });
+		return;
+	}
+	const passwordError = passwordTooShort(newPassword);
+	if (passwordError) {
+		res.status(400).json({ code: 'auth.invalid_request', message: passwordError });
+		return;
+	}
+
+	const user = await UserModel.findById(req.userId);
+	if (!user) {
+		res.status(404).json({ error: 'User not found' });
+		return;
+	}
+	if (!user.passwordHash) {
+		res.status(409).json({
+			code: 'auth.google_account_no_password',
+			message: 'This account signs in with Google and has no password to change.',
+		});
+		return;
+	}
+	if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+		res.status(400).json({ code: 'auth.invalid_current_password', message: 'Your current password is incorrect.' });
+		return;
+	}
+
+	await applyPasswordReset(user.id, newPassword);
+	res.json({ message: 'Password updated.' });
 }
 
 export async function me(req: AuthedRequest, res: Response): Promise<void> {

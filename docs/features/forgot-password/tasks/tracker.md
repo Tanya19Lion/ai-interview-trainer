@@ -23,7 +23,7 @@ ticket: "<TBD>"
 | T5 | sendResetEmail implementation | Not started | Tanya19Lion | S | T0 |
 | T6 | POST /api/auth/password-reset/request | Not started | Tanya19Lion | S | T3, T5 |
 | T7 | POST /api/auth/password-reset/confirm | Merged | Tanya19Lion | S | T3, T4 |
-| T8 | POST /api/auth/change-password | Not started | Tanya19Lion | S | T4 |
+| T8 | POST /api/auth/change-password | In review | Tanya19Lion | S | T4 |
 | T9 | Client: forgot-password request form | Not started | Tanya19Lion | S | T6 |
 | T10 | Client: reset-confirm page | Not started | Tanya19Lion | S | T7 |
 | T11 | Client: change-password form (profile) | Not started | Tanya19Lion | S | T8 |
