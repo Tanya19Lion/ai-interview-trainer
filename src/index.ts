@@ -2,6 +2,7 @@ import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
 import { connectDB } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -15,6 +16,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(helmet());
 
 app.get('/health', (_req, res) => {
 	res.json({ status: 'ok', uptime: process.uptime() });
