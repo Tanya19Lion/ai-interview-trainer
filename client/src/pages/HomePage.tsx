@@ -4,12 +4,12 @@ import { useLogout, useMe } from '../hooks/useAuth';
 import { useActiveSession } from '../hooks/useActiveSession';
 import { useHistory } from '../hooks/useHistory';
 import { useStats } from '../hooks/useStats';
+import { formatCompletedAt } from '../lib/formatCompletedAt';
+import { LEVEL_LABEL } from '../lib/levelLabel';
 import { scoreTone } from '../lib/scoreTone';
 import { TOPIC_LABEL } from '../lib/topicLabel';
 import type { Level } from '../types/interview';
 import styles from './HomePage.module.css';
-
-const LEVEL_LABEL: Record<Level, string> = { junior: 'Junior', middle: 'Middle', senior: 'Senior' };
 
 function mostFrequentLevel(levels: Level[]): Level | null {
 	if (levels.length === 0) return null;
@@ -137,11 +137,7 @@ export function HomePage() {
 											<div className={styles.recentTopic}>
 												{TOPIC_LABEL[session.topic]} · {session.level}
 											</div>
-											<div className={styles.recentSub}>
-												{session.completedAt
-													? new Date(session.completedAt).toLocaleDateString('uk-UA')
-													: '—'}
-											</div>
+											<div className={styles.recentSub}>{formatCompletedAt(session.completedAt)}</div>
 										</div>
 										{session.averageScore !== undefined && (
 											<span

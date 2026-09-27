@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Eyebrow, HistoryTable, ReviewModal } from '../components';
 import { useHistory } from '../hooks/useHistory';
+import { LEVEL_LABEL } from '../lib/levelLabel';
 import { TOPIC_LABEL } from '../lib/topicLabel';
 import { LEVELS, TOPICS, type Level, type Topic } from '../types/interview';
 import styles from './HistoryPage.module.css';
-
-const LEVEL_LABEL: Record<Level, string> = { junior: 'Junior', middle: 'Middle', senior: 'Senior' };
 
 export function HistoryPage() {
 	const [topic, setTopic] = useState<Topic | null>(null);

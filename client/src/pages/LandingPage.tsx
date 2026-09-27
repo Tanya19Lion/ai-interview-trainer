@@ -15,6 +15,7 @@ import {
 } from '../components';
 import { buttonClassName } from '../components/Button/buttonClassName';
 import { LEVELS, TOPICS, type Level, type Topic } from '../types/interview';
+import { LEVEL_LABEL } from '../lib/levelLabel';
 import { TOPIC_LABEL } from '../lib/topicLabel';
 import styles from './LandingPage.module.css';
 
@@ -39,8 +40,6 @@ const DEMO_HISTORY: { topic: Topic; level: Level; date: string; score: string; p
 	{ topic: 'typescript', level: 'junior', date: '20.07.2026', score: '9/10', pass: true },
 	{ topic: 'javascript', level: 'middle', date: '15.07.2026', score: '7/10', pass: true },
 ];
-
-const LEVEL_LABEL: Record<Level, string> = { junior: 'Junior', middle: 'Middle', senior: 'Senior' };
 
 const HEAT_WEEKS = 26;
 const HEAT_CELLS = HEAT_WEEKS * 7;

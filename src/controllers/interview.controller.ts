@@ -16,14 +16,10 @@ export async function startSession(req: AuthedRequest, res: Response): Promise<v
 		return;
 	}
 
-	const session = await InterviewSessionModel.create({
-		userId: req.userId,
-		topic,
-		level,
-		questions: [],
-	});
-
-	const { question } = await generateQuestion(topic, level, []);
+	const [session, { question }] = await Promise.all([
+		InterviewSessionModel.create({ userId: req.userId, topic, level, questions: [] }),
+		generateQuestion(topic, level, []),
+	]);
 
 	res.status(201).json({
 		sessionId: session.id,
