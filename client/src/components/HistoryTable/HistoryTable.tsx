@@ -1,8 +1,8 @@
+import { formatCompletedAt } from '../../lib/formatCompletedAt';
+import { LEVEL_LABEL } from '../../lib/levelLabel';
 import { TOPIC_LABEL } from '../../lib/topicLabel';
-import type { HistorySessionSummary, Level } from '../../types/interview';
+import type { HistorySessionSummary } from '../../types/interview';
 import styles from './HistoryTable.module.css';
-
-const LEVEL_LABEL: Record<Level, string> = { junior: 'Junior', middle: 'Middle', senior: 'Senior' };
 
 export interface HistoryTableProps {
 	sessions: HistorySessionSummary[];
@@ -37,9 +37,7 @@ export function HistoryTable({ sessions, onReview }: HistoryTableProps) {
 								{TOPIC_LABEL[session.topic]}
 							</td>
 							<td data-label="Рівень">{LEVEL_LABEL[session.level]}</td>
-							<td data-label="Дата">
-								{session.completedAt ? new Date(session.completedAt).toLocaleDateString('uk-UA') : '—'}
-							</td>
+							<td data-label="Дата">{formatCompletedAt(session.completedAt)}</td>
 							<td data-label="Оцінка" className={styles.score}>
 								{session.averageScore !== undefined ? `${session.averageScore.toFixed(1)}/10` : '—'}
 							</td>

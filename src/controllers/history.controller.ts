@@ -9,7 +9,9 @@ export async function getHistory(req: AuthedRequest, res: Response): Promise<voi
 	if (topic) filter.topic = topic;
 	if (level) filter.level = level;
 
-	const sessions = await InterviewSessionModel.find(filter).sort({ completedAt: -1 });
+	const sessions = await InterviewSessionModel.find(filter)
+		.select('topic level averageScore completedAt')
+		.sort({ completedAt: -1 });
 
 	res.json({
 		sessions: sessions.map((s) => ({

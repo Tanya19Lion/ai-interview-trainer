@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { CookieOptions, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
@@ -34,30 +34,39 @@ function signToken(userId: string, tokenVersion: number, expiresIn: jwt.SignOpti
 	return jwt.sign({ userId, tokenVersion }, secret, { expiresIn });
 }
 
-export function issueSession(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
-	const tokenVersion = user.tokenVersion ?? 0;
-	const accessExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
-	const token = signToken(user.id, tokenVersion, accessExpiresIn);
-	res.cookie('token', token, {
+function accessTokenExpiresIn(): jwt.SignOptions['expiresIn'] {
+	return (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
+}
+
+// `persistent` controls whether the cookie survives the browser session (`maxAge` set) or is
+// session-only. `refreshSession` always passes true: it only ever runs for a remembered session
+// (only rememberMe issues a refreshToken in the first place), so the renewed access cookie must
+// stay persistent too — otherwise it silently downgrades to a session-only cookie on every
+// refresh.
+function authCookieOptions(persistent: boolean): CookieOptions {
+	return {
 		httpOnly: true,
 		sameSite: 'lax',
 		secure: process.env.NODE_ENV === 'production',
-		...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE_MS } : {}),
-	});
+		...(persistent ? { maxAge: REMEMBER_ME_MAX_AGE_MS } : {}),
+	};
+}
+
+function toAuthUserPayload(user: HydratedDocument<User>) {
+	return { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl };
+}
+
+export function issueSession(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
+	const tokenVersion = user.tokenVersion ?? 0;
+	const token = signToken(user.id, tokenVersion, accessTokenExpiresIn());
+	res.cookie('token', token, authCookieOptions(Boolean(rememberMe)));
 
 	if (rememberMe) {
 		const refreshToken = signToken(user.id, tokenVersion, '7d');
-		res.cookie('refreshToken', refreshToken, {
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: process.env.NODE_ENV === 'production',
-			maxAge: REMEMBER_ME_MAX_AGE_MS,
-		});
+		res.cookie('refreshToken', refreshToken, authCookieOptions(true));
 	}
 
-	res.json({
-		user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl },
-	});
+	res.json({ user: toAuthUserPayload(user) });
 }
 
 export async function googleLogin(req: Request, res: Response): Promise<void> {
@@ -166,17 +175,8 @@ export async function refreshSession(req: Request, res: Response): Promise<void>
 		return;
 	}
 
-	const accessExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as unknown as jwt.SignOptions['expiresIn'];
-	const token = signToken(user.id, payload.tokenVersion, accessExpiresIn);
-	res.cookie('token', token, {
-		httpOnly: true,
-		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
-		// refreshSession only ever runs for a remembered session (only rememberMe issues a
-		// refreshToken in the first place), so the renewed access cookie must stay persistent too —
-		// otherwise it silently downgrades to a session-only cookie on every refresh.
-		maxAge: REMEMBER_ME_MAX_AGE_MS,
-	});
+	const token = signToken(user.id, payload.tokenVersion, accessTokenExpiresIn());
+	res.cookie('token', token, authCookieOptions(true));
 	res.json({ ok: true });
 }
 
@@ -290,7 +290,5 @@ export async function me(req: AuthedRequest, res: Response): Promise<void> {
 		res.status(404).json({ error: 'User not found' });
 		return;
 	}
-	res.json({
-		user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl },
-	});
+	res.json({ user: toAuthUserPayload(user) });
 }

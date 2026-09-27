@@ -2,10 +2,9 @@ import { useState } from 'react';
 import type { SubmitEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, TextField } from '../components';
+import { useFakeSubmit } from '../hooks/useFakeSubmit';
 import loginStyles from './LoginPage.module.css';
 import styles from './ResetPasswordPage.module.css';
-
-const FAKE_DELAY_MS = 700;
 
 type RequestStep = 'form' | 'sent';
 type ResetStep = 'form' | 'done';
@@ -13,15 +12,11 @@ type ResetStep = 'form' | 'done';
 function RequestEmailView() {
 	const [step, setStep] = useState<RequestStep>('form');
 	const [email, setEmail] = useState('');
-	const [pending, setPending] = useState(false);
+	const { pending, run } = useFakeSubmit();
 
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		setPending(true);
-		setTimeout(() => {
-			setPending(false);
-			setStep('sent');
-		}, FAKE_DELAY_MS);
+		run(() => setStep('sent'));
 	}
 
 	if (step === 'sent') {
@@ -71,7 +66,7 @@ function NewPasswordView() {
 	const [step, setStep] = useState<ResetStep>('form');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
-	const [pending, setPending] = useState(false);
+	const { pending, run } = useFakeSubmit();
 	const [error, setError] = useState<string | null>(null);
 
 	function handleSubmit(event: SubmitEvent) {
@@ -81,11 +76,7 @@ function NewPasswordView() {
 			return;
 		}
 		setError(null);
-		setPending(true);
-		setTimeout(() => {
-			setPending(false);
-			setStep('done');
-		}, FAKE_DELAY_MS);
+		run(() => setStep('done'));
 	}
 
 	if (step === 'done') {

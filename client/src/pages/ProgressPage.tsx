@@ -1,15 +1,16 @@
 import { Badge, Eyebrow, Heatmap, Spinner } from '../components';
 import { useHistory } from '../hooks/useHistory';
 import { useStats } from '../hooks/useStats';
+import { LEVEL_LABEL } from '../lib/levelLabel';
 import { scoreTone } from '../lib/scoreTone';
 import { TOPIC_LABEL } from '../lib/topicLabel';
 import type { Level } from '../types/interview';
 import styles from './ProgressPage.module.css';
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
-	junior: { label: 'Junior', color: 'var(--green)' },
-	middle: { label: 'Middle', color: 'var(--amber)' },
-	senior: { label: 'Senior', color: 'var(--plum)' },
+	junior: { label: LEVEL_LABEL.junior, color: 'var(--green)' },
+	middle: { label: LEVEL_LABEL.middle, color: 'var(--amber)' },
+	senior: { label: LEVEL_LABEL.senior, color: 'var(--plum)' },
 };
 
 const TREND_SIZE = 10;

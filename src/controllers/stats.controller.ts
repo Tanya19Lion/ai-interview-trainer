@@ -31,7 +31,9 @@ function computeStreakDays(completedAtDates: Date[]): number {
 }
 
 export async function getStats(req: AuthedRequest, res: Response): Promise<void> {
-	const sessions = await InterviewSessionModel.find({ userId: req.userId, status: 'completed' });
+	const sessions = await InterviewSessionModel.find({ userId: req.userId, status: 'completed' }).select(
+		'topic completedAt questions.score',
+	);
 
 	if (sessions.length === 0) {
 		res.json({ totalSessions: 0, overallAccuracy: null, byTopic: [], streakDays: 0 });
