@@ -25,7 +25,7 @@ All notable changes to this project are documented in this file. The format foll
 - Persistent sign-in ("remember me") support in the auth API and the client API layer, without a login-form checkbox yet
 - Login rate limit per email address
 - Mock API server generated from the OpenAPI contracts (`npm run mock:api`)
-- CI: lint, build and tests for the server and the client, a docs-drift check of the routes against the OpenAPI specs, a next-version preview on pull requests, and changelog and release-notes drafting on version tags
+- CI: lint, build and tests for the server and the client, a docs-drift check of the routes against the OpenAPI specs, a next-version preview on pull requests, and an automatic tag and GitHub Release when a release pull request is merged
 
 ### Changed
 
