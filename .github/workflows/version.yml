@@ -3,7 +3,7 @@ on:
   pull_request:
 
 # Shows the version a change would release — before any tag exists. The
-# deterministic scripts/next-version.sh computes the number from the commit
+# deterministic .github/scripts/next-version.sh computes the number from the commit
 # types (free, no LLM); `claude -p` only explains it in a PR comment (which part
 # moved and why). Pure preview: it tags nothing and changes nothing.
 jobs:
@@ -24,7 +24,7 @@ jobs:
         id: semver
         run: |
           last_tag="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
-          next="$(bash scripts/next-version.sh)"
+          next="$(bash .github/scripts/next-version.sh)"
           echo "current=${last_tag#v}" >> "$GITHUB_OUTPUT"
           echo "next=$next" >> "$GITHUB_OUTPUT"
           echo "::notice::proposed version ${last_tag#v} -> $next"

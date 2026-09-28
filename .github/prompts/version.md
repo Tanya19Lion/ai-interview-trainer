@@ -6,7 +6,7 @@ the current released version is in `CURRENT_VERSION` (e.g. `0.1.0`).
 ## Workflow
 
 1. Read `NEXT_VERSION` and `CURRENT_VERSION`. The number is decided by the rule
-   in `scripts/next-version.sh` — do not recompute it; explain it.
+   in `.github/scripts/next-version.sh` — do not recompute it; explain it.
 2. Run `git log <last-tag>..HEAD --oneline` and identify the strongest change
    that drove the bump: a `BREAKING CHANGE` → MAJOR, a `feat:` → MINOR, only
    `fix:` → PATCH.

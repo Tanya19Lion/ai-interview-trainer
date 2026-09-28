@@ -6,7 +6,7 @@ on:
 
 # Docs live outside the test/lint gate, so they drift silently. This brings
 # them into CI: every PR (and every push to main) runs the deterministic
-# detector scripts/check-docs-drift.py — it parses the Express routes in
+# detector .github/scripts/check-docs-drift.py — it parses the Express routes in
 # src/routes/ and compares them to the OpenAPI specs in docs/features/. The
 # detector is free (no LLM). Only when it finds a real gap does the job spend a
 # few cents on `claude -p` to draft a review comment naming the undocumented
@@ -26,7 +26,7 @@ jobs:
         id: detect
         run: |
           set +e
-          report="$(python3 scripts/check-docs-drift.py)"
+          report="$(python3 .github/scripts/check-docs-drift.py)"
           code=$?
           set -e
           echo "$report"
