@@ -1,0 +1,54 @@
+name: release
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# Merging a release PR (branch `release/vX.Y.Z`) publishes the release: the tag is
+# created on the merge commit and the GitHub Release body is the `## [X.Y.Z]` section
+# of docs/CHANGELOG.md, which was already reviewed inside the PR. Deterministic — no LLM.
+# The PR must carry the bumped package.json version and the promoted changelog section.
+jobs:
+  release:
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_REF: ${{ github.head_ref }}
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check the release PR is consistent
+        run: |
+          version="$(sed -n 's/.*"version": *"\([0-9.]*\)".*/\1/p' package.json | head -n1)"
+          [[ "$HEAD_REF" == "release/v$version" ]] \
+            || { echo "::error::branch $HEAD_REF does not match package.json version $version"; exit 1; }
+          git rev-parse -q --verify "refs/tags/v$version" >/dev/null \
+            && { echo "::error::tag v$version already exists"; exit 1; }
+          grep -qE "^## \[$version\]" docs/CHANGELOG.md \
+            || { echo "::error::docs/CHANGELOG.md has no ## [$version] section"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Extract release notes from the changelog
+        run: |
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && (index($0, "## [") == 1 || (index($0, "[") == 1 && index($0, "]: ") > 0)) { exit }
+            on
+          ' docs/CHANGELOG.md > /tmp/release-body.md
+          [[ -s /tmp/release-body.md ]] \
+            || { echo "::error::the [$VERSION] changelog section is empty"; exit 1; }
+
+      - name: Tag and publish the GitHub Release
+        run: |
+          gh release create "v$VERSION" \
+            --target "$MERGE_SHA" \
+            --title "v$VERSION" \
+            --notes-file /tmp/release-body.md
