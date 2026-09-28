@@ -1,0 +1,207 @@
+# Source of truth for the actual behavior is the code:
+# src/routes/history.routes.ts, src/controllers/history.controller.ts,
+# src/routes/stats.routes.ts, src/controllers/stats.controller.ts.
+openapi: 3.0.3
+info:
+  title: History and stats API
+  version: "1.0.0"
+  description: >
+    Read-only views over the caller's completed interview sessions: the history list,
+    one session's detail, and aggregate stats. All endpoints require the auth session
+    cookie (see src/middleware/auth.ts) and are mounted under /api/history and /api/stats.
+servers:
+  - url: /api
+
+paths:
+  /history:
+    get:
+      operationId: listHistory
+      summary: List the caller's completed sessions, newest first.
+      parameters:
+        - name: topic
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Topic'
+        - name: level
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Level'
+      responses:
+        '200':
+          description: Completed sessions matching the optional filters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '401':
+          description: Not authenticated.
+
+  /history/{id}:
+    get:
+      operationId: getSessionDetail
+      summary: Return one of the caller's sessions with all its questions.
+      description: Works for both completed and in-progress sessions.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+        '404':
+          description: Session not found for this user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated.
+
+  /stats:
+    get:
+      operationId: getStats
+      summary: Aggregate stats over the caller's completed sessions.
+      responses:
+        '200':
+          description: >
+            Totals, accuracy and streak. With no completed sessions the response is
+            `totalSessions: 0`, `overallAccuracy: null`, `byTopic: []`, `streakDays: 0`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+        '401':
+          description: Not authenticated.
+
+components:
+  schemas:
+    Topic:
+      type: string
+      enum: [react, javascript, nodejs, typescript, nextjs, css, html, sql, restapi, system-design]
+    Level:
+      type: string
+      enum: [junior, middle, senior]
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    HistoryItem:
+      type: object
+      required: [id, topic, level]
+      properties:
+        id:
+          type: string
+        topic:
+          $ref: '#/components/schemas/Topic'
+        level:
+          $ref: '#/components/schemas/Level'
+        averageScore:
+          type: number
+          minimum: 0
+          maximum: 10
+        completedAt:
+          type: string
+          format: date-time
+
+    HistoryResponse:
+      type: object
+      required: [sessions]
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryItem'
+
+    QuestionAttempt:
+      type: object
+      required: [question, answer, score, feedback, correctAnswer, weakTopics]
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+        feedback:
+          type: string
+        correctAnswer:
+          type: string
+        weakTopics:
+          type: array
+          items:
+            type: string
+
+    SessionDetail:
+      type: object
+      required: [id, topic, level, status, questions]
+      properties:
+        id:
+          type: string
+        topic:
+          $ref: '#/components/schemas/Topic'
+        level:
+          $ref: '#/components/schemas/Level'
+        status:
+          type: string
+          enum: [in_progress, completed]
+        averageScore:
+          type: number
+          description: Present once the session is completed.
+        completedAt:
+          type: string
+          format: date-time
+          description: Present once the session is completed.
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionAttempt'
+
+    TopicStat:
+      type: object
+      required: [topic, accuracy, count]
+      properties:
+        topic:
+          $ref: '#/components/schemas/Topic'
+        accuracy:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Mean question score for the topic, divided by 10.
+        count:
+          type: integer
+          description: Number of answered questions for the topic.
+
+    StatsResponse:
+      type: object
+      required: [totalSessions, overallAccuracy, byTopic, streakDays]
+      properties:
+        totalSessions:
+          type: integer
+        overallAccuracy:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 1
+          description: Mean question score over all topics, divided by 10. Null with no completed sessions.
+        byTopic:
+          type: array
+          description: Sorted by accuracy, highest first.
+          items:
+            $ref: '#/components/schemas/TopicStat'
+        streakDays:
+          type: integer
+          description: Consecutive UTC days with a completed session, ending today or yesterday.
