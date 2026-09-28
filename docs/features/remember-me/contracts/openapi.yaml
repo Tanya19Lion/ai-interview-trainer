@@ -281,6 +281,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/OkResponse"
 
+  /api/auth/me:
+    get:
+      summary: Return the currently signed-in user
+      operationId: getCurrentUser
+      description: |
+        Used by the client on load to restore the session (`useMe()`). Authenticated by the
+        `token` cookie via `requireAuth` (src/middleware/auth.ts), which also rejects a token
+        whose `tokenVersion` no longer matches the user's (session revoked).
+      security:
+        - CookieAuth: []
+      responses:
+        "200":
+          description: The signed-in user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: >-
+            No or invalid `token` cookie (body `{ error }`), or the session was revoked
+            (body `{ code: "auth.session_revoked", message }`).
+        "404":
+          description: The token is valid but the user no longer exists (body `{ error }`).
+
 components:
   securitySchemes:
     CookieAuth:
