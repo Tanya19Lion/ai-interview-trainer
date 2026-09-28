@@ -3,8 +3,9 @@
 
 Routes are read from `<name>Router.<method>('<path>', ...)` calls and prefixed with
 the mount point from `app.use('/api/...', <name>Router)` in src/index.ts. Documented
-operations are read from every docs/features/*/(contracts/)openapi.yaml, honouring a
-`servers: - url:` base path. Path params are normalised (`:id` and `{id}` -> `{}`).
+operations are read from every docs/features/*/(contracts/)openapi.yaml, honouring the
+path of a `servers: - url:` (any scheme://host is dropped). Path params are
+normalised (`:id` and `{id}` -> `{}`).
 
 Prints a report to stdout. Exit 0 = in sync, 1 = drift (used by docs-drift.yml).
 """
@@ -53,7 +54,7 @@ def documented_operations():
         for line in lines:
             m = re.match(r"\s+-\s+url:\s*(\S+)", line)
             if m and not in_paths:
-                base = m.group(1).rstrip("/")
+                base = re.sub(r"^\w+://[^/]*", "", m.group(1)).rstrip("/")
                 continue
             if re.match(r"paths:\s*$", line):
                 in_paths = True
