@@ -98,7 +98,7 @@ components:
   schemas:
     Topic:
       type: string
-      enum: [react, javascript, nodejs, typescript, nextjs, css, html, sql, restapi]
+      enum: [react, javascript, nodejs, typescript, nextjs, css, html, sql, restapi, system-design]
     Level:
       type: string
       enum: [junior, middle, senior]
