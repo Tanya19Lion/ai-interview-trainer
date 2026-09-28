@@ -38,7 +38,7 @@ jobs:
 
       - name: Curate the changelog
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
           # The agent curates [Unreleased] in the working tree and returns the
