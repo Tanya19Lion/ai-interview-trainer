@@ -6,6 +6,21 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-28
+
+### Fixed
+
+- Docs-drift detector: no longer treats an OpenAPI `servers` URL's scheme and host as part of the route path, which had made every documented auth route look undocumented
+- Added the missing `system-design` value to the interview-flow OpenAPI `Topic` enum
+
+### Documentation
+
+- Documented `GET /api/auth/me`, `GET /api/history`, `GET /api/history/{id}` and `GET /api/stats` in OpenAPI
+
+### Removed
+
+- The unused `.github/release.yml` GitHub-native release-notes config (the `release` workflow builds release notes from this changelog instead)
+
 ## [0.1.0] - 2026-09-28
 
 ### Added
@@ -61,5 +76,6 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.0
