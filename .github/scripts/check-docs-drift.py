@@ -89,7 +89,11 @@ def main():
         print(f"  - {method} {path}")
     if not unimplemented:
         print("  (none)")
-    return 1 if undocumented or unimplemented else 0
+    # Only a route implemented but undocumented is an actionable gap worth an agent
+    # comment on every PR. A documented-but-unimplemented operation may be planned
+    # work or a stale spec (docs-drift.md's own workflow step 3) — report it, but
+    # don't fail the job or spend an LLM call on it every single time.
+    return 1 if undocumented else 0
 
 
 if __name__ == "__main__":
