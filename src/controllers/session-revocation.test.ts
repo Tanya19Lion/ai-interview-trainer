@@ -40,7 +40,8 @@ vi.mock('../models/User.js', () => ({
 }));
 
 vi.mock('../models/LoginAttempt.js', () => ({
-	LoginAttemptModel: { findOneAndUpdate: vi.fn(async () => ({ count: 1 })) },
+	LOGIN_ATTEMPT_WINDOW_SECONDS: 900,
+	LoginAttemptModel: { deleteOne: vi.fn(async () => ({})), findOneAndUpdate: vi.fn(async () => ({ count: 1 })) },
 }));
 
 vi.mock('../services/passwordReset.service.js', () => ({

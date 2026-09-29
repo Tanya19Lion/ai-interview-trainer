@@ -3,15 +3,22 @@ import express from 'express';
 import type { AddressInfo } from 'net';
 import type { NextFunction, Request, Response } from 'express';
 
-const store = new Map<string, { count: number }>();
+// The store never runs Mongo's TTL sweep on its own — an expired document stays until the code
+// under test deletes it, which is exactly the gap the window-expiry test below exercises.
+const store = new Map<string, { count: number; windowStart: Date }>();
 
 vi.mock('../models/LoginAttempt.js', () => ({
+	LOGIN_ATTEMPT_WINDOW_SECONDS: 900,
 	LoginAttemptModel: {
 		findOneAndUpdate: vi.fn(async (filter: { email: string }) => {
 			const existing = store.get(filter.email);
-			const count = (existing?.count ?? 0) + 1;
-			store.set(filter.email, { count });
-			return { count };
+			const attempt = { count: (existing?.count ?? 0) + 1, windowStart: existing?.windowStart ?? new Date() };
+			store.set(filter.email, attempt);
+			return attempt;
+		}),
+		deleteOne: vi.fn(async (filter: { email: string; windowStart: { $lt: Date } }) => {
+			const existing = store.get(filter.email);
+			if (existing && existing.windowStart < filter.windowStart.$lt) store.delete(filter.email);
 		}),
 	},
 }));
@@ -28,6 +35,27 @@ function makeRes() {
 describe('loginRateLimit (unit, mocked LoginAttemptModel)', () => {
 	beforeEach(() => {
 		store.clear();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('starts a fresh window once 15 minutes have passed, without waiting for the TTL sweep', async () => {
+		vi.useFakeTimers({ toFake: ['Date'] });
+		const email = 'jobseeker@example.test';
+		for (let i = 0; i < 6; i++) {
+			await loginRateLimit({ body: { email } } as Request, makeRes(), vi.fn() as NextFunction);
+		}
+
+		vi.setSystemTime(Date.now() + 15 * 60 * 1000 + 1000);
+
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+		await loginRateLimit({ body: { email } } as Request, res, next);
+
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(res.status).not.toHaveBeenCalled();
 	});
 
 	it('calls next() for the first 5 attempts for an email', async () => {
