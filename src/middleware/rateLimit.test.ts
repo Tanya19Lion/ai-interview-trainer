@@ -4,10 +4,10 @@ import type { AddressInfo } from 'net';
 import type { NextFunction, Request, Response } from 'express';
 
 vi.mock('../services/loginAttempt.service.js', () => ({
-	isLoginBlocked: vi.fn(),
+	reserveLoginAttempt: vi.fn(),
 }));
 
-const { isLoginBlocked } = await import('../services/loginAttempt.service.js');
+const { reserveLoginAttempt } = await import('../services/loginAttempt.service.js');
 const { loginRateLimit } = await import('./rateLimit.js');
 
 function makeRes() {
@@ -19,23 +19,23 @@ function makeRes() {
 
 describe('loginRateLimit (unit, mocked loginAttempt.service)', () => {
 	beforeEach(() => {
-		vi.mocked(isLoginBlocked).mockReset();
+		vi.mocked(reserveLoginAttempt).mockReset();
 	});
 
-	it('calls next() when the email is not blocked', async () => {
-		vi.mocked(isLoginBlocked).mockResolvedValueOnce(false);
+	it('reserves an attempt for the email and calls next() when one is available', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(true);
 		const res = makeRes();
 		const next = vi.fn() as NextFunction;
 
 		await loginRateLimit({ body: { email: 'jobseeker@example.test' } } as Request, res, next);
 
-		expect(isLoginBlocked).toHaveBeenCalledWith('jobseeker@example.test');
+		expect(reserveLoginAttempt).toHaveBeenCalledWith('jobseeker@example.test');
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.status).not.toHaveBeenCalled();
 	});
 
-	it('rejects a blocked email with 429 auth.rate_limited and does not call next()', async () => {
-		vi.mocked(isLoginBlocked).mockResolvedValueOnce(true);
+	it('rejects with 429 auth.rate_limited and does not call next() when no attempt is left', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(false);
 		const res = makeRes();
 		const next = vi.fn() as NextFunction;
 
@@ -49,12 +49,12 @@ describe('loginRateLimit (unit, mocked loginAttempt.service)', () => {
 		});
 	});
 
-	it('passes through without consulting the limiter when the body has no email', async () => {
+	it('passes through without reserving anything when the body has no email', async () => {
 		const next = vi.fn() as NextFunction;
 
 		await loginRateLimit({ body: {} } as Request, makeRes(), next);
 
-		expect(isLoginBlocked).not.toHaveBeenCalled();
+		expect(reserveLoginAttempt).not.toHaveBeenCalled();
 		expect(next).toHaveBeenCalledTimes(1);
 	});
 });
@@ -65,7 +65,7 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 	let credentialCheckCalls: number;
 
 	beforeEach(async () => {
-		vi.mocked(isLoginBlocked).mockReset();
+		vi.mocked(reserveLoginAttempt).mockReset();
 		credentialCheckCalls = 0;
 
 		const app = express();
@@ -93,8 +93,8 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 		});
 	}
 
-	it('an unblocked email reaches the credential check', async () => {
-		vi.mocked(isLoginBlocked).mockResolvedValueOnce(false);
+	it('an email with an attempt left reaches the credential check', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(true);
 
 		const res = await post('ratelimited@example.test');
 
@@ -102,8 +102,8 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 		expect(credentialCheckCalls).toBe(1);
 	});
 
-	it('a blocked email gets 429 before the credential check runs', async () => {
-		vi.mocked(isLoginBlocked).mockResolvedValueOnce(true);
+	it('an email with no attempt left gets 429 before the credential check runs', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(false);
 
 		const res = await post('ratelimited@example.test');
 

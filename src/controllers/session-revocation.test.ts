@@ -39,9 +39,9 @@ vi.mock('../models/User.js', () => ({
 	},
 }));
 
-vi.mock('../models/LoginAttempt.js', () => ({
-	LOGIN_ATTEMPT_WINDOW_SECONDS: 900,
-	LoginAttemptModel: { findOne: vi.fn(async () => null) },
+vi.mock('../services/loginAttempt.service.js', () => ({
+	reserveLoginAttempt: vi.fn(async () => true),
+	releaseLoginAttempt: vi.fn(),
 }));
 
 vi.mock('../services/passwordReset.service.js', () => ({

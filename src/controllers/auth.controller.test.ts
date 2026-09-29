@@ -39,11 +39,11 @@ vi.mock('../services/passwordReset.service.js', () => ({
 }));
 
 vi.mock('../services/loginAttempt.service.js', () => ({
-	recordFailedLogin: vi.fn(),
+	releaseLoginAttempt: vi.fn(),
 }));
 
 const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword, login } = await import('./auth.controller.js');
-const { recordFailedLogin } = await import('../services/loginAttempt.service.js');
+const { releaseLoginAttempt } = await import('../services/loginAttempt.service.js');
 const { requireAuth } = await import('../middleware/auth.js');
 const { verifyAndConsumePasswordResetToken } = await import('../services/passwordReset.service.js');
 const { UserModel } = await import('../models/User.js');
@@ -599,6 +599,7 @@ describe('changePassword (integration, mounted on POST /api/auth/change-password
 	});
 });
 
+// loginRateLimit reserves an attempt before the credential check; login() gives it back on success.
 describe('login (integration, mounted on POST /api/auth/login) — rate-limit bookkeeping', () => {
 	let server: ReturnType<express.Express['listen']>;
 	let baseUrl: string;
@@ -614,7 +615,7 @@ describe('login (integration, mounted on POST /api/auth/login) — rate-limit bo
 
 	beforeEach(async () => {
 		process.env.JWT_SECRET = 'test-secret';
-		vi.mocked(recordFailedLogin).mockReset();
+		vi.mocked(releaseLoginAttempt).mockReset();
 		vi.mocked(UserModel.findOne).mockReset();
 
 		const app = express();
@@ -631,34 +632,33 @@ describe('login (integration, mounted on POST /api/auth/login) — rate-limit bo
 		await new Promise<void>((resolve) => server.close(() => resolve()));
 	});
 
-	it('wrong password → 401 and the failed attempt is recorded for that email', async () => {
+	it('wrong password → 401 and the reserved attempt stays used', async () => {
 		const passwordHash = await bcrypt.hash('right-password', 4);
 		vi.mocked(UserModel.findOne).mockResolvedValueOnce({ id: 'user-1', email, passwordHash } as never);
 
 		const res = await post({ email, password: 'wrong-password' });
 
 		expect(res.status).toBe(401);
-		expect(recordFailedLogin).toHaveBeenCalledTimes(1);
-		expect(recordFailedLogin).toHaveBeenCalledWith(email);
+		expect(releaseLoginAttempt).not.toHaveBeenCalled();
 	});
 
-	it('unknown email → 401 and the failed attempt is recorded', async () => {
+	it('unknown email → 401 and the reserved attempt stays used', async () => {
 		vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
 
 		const res = await post({ email, password: 'whatever-123' });
 
 		expect(res.status).toBe(401);
-		expect(recordFailedLogin).toHaveBeenCalledTimes(1);
-		expect(recordFailedLogin).toHaveBeenCalledWith(email);
+		expect(releaseLoginAttempt).not.toHaveBeenCalled();
 	});
 
-	it('correct password → 200 and nothing is recorded, so successful logins never fill the window', async () => {
+	it('correct password → 200 and the reserved attempt is given back, so successful logins never fill the window', async () => {
 		const passwordHash = await bcrypt.hash('right-password', 4);
 		vi.mocked(UserModel.findOne).mockResolvedValueOnce({ id: 'user-1', email, passwordHash } as never);
 
 		const res = await post({ email, password: 'right-password' });
 
 		expect(res.status).toBe(200);
-		expect(recordFailedLogin).not.toHaveBeenCalled();
+		expect(releaseLoginAttempt).toHaveBeenCalledTimes(1);
+		expect(releaseLoginAttempt).toHaveBeenCalledWith(email);
 	});
 });
