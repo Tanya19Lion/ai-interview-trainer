@@ -6,6 +6,24 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-29
+
+### Fixed
+
+- Login rate limit: a successful sign-in no longer counts toward the per-email limit, so signing in several times in a row no longer locks the account out for 15 minutes
+- Login rate limit: the 15-minute window now expires in application code instead of waiting for MongoDB's periodic cleanup, so a lock ends on time
+- CI: the docs-drift check no longer fails a pull request for an OpenAPI operation that is documented but not implemented yet (planned work); it still fails for a route missing from the docs
+
+### Security
+
+- The login limit reserves an attempt with a single atomic write before the password is checked, so parallel requests for one email cannot exceed five password checks per 15 minutes
+- A first-attempt race on the login limit counter is retried instead of returning a server error
+
+### Documentation
+
+- Updated the remember-me data model, sequence diagram, OpenAPI description and ADR-0003 (new amendment), and the root PRD's rate-limit notes, to match the shipped limiter
+- Recorded the fix in `SECURITY_REVIEW_RESULTS.md` and `PROGRESS.md`, and added the 0.1.2 release notes
+
 ## [0.1.1] - 2026-09-28
 
 ### Fixed
@@ -76,6 +94,7 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.0
