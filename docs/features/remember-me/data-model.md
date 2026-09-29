@@ -64,9 +64,9 @@ this feature.
 | Field | Type | Constraints | Notes |
 |---|---|---|---|
 | `_id` | `ObjectId` | PK | Mongo native id, same convention as `User`. |
-| `email` | `String` | required, unique | One active document per email — the login handler upserts by `email`, incrementing `count` on each attempt. Not a `ref` to `User._id`: the check runs before credential lookup, so it must work for emails that don't resolve to a `User` at all. |
-| `windowStart` | `Date` | required, default = `Date.now` | Genuine identity/genesis default (record-creation time), not a business decision — matches `.claude/rules/migrations.md`'s allowed-default carve-out. Anchors the TTL window; app code does not reset it on subsequent attempts within the same window (fixed window, not sliding, per ADR-0003). |
-| `count` | `Number` | required, no schema default | Set to `1` on first attempt and incremented on each retry by app code (`auth.controller.ts` login handler) — deliberately no schema-level default so the "starts at 1" business rule stays in code, not the store. |
+| `email` | `String` | required, unique | One active document per email — `reserveLoginAttempt` upserts by `email`, incrementing `count` once per attempt before the password check; a successful login decrements it again (`releaseLoginAttempt`), so only failures stay counted. Not a `ref` to `User._id`: the check runs before credential lookup, so it must work for emails that don't resolve to a `User` at all. |
+| `windowStart` | `Date` | required, default = `Date.now` | Genuine identity/genesis default (record-creation time), not a business decision — matches `.claude/rules/migrations.md`'s allowed-default carve-out. Anchors the TTL window; app code does not reset it on subsequent attempts within the same window (fixed window, not sliding, per ADR-0003). A window older than 15 minutes is deleted by the next `reserveLoginAttempt`, so enforcement never waits for Mongo's TTL sweep. |
+| `count` | `Number` | required, no schema default | Set to `1` on first attempt and incremented per attempt by app code (`reserveLoginAttempt` in `loginAttempt.service.ts`, called from the `loginRateLimit` middleware) and decremented on a successful login (`releaseLoginAttempt`, called from the `auth.controller.ts` login handler) — deliberately no schema-level default so the "starts at 1" business rule stays in code, not the store. |
 
 No `createdAt`/`updatedAt` on this entity: `windowStart` already anchors both "when this window
 began" and the TTL expiry — a second identity timestamp would be redundant (deviates from this
@@ -80,8 +80,8 @@ timestamp to add here, not because the default was skipped by oversight).
 
 | Index | Fields | Query it serves |
 |---|---|---|
-| `LoginAttempt` unique on `email` | `{ email: 1 }` (via `unique: true`) | Upsert-by-email on every login attempt (SAD §4 ADR-0003: "read + upsert on `LoginAttempt`"). |
-| `LoginAttempt` TTL on `windowStart` | `{ windowStart: 1 }`, `expireAfterSeconds: 900` | Auto-expires a `LoginAttempt` document 15 minutes after window start, implementing the PRD §6 "≤5 attempts / 15 min" fixed window with no manual cleanup job (ADR-0003 Neutral consequence). |
+| `LoginAttempt` unique on `email` | `{ email: 1 }` (via `unique: true`) | Atomic upsert-by-email on every login attempt (`reserveLoginAttempt`), and a decrement on every successful one (`releaseLoginAttempt`) (SAD §4 ADR-0003: "read + upsert on `LoginAttempt`"). |
+| `LoginAttempt` TTL on `windowStart` | `{ windowStart: 1 }`, `expireAfterSeconds: 900` | Auto-expires a `LoginAttempt` document 15 minutes after window start, implementing the PRD §6 "≤5 attempts / 15 min" fixed window with no manual cleanup job (ADR-0003 Neutral consequence). A cleanup backstop, not the enforcement mechanism — app code also expires the window itself. |
 
 No new index on `User` — `email` already carries a `unique` index from the existing schema; SAD's
 `requireAuth` `tokenVersion` comparison is a document-level field check on an already-fetched

@@ -6,6 +6,7 @@ import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
 import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
 import type { HydratedDocument, Types } from 'mongoose';
+import { releaseLoginAttempt } from '../services/loginAttempt.service.js';
 import { verifyAndConsumePasswordResetToken } from '../services/passwordReset.service.js';
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -151,6 +152,8 @@ export async function login(req: Request, res: Response): Promise<void> {
 		return;
 	}
 
+	// loginRateLimit reserved an attempt before this check; a successful login gives it back.
+	await releaseLoginAttempt(email);
 	issueSession(res, user, rememberMe);
 }
 

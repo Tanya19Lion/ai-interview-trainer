@@ -3,19 +3,11 @@ import express from 'express';
 import type { AddressInfo } from 'net';
 import type { NextFunction, Request, Response } from 'express';
 
-const store = new Map<string, { count: number }>();
-
-vi.mock('../models/LoginAttempt.js', () => ({
-	LoginAttemptModel: {
-		findOneAndUpdate: vi.fn(async (filter: { email: string }) => {
-			const existing = store.get(filter.email);
-			const count = (existing?.count ?? 0) + 1;
-			store.set(filter.email, { count });
-			return { count };
-		}),
-	},
+vi.mock('../services/loginAttempt.service.js', () => ({
+	reserveLoginAttempt: vi.fn(),
 }));
 
+const { reserveLoginAttempt } = await import('../services/loginAttempt.service.js');
 const { loginRateLimit } = await import('./rateLimit.js');
 
 function makeRes() {
@@ -25,42 +17,45 @@ function makeRes() {
 	} as unknown as Response & { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn> };
 }
 
-describe('loginRateLimit (unit, mocked LoginAttemptModel)', () => {
+describe('loginRateLimit (unit, mocked loginAttempt.service)', () => {
 	beforeEach(() => {
-		store.clear();
+		vi.mocked(reserveLoginAttempt).mockReset();
 	});
 
-	it('calls next() for the first 5 attempts for an email', async () => {
-		const email = 'jobseeker@example.test';
-		for (let i = 0; i < 5; i++) {
-			const req = { body: { email } } as Request;
-			const res = makeRes();
-			const next = vi.fn() as NextFunction;
-
-			await loginRateLimit(req, res, next);
-
-			expect(next).toHaveBeenCalledTimes(1);
-			expect(res.status).not.toHaveBeenCalled();
-		}
-	});
-
-	it('rejects the 6th attempt with 429 auth.rate_limited and does not call next()', async () => {
-		const email = 'jobseeker@example.test';
-		const next = vi.fn() as NextFunction;
-		for (let i = 0; i < 5; i++) {
-			await loginRateLimit({ body: { email } } as Request, makeRes(), next);
-		}
-
+	it('reserves an attempt for the email and calls next() when one is available', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(true);
 		const res = makeRes();
-		const sixthNext = vi.fn() as NextFunction;
-		await loginRateLimit({ body: { email } } as Request, res, sixthNext);
+		const next = vi.fn() as NextFunction;
 
-		expect(sixthNext).not.toHaveBeenCalled();
+		await loginRateLimit({ body: { email: 'jobseeker@example.test' } } as Request, res, next);
+
+		expect(reserveLoginAttempt).toHaveBeenCalledWith('jobseeker@example.test');
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(res.status).not.toHaveBeenCalled();
+	});
+
+	it('rejects with 429 auth.rate_limited and does not call next() when no attempt is left', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(false);
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await loginRateLimit({ body: { email: 'jobseeker@example.test' } } as Request, res, next);
+
+		expect(next).not.toHaveBeenCalled();
 		expect(res.status).toHaveBeenCalledWith(429);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 'auth.rate_limited',
 			message: 'Too many login attempts for this email. Try again later.',
 		});
+	});
+
+	it('passes through without reserving anything when the body has no email', async () => {
+		const next = vi.fn() as NextFunction;
+
+		await loginRateLimit({ body: {} } as Request, makeRes(), next);
+
+		expect(reserveLoginAttempt).not.toHaveBeenCalled();
+		expect(next).toHaveBeenCalledTimes(1);
 	});
 });
 
@@ -70,7 +65,7 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 	let credentialCheckCalls: number;
 
 	beforeEach(async () => {
-		store.clear();
+		vi.mocked(reserveLoginAttempt).mockReset();
 		credentialCheckCalls = 0;
 
 		const app = express();
@@ -90,64 +85,33 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 		await new Promise<void>((resolve) => server.close(() => resolve()));
 	});
 
-	it('passes 5 attempts through to the credential check, then rejects the 6th before it', async () => {
-		const email = 'ratelimited@example.test';
-
-		for (let i = 0; i < 5; i++) {
-			const res = await fetch(`${baseUrl}/api/auth/login`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password: 'wrong' }),
-			});
-			expect(res.status).toBe(401);
-		}
-		expect(credentialCheckCalls).toBe(5);
-
-		const sixth = await fetch(`${baseUrl}/api/auth/login`, {
+	function post(email: string) {
+		return fetch(`${baseUrl}/api/auth/login`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email, password: 'wrong' }),
 		});
+	}
 
-		expect(sixth.status).toBe(429);
-		await expect(sixth.json()).resolves.toEqual({
+	it('an email with an attempt left reaches the credential check', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(true);
+
+		const res = await post('ratelimited@example.test');
+
+		expect(res.status).toBe(401);
+		expect(credentialCheckCalls).toBe(1);
+	});
+
+	it('an email with no attempt left gets 429 before the credential check runs', async () => {
+		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(false);
+
+		const res = await post('ratelimited@example.test');
+
+		expect(res.status).toBe(429);
+		await expect(res.json()).resolves.toEqual({
 			code: 'auth.rate_limited',
 			message: 'Too many login attempts for this email. Try again later.',
 		});
-		// the 6th request was short-circuited before reaching the credential check
-		expect(credentialCheckCalls).toBe(5);
-	});
-
-	it('a successful login does not reset or bypass the counter', async () => {
-		const email = 'success@example.test';
-
-		const app2 = express();
-		app2.use(express.json());
-		app2.post('/api/auth/login', loginRateLimit, (_req, res) => {
-			credentialCheckCalls++;
-			res.status(200).json({ user: { id: '1', email } });
-		});
-		await new Promise<void>((resolve) => server.close(() => resolve()));
-		server = app2.listen(0);
-		await new Promise<void>((resolve) => server.once('listening', resolve));
-		const { port } = server.address() as AddressInfo;
-		baseUrl = `http://127.0.0.1:${port}`;
-
-		for (let i = 0; i < 5; i++) {
-			const res = await fetch(`${baseUrl}/api/auth/login`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password: 'correct' }),
-			});
-			expect(res.status).toBe(200);
-		}
-
-		const sixth = await fetch(`${baseUrl}/api/auth/login`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ email, password: 'correct' }),
-		});
-
-		expect(sixth.status).toBe(429);
+		expect(credentialCheckCalls).toBe(0);
 	});
 });

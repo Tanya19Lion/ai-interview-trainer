@@ -39,8 +39,9 @@ vi.mock('../models/User.js', () => ({
 	},
 }));
 
-vi.mock('../models/LoginAttempt.js', () => ({
-	LoginAttemptModel: { findOneAndUpdate: vi.fn(async () => ({ count: 1 })) },
+vi.mock('../services/loginAttempt.service.js', () => ({
+	reserveLoginAttempt: vi.fn(async () => true),
+	releaseLoginAttempt: vi.fn(),
 }));
 
 vi.mock('../services/passwordReset.service.js', () => ({
