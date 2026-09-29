@@ -6,6 +6,7 @@ import { UserModel, type User } from '../models/User.js';
 import type { AuthedRequest } from '../middleware/auth.js';
 import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
 import type { HydratedDocument, Types } from 'mongoose';
+import { recordFailedLogin } from '../services/loginAttempt.service.js';
 import { verifyAndConsumePasswordResetToken } from '../services/passwordReset.service.js';
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -147,6 +148,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 
 	const user = await UserModel.findOne({ email });
 	if (!user?.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
+		await recordFailedLogin(email);
 		res.status(401).json({ error: 'Invalid email or password' });
 		return;
 	}

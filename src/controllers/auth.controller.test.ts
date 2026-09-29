@@ -12,6 +12,7 @@ const users = new Map<string, { tokenVersion?: number; passwordHash?: string }>(
 
 vi.mock('../models/User.js', () => ({
 	UserModel: {
+		findOne: vi.fn(),
 		findById: vi.fn(async (id: string) => {
 			const user = users.get(id);
 			return user ? { id, ...user } : null;
@@ -37,7 +38,12 @@ vi.mock('../services/passwordReset.service.js', () => ({
 	verifyAndConsumePasswordResetToken: vi.fn(),
 }));
 
-const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword } = await import('./auth.controller.js');
+vi.mock('../services/loginAttempt.service.js', () => ({
+	recordFailedLogin: vi.fn(),
+}));
+
+const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword, login } = await import('./auth.controller.js');
+const { recordFailedLogin } = await import('../services/loginAttempt.service.js');
 const { requireAuth } = await import('../middleware/auth.js');
 const { verifyAndConsumePasswordResetToken } = await import('../services/passwordReset.service.js');
 const { UserModel } = await import('../models/User.js');
@@ -590,5 +596,69 @@ describe('changePassword (integration, mounted on POST /api/auth/change-password
 		const body = (await res.json()) as { code: string; message: string };
 		expect(body.code).toBe('auth.invalid_request');
 		expect(UserModel.findByIdAndUpdate).not.toHaveBeenCalled();
+	});
+});
+
+describe('login (integration, mounted on POST /api/auth/login) — rate-limit bookkeeping', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+	const email = 'jobseeker@example.test';
+
+	async function post(body: unknown) {
+		return fetch(`${baseUrl}/api/auth/login`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+	}
+
+	beforeEach(async () => {
+		process.env.JWT_SECRET = 'test-secret';
+		vi.mocked(recordFailedLogin).mockReset();
+		vi.mocked(UserModel.findOne).mockReset();
+
+		const app = express();
+		app.use(express.json());
+		app.post('/api/auth/login', login);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	it('wrong password → 401 and the failed attempt is recorded for that email', async () => {
+		const passwordHash = await bcrypt.hash('right-password', 4);
+		vi.mocked(UserModel.findOne).mockResolvedValueOnce({ id: 'user-1', email, passwordHash } as never);
+
+		const res = await post({ email, password: 'wrong-password' });
+
+		expect(res.status).toBe(401);
+		expect(recordFailedLogin).toHaveBeenCalledTimes(1);
+		expect(recordFailedLogin).toHaveBeenCalledWith(email);
+	});
+
+	it('unknown email → 401 and the failed attempt is recorded', async () => {
+		vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
+
+		const res = await post({ email, password: 'whatever-123' });
+
+		expect(res.status).toBe(401);
+		expect(recordFailedLogin).toHaveBeenCalledTimes(1);
+		expect(recordFailedLogin).toHaveBeenCalledWith(email);
+	});
+
+	it('correct password → 200 and nothing is recorded, so successful logins never fill the window', async () => {
+		const passwordHash = await bcrypt.hash('right-password', 4);
+		vi.mocked(UserModel.findOne).mockResolvedValueOnce({ id: 'user-1', email, passwordHash } as never);
+
+		const res = await post({ email, password: 'right-password' });
+
+		expect(res.status).toBe(200);
+		expect(recordFailedLogin).not.toHaveBeenCalled();
 	});
 });
