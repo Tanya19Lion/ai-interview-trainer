@@ -310,10 +310,11 @@ sequenceDiagram
     Note over jobseeker,api: Precondition: Job-seeker is on the login form (AC-01)
     jobseeker->>web: Checks "remember me", submits email + password
     web->>api: login (rememberMe: true)
-    api->>mongo: Check LoginAttempt for this email (ADR-0003)
+    api->>mongo: Reserve an attempt for this email: atomic upsert-increment on LoginAttempt (ADR-0003)
     mongo-->>api: count <= 5 within 15-min window
     api->>mongo: Verify credentials against User
     mongo-->>api: User found, password matches
+    api->>mongo: Give the reserved attempt back (decrement count) — only failed logins stay counted
     api->>api: Issue access JWT + 7-day refresh token, both embed current tokenVersion (ADR-0001, ADR-0002)
     api-->>web: 200, Set-Cookie: token + refreshToken (openapi.yaml login)
     web-->>jobseeker: Signed in
@@ -578,7 +579,7 @@ Each top-3 goal from §1 expanded into a full scenario:
 | `tokenVersion` is decided (forgot-password ADR 0002, Accepted) but not yet implemented in `User.ts`/`requireAuth` (confirmed via repo scan, 2026-09-10) — two features (remember-me, forgot-password) now depend on the same field | Medium | Whichever feature ships first implements the field + `requireAuth` check; the other reuses it verbatim. Cross-linked in both features' ADRs (ADR-0001 ↔ forgot-password ADR 0002) to prevent divergent implementations. | Tech Lead |
 | Logging out on one device invalidates every device's session for that Job-seeker (ADR-0001 consequence) — a user with two open tabs who logs out in one is signed out of both | Medium | Documented, known, and accepted behavior — per-device logout is explicitly out of scope (PRD §3 Non-goals, idea-brief §5). Revisit only if device/session management becomes a future feature. | PM |
 | Two cookies (access + refresh) instead of one (ADR-0002) introduce new attack surface — refresh-token replay/theft | High | PRD §6.1 already marks Security review as Required; both cookies are httpOnly + `sameSite: lax` + `secure` in production, matching the existing single-cookie convention. Refresh-token theft still bounded by `tokenVersion` revocation (ADR-0001) on logout/password-reset. | Tech Lead / Security review |
-| Rate-limit check adds a MongoDB round-trip to every login attempt (ADR-0003) — latency risk against QG-2's login p95 ≤ 300 ms target | Low | Index on `LoginAttempt.email` keeps the lookup O(1); QG-2's k6 smoke test (§10) already covers this by measuring the full login path, not just the credential check. | Backend |
+| Rate-limit check adds a MongoDB round-trip to every login attempt, plus a second write on a successful one (ADR-0003) — latency risk against QG-2's login p95 ≤ 300 ms target | Low | Index on `LoginAttempt.email` keeps the lookup O(1); QG-2's k6 smoke test (§10) already covers this by measuring the full login path, not just the credential check. | Backend |
 | No live analytics/APM exists to validate PRD §7 KPIs (remember-me adoption, post-expiry confusion) — same gap idea-brief §11 Confidence already flagged | Low | Accepted for v1 — PRD §7 KPIs are measured post-release once analytics exist; not a blocker for this SAD. | PM |
 
 **Accepted debt (acceptable in v1, plan to fix later):**

@@ -164,12 +164,15 @@ the data-access layer, not at the UI layer)
 - **Abuse cases:**
   - **Cross-job-seeker access:** mitigated by filtering every query by `userId`
     (`InterviewSessionModel.find({ userId })`) at the data-access layer, not at the UI.
-  - **Password brute-force on `/api/auth/login`:** no rate limit exists yet — open question, §8.
+  - **Password brute-force on `/api/auth/login`:** mitigated — a per-email limit of 5 failed
+    attempts / 15 min (`middleware/rateLimit.ts`, ADR-0003 in `docs/features/remember-me/`).
+    `/api/auth/register` has no limit yet — open question, §8.
   - **Google OAuth token forgery:** mitigated by verifying the token server-side via
     `google-auth-library` against `GOOGLE_CLIENT_ID` (the server never trusts a client-supplied
     payload without verification).
 - **Security review:** N/A for the current state (single maintainer, no regulated PII category)
-  — but a rate limit on the auth routes should land before any public/production release (§8).
+  — the login rate limit has landed; a limit on `/api/auth/register` should land before any
+  public/production release (§8).
 
 ## 7. Metrics / KPIs
 
@@ -187,8 +190,8 @@ the data-access layer, not at the UI layer)
 
 - [ ] Should NFRs (latency/throughput) be measured via APM (e.g. OpenTelemetry) before the first
   public release? Default now: not measured. — owner: Tanya19Lion, due: before public release
-- [ ] Is a rate limit needed on `/api/auth/login` and `/api/auth/register` against
-  brute-force/spam? — owner: Tanya19Lion, due: before public release
+- [ ] Is a rate limit needed on `/api/auth/register` against spam? (`/api/auth/login` already
+  has one.) — owner: Tanya19Lion, due: before public release
 - [ ] Manual verification against a live MongoDB for tasks 4–9 of the original client plan
   (`PROGRESS.md`) is still pending — does this block the next release? — owner: Tanya19Lion,
   due: TBD
