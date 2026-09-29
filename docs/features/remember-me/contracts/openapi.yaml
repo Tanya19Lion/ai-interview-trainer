@@ -26,7 +26,8 @@ paths:
       operationId: login
       description: |
         Extended for remember-me: an optional `rememberMe` flag on the existing endpoint (AC-01,
-        AC-02). Rate-limited server-side to ≤5 attempts / 15 min per email (ADR-0003) — a new
+        AC-02). Rate-limited server-side to ≤5 attempts / 15 min per email (ADR-0003; a successful
+        login gives its attempt back, so only failed logins stay counted) — a new
         behavior this feature adds to the existing `/login` route only, not `/register` or
         `/google` (sad.md §5 Building block view: "rate-limit middleware on /login").
       security: []
