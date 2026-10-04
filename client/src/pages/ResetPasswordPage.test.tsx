@@ -28,6 +28,15 @@ describe('ResetPasswordPage i18n', () => {
 		expect(screen.getByText('diff — порівняй. виправ. пройди.')).toBeInTheDocument();
 	});
 
+	it('offers the language toggle here too', async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole('button', { name: 'Змінити мову на English' }));
+
+		expect(screen.getByRole('heading', { level: 1, name: 'Forgot your password?' })).toBeInTheDocument();
+	});
+
 	it('walks the request flow in English and keeps the email in bold', async () => {
 		const user = userEvent.setup();
 		await i18n.changeLanguage('en');

@@ -50,6 +50,16 @@ describe('LoginPage i18n', () => {
 		expect(screen.getByText('diff — compare. fix. pass.')).toBeInTheDocument();
 	});
 
+	it('lets a visitor who opened /login directly switch the language', async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole('button', { name: 'Змінити мову на English' }));
+
+		expect(screen.getByRole('heading', { level: 1, name: 'One account. Your whole interview history.' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Switch language to Українська' })).toBeInTheDocument();
+	});
+
 	it('renders the sign-up form in English after switching the tab', async () => {
 		const user = userEvent.setup();
 		await i18n.changeLanguage('en');
