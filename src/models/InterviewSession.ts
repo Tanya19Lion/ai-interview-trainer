@@ -6,9 +6,11 @@ export const LEVELS = ['junior', 'middle', 'senior'] as const;
 const questionAttemptSchema = new Schema(
 	{
 		question: { type: String, required: true },
-		answer: { type: String, required: true },
+		// '' is a valid value (a skipped "Не знаю" question) — `required: true` would reject it,
+		// so only a missing value (not a string) fails.
+		answer: { type: String, required: function (this: { answer?: unknown }) { return typeof this.answer !== 'string'; } },
 		score: { type: Number, required: true, min: 0, max: 10 },
-		feedback: { type: String, required: true },
+		feedback: { type: String, required: function (this: { feedback?: unknown }) { return typeof this.feedback !== 'string'; } },
 		correctAnswer: { type: String, required: true },
 		weakTopics: { type: [String], default: [] },
 	},
