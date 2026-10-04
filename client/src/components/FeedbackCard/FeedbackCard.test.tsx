@@ -19,7 +19,7 @@ describe('FeedbackCard', () => {
 
 		expect(screen.getByText('Ось твоя відповідь')).toBeInTheDocument();
 		expect(screen.getByText('Мій варіант відповіді')).toBeInTheDocument();
-		expect(screen.getByText('Краща відповідь')).toBeInTheDocument();
+		expect(screen.getByText('Можлива відповідь')).toBeInTheDocument();
 		expect(screen.getByText('Еталонна відповідь')).toBeInTheDocument();
 		expect(screen.getByText('Непогано, але неповно.')).toBeInTheDocument();
 		expect(screen.getByText(/Точність: 6\/10/)).toBeInTheDocument();

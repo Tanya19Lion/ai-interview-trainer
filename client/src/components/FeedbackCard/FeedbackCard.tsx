@@ -51,7 +51,7 @@ export function FeedbackCard({
 			<CodeDiffLine
 				gutter="+"
 				variant="added"
-				label={skipped ? 'Ось відповідь на питання' : 'Краща відповідь'}
+				label={skipped ? 'Ось відповідь на питання' : 'Можлива відповідь'}
 			>
 				{correctAnswer}
 			</CodeDiffLine>
