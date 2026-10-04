@@ -30,7 +30,7 @@ paths:
 - `CodeDiffLine` takes an optional `label` (a bold mono badge above the text). The review cards
   (`FeedbackCard`, `ReviewModal`, both `LandingPage` demos) show the user's answer as a neutral
   line labelled "Ось твоя відповідь" (no strike-through, so it doesn't read as "all wrong") and the
-  model's as a green `+` line labelled "Краща відповідь"; a skipped question shows only the model's
+  model's as a green `+` line labelled "Можлива відповідь"; a skipped question shows only the model's
   answer ("Ось відповідь на питання") plus a "doesn't affect the result" note. `AnswerForm`'s
   `skipping` prop switches the loading text for "Не знаю". The `removed` variant still exists but
   the review UI no longer uses it.

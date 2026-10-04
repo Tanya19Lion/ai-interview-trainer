@@ -42,7 +42,7 @@
 	"review.cardQ": "// Q: Як Event Loop обробляє мікро- і макрозадачі?",
 	"review.cardRemoved": "Спочатку виконується весь код, потім усі колбеки по черзі.",
 	"card.userAnswer": "Ось твоя відповідь",
-	"card.betterAnswer": "Краща відповідь",
+	"card.betterAnswer": "Можлива відповідь",
 	"review.cardAdded": "Після синхронного коду Event Loop спорожняє всю чергу мікрозадач (Promise, queueMicrotask), і лише тоді бере одну макрозадачу (setTimeout, I/O).",
 	"review.cardComment": "Ключова неточність: мікрозадачі виконуються всі одразу між кожною макрозадачею, а не «по черзі як прийдуть».",
 	"review.cardScore": "Точність: 5/10",
