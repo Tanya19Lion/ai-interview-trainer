@@ -1,10 +1,17 @@
 import { useCallback, useState } from 'react';
 import type { SubmitEvent } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
 import type { CredentialResponse } from '@react-oauth/google';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, Tabs, TextField } from '../components';
+import {
+	AuthAmbientBackdrop,
+	Button,
+	Eyebrow,
+	GoogleSignInButton,
+	PasswordField,
+	Tabs,
+	TextField,
+} from '../components';
 import { useGoogleLogin, useLoginWithPassword, useRegister } from '../hooks/useAuth';
 import styles from './LoginPage.module.css';
 
@@ -88,13 +95,7 @@ export function LoginPage() {
 					</div>
 
 					<div className={styles.googleWrap}>
-						<GoogleLogin
-							theme="filled_black"
-							size="large"
-							width="320"
-							text="continue_with"
-							onSuccess={handleGoogleSuccess}
-						/>
+						<GoogleSignInButton onSuccess={handleGoogleSuccess} />
 					</div>
 
 					<p className={styles.scopeNote}>{t('login.scopeNote')}</p>

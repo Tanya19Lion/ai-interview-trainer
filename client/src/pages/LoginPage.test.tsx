@@ -6,7 +6,10 @@ import i18n from '../i18n';
 
 const { idle } = vi.hoisted(() => ({ idle: { mutate: vi.fn(), isPending: false, error: null } }));
 
-vi.mock('@react-oauth/google', () => ({ GoogleLogin: () => null }));
+vi.mock('@react-oauth/google', () => ({
+	GoogleLogin: () => null,
+	GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('../hooks/useAuth', () => ({
 	useGoogleLogin: () => idle,
 	useLoginWithPassword: () => idle,
