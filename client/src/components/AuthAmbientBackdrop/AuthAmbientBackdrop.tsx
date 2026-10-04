@@ -4,6 +4,7 @@ import { CodeDiffLine } from '../CodeDiffLine/CodeDiffLine';
 import { EditorComment } from '../EditorComment/EditorComment';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
 import { LangToggle } from '../LangToggle/LangToggle';
+import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import { LevelChip, ScoreChip } from '../Badge/Badge';
 import styles from './AuthAmbientBackdrop.module.css';
 
@@ -17,7 +18,10 @@ export function AuthAmbientBackdrop() {
 				<Link to="/" className={styles.logo}>
 					diff<span className={styles.cursor} aria-hidden="true" />
 				</Link>
-				<LangToggle />
+				<div className={styles.actions}>
+					<LangToggle />
+					<ThemeToggle />
+				</div>
 			</div>
 
 			<EditorWindow

@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ThemeContext } from '../context/theme/ThemeContext';
 import i18n from '../i18n';
 
 vi.mock('../hooks/useFakeSubmit', () => ({
@@ -10,12 +11,15 @@ vi.mock('../hooks/useFakeSubmit', () => ({
 
 const { ResetPasswordPage } = await import('./ResetPasswordPage');
 
-function renderPage(search = '') {
+function renderPage(search = '', setTheme = vi.fn()) {
 	render(
-		<MemoryRouter initialEntries={[`/reset-password${search}`]}>
-			<ResetPasswordPage />
-		</MemoryRouter>,
+		<ThemeContext.Provider value={{ theme: 'dark', setTheme }}>
+			<MemoryRouter initialEntries={[`/reset-password${search}`]}>
+				<ResetPasswordPage />
+			</MemoryRouter>
+		</ThemeContext.Provider>,
 	);
+	return { setTheme };
 }
 
 describe('ResetPasswordPage i18n', () => {
@@ -35,6 +39,15 @@ describe('ResetPasswordPage i18n', () => {
 		await user.click(screen.getByRole('button', { name: 'Змінити мову на English' }));
 
 		expect(screen.getByRole('heading', { level: 1, name: 'Forgot your password?' })).toBeInTheDocument();
+	});
+
+	it('offers the theme toggle here too', async () => {
+		const user = userEvent.setup();
+		const { setTheme } = renderPage();
+
+		await user.click(screen.getByRole('button', { name: 'Увімкнути світлу тему' }));
+
+		expect(setTheme).toHaveBeenCalledWith('light');
 	});
 
 	it('walks the request flow in English and keeps the email in bold', async () => {

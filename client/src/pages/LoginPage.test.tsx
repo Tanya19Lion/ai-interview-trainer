@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ThemeContext } from '../context/theme/ThemeContext';
 import i18n from '../i18n';
 
 const { idle } = vi.hoisted(() => ({ idle: { mutate: vi.fn(), isPending: false, error: null } }));
@@ -18,12 +19,15 @@ vi.mock('../hooks/useAuth', () => ({
 
 const { LoginPage } = await import('./LoginPage');
 
-function renderPage() {
+function renderPage(setTheme = vi.fn()) {
 	render(
-		<MemoryRouter>
-			<LoginPage />
-		</MemoryRouter>,
+		<ThemeContext.Provider value={{ theme: 'dark', setTheme }}>
+			<MemoryRouter>
+				<LoginPage />
+			</MemoryRouter>
+		</ThemeContext.Provider>,
 	);
+	return { setTheme };
 }
 
 describe('LoginPage i18n', () => {
@@ -58,6 +62,15 @@ describe('LoginPage i18n', () => {
 
 		expect(screen.getByRole('heading', { level: 1, name: 'One account. Your whole interview history.' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Switch language to Українська' })).toBeInTheDocument();
+	});
+
+	it('offers the theme toggle to a visitor who opened /login directly', async () => {
+		const user = userEvent.setup();
+		const { setTheme } = renderPage();
+
+		await user.click(screen.getByRole('button', { name: 'Увімкнути світлу тему' }));
+
+		expect(setTheme).toHaveBeenCalledWith('light');
 	});
 
 	it('renders the sign-up form in English after switching the tab', async () => {
