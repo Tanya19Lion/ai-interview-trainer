@@ -548,4 +548,4 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 
 **Що лишилось відкритим:**
 - ~~Тестів на `answerQuestion`/пропуск немає.~~ Додано (гілка `feat/skip-question-tests`): `interview.controller.test.ts` (пропуск, порожній/пробільний `answer`, `averageScore` без пропусків), `stats.controller.test.ts`, `ai.service.answerQuestion.test.ts`. Живу перевірку пропуску вручну під `test@demo.com` перевірено.
-- Стиль бейджа `label` не дивились у темній темі. Тестів на `ConfirmDialog` і клієнтські підписи досі немає.
+- Стиль бейджа `label` не дивились у темній темі. Клієнтські тести на `ConfirmDialog`, `FeedbackCard` і `AnswerForm` додано.
