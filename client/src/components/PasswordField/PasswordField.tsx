@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import styles from './PasswordField.module.css';
 
 export interface PasswordFieldProps {
@@ -28,6 +29,7 @@ export function PasswordField({
 	placeholder,
 	labelExtra,
 }: PasswordFieldProps) {
+	const { t } = useTranslation();
 	const [visible, setVisible] = useState(false);
 	const id = useId();
 
@@ -61,7 +63,7 @@ export function PasswordField({
 					type="button"
 					className={styles.toggle}
 					onClick={() => setVisible((v) => !v)}
-					aria-label={visible ? 'Приховати пароль' : 'Показати пароль'}
+					aria-label={visible ? t('auth.hidePassword') : t('auth.showPassword')}
 				>
 					{visible ? <EyeOff size={16} /> : <Eye size={16} />}
 				</button>

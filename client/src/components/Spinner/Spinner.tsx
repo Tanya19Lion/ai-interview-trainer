@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import styles from './Spinner.module.css';
 
 export interface SpinnerProps {
@@ -6,17 +7,16 @@ export interface SpinnerProps {
 	'aria-label'?: string;
 }
 
-export function Spinner({
-	variant = 'default',
-	'aria-label': ariaLabel = 'Завантаження…',
-}: SpinnerProps) {
+export function Spinner({ variant = 'default', 'aria-label': ariaLabel }: SpinnerProps) {
+	const { t } = useTranslation();
+
 	return (
 		<span
 			className={[styles.spinner, variant === 'on-primary' ? styles.onPrimary : null]
 				.filter(Boolean)
 				.join(' ')}
 			role="status"
-			aria-label={ariaLabel}
+			aria-label={ariaLabel ?? t('common.loading')}
 		/>
 	);
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { SubmitEvent } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, TextField } from '../components';
 import { useFakeSubmit } from '../hooks/useFakeSubmit';
@@ -10,6 +11,7 @@ type RequestStep = 'form' | 'sent';
 type ResetStep = 'form' | 'done';
 
 function RequestEmailView() {
+	const { t } = useTranslation();
 	const [step, setStep] = useState<RequestStep>('form');
 	const [email, setEmail] = useState('');
 	const { pending, run } = useFakeSubmit();
@@ -23,12 +25,12 @@ function RequestEmailView() {
 		return (
 			<>
 				<Eyebrow centered>$ diff --forgot-password</Eyebrow>
-				<h1 className={loginStyles.h1}>Перевір пошту</h1>
+				<h1 className={loginStyles.h1}>{t('reset.checkTitle')}</h1>
 				<p className={loginStyles.subtitle}>
-					Якщо акаунт з адресою <b>{email}</b> існує, ми надіслали лінк для відновлення пароля.
+					<Trans i18nKey="reset.checkBody" values={{ email }} components={{ b: <b /> }} />
 				</p>
 				<Link to="/login" className={styles.backLink}>
-					← Повернутися до входу
+					{t('reset.back')}
 				</Link>
 			</>
 		);
@@ -37,8 +39,8 @@ function RequestEmailView() {
 	return (
 		<>
 			<Eyebrow centered>$ diff --forgot-password</Eyebrow>
-			<h1 className={loginStyles.h1}>Забули пароль?</h1>
-			<p className={loginStyles.subtitle}>Введи email — надішлемо лінк для відновлення.</p>
+			<h1 className={loginStyles.h1}>{t('reset.forgotTitle')}</h1>
+			<p className={loginStyles.subtitle}>{t('reset.forgotSubtitle')}</p>
 
 			<form className={loginStyles.form} onSubmit={handleSubmit}>
 				<TextField
@@ -51,18 +53,22 @@ function RequestEmailView() {
 					onChange={(event) => setEmail(event.target.value)}
 				/>
 				<Button type="submit" variant="primary" size="lg" disabled={pending}>
-					{pending ? 'Надсилаємо…' : 'Надіслати лінк'}
+					{pending ? t('reset.sending') : t('reset.send')}
 				</Button>
 			</form>
 
 			<p className={loginStyles.switchLine}>
-				Згадав(-ла) пароль? <Link to="/login" className={loginStyles.switchLink}>Увійти</Link>
+				{t('reset.remembered')}{' '}
+				<Link to="/login" className={loginStyles.switchLink}>
+					{t('auth.signIn')}
+				</Link>
 			</p>
 		</>
 	);
 }
 
 function NewPasswordView() {
+	const { t } = useTranslation();
 	const [step, setStep] = useState<ResetStep>('form');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
@@ -72,7 +78,7 @@ function NewPasswordView() {
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		if (password !== confirmPassword) {
-			setError('Паролі не збігаються');
+			setError(t('reset.mismatch'));
 			return;
 		}
 		setError(null);
@@ -83,11 +89,11 @@ function NewPasswordView() {
 		return (
 			<>
 				<Eyebrow centered>$ diff --reset-password</Eyebrow>
-				<h1 className={loginStyles.h1}>Пароль змінено</h1>
-				<p className={loginStyles.subtitle}>Тепер можеш увійти з новим паролем.</p>
+				<h1 className={loginStyles.h1}>{t('reset.doneTitle')}</h1>
+				<p className={loginStyles.subtitle}>{t('reset.doneBody')}</p>
 				<Link to="/login">
 					<Button type="button" variant="primary" size="lg">
-						Увійти
+						{t('auth.signIn')}
 					</Button>
 				</Link>
 			</>
@@ -97,22 +103,22 @@ function NewPasswordView() {
 	return (
 		<>
 			<Eyebrow centered>$ diff --reset-password</Eyebrow>
-			<h1 className={loginStyles.h1}>Новий пароль</h1>
-			<p className={loginStyles.subtitle}>Введи новий пароль для свого акаунта.</p>
+			<h1 className={loginStyles.h1}>{t('reset.newTitle')}</h1>
+			<p className={loginStyles.subtitle}>{t('reset.newSubtitle')}</p>
 
 			<form className={loginStyles.form} onSubmit={handleSubmit}>
 				<PasswordField
-					label="Новий пароль"
-					placeholder="мінімум 8 символів"
+					label={t('reset.newLabel')}
+					placeholder={t('auth.passwordPlaceholder')}
 					autoComplete="new-password"
 					required
 					minLength={8}
-					hint="Мінімум 8 символів"
+					hint={t('auth.passwordHint')}
 					value={password}
 					onChange={setPassword}
 				/>
 				<PasswordField
-					label="Підтвердь пароль"
+					label={t('reset.confirmLabel')}
 					placeholder="••••••••"
 					autoComplete="new-password"
 					required
@@ -121,7 +127,7 @@ function NewPasswordView() {
 					onChange={setConfirmPassword}
 				/>
 				<Button type="submit" variant="primary" size="lg" disabled={pending}>
-					{pending ? 'Зберігаємо…' : 'Змінити пароль'}
+					{pending ? t('reset.saving') : t('reset.save')}
 				</Button>
 			</form>
 
@@ -131,6 +137,7 @@ function NewPasswordView() {
 }
 
 export function ResetPasswordPage() {
+	const { t } = useTranslation();
 	const [searchParams] = useSearchParams();
 	const hasToken = Boolean(searchParams.get('token'));
 
@@ -144,7 +151,7 @@ export function ResetPasswordPage() {
 				</div>
 			</main>
 
-			<p className={loginStyles.authFooter}>diff — порівняй. виправ. пройди.</p>
+			<p className={loginStyles.authFooter}>{t('common.tagline')}</p>
 		</div>
 	);
 }

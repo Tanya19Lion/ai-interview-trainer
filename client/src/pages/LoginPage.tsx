@@ -1,25 +1,34 @@
 import { useCallback, useState } from 'react';
 import type { SubmitEvent } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
 import type { CredentialResponse } from '@react-oauth/google';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, Tabs, TextField } from '../components';
+import {
+	AuthAmbientBackdrop,
+	Button,
+	Eyebrow,
+	GoogleSignInButton,
+	PasswordField,
+	Tabs,
+	TextField,
+} from '../components';
 import { useGoogleLogin, useLoginWithPassword, useRegister } from '../hooks/useAuth';
 import styles from './LoginPage.module.css';
 
 type Mode = 'signin' | 'signup';
 
-const SUBTITLE: Record<Mode, string> = {
-	signin: 'Введи email і пароль — або обери Google, це швидше.',
-	signup: 'Створи акаунт за хвилину — або зареєструйся через Google, ще швидше.',
-};
+const SUBTITLE_KEY = {
+	signin: 'login.subtitle.signin',
+	signup: 'login.subtitle.signup',
+} as const;
 
-const SWITCH_LINE: Record<Mode, { question: string; action: string; target: Mode }> = {
-	signin: { question: 'Ще немає акаунта?', action: 'Зареєструватися', target: 'signup' },
-	signup: { question: 'Вже є акаунт?', action: 'Увійти', target: 'signin' },
-};
+const SWITCH_LINE = {
+	signin: { questionKey: 'login.switch.signin', actionKey: 'auth.signUp', target: 'signup' },
+	signup: { questionKey: 'login.switch.signup', actionKey: 'auth.signIn', target: 'signin' },
+} as const;
 
 export function LoginPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const redirectTo = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/home';
@@ -71,34 +80,28 @@ export function LoginPage() {
 			<main className={styles.authMain}>
 				<div className={styles.authCard}>
 					<Eyebrow centered>$ diff --login</Eyebrow>
-					<h1 className={styles.h1}>Один акаунт. Уся історія твоїх співбесід.</h1>
-					<p className={styles.subtitle}>{SUBTITLE[mode]}</p>
+					<h1 className={styles.h1}>{t('login.h1')}</h1>
+					<p className={styles.subtitle}>{t(SUBTITLE_KEY[mode])}</p>
 
 					<div className={styles.tabsRow}>
 						<Tabs
 							value={mode}
 							onChange={(value) => setMode(value as Mode)}
 							items={[
-								{ value: 'signin', label: 'Увійти' },
-								{ value: 'signup', label: 'Зареєструватися' },
+								{ value: 'signin', label: t('auth.signIn') },
+								{ value: 'signup', label: t('auth.signUp') },
 							]}
 						/>
 					</div>
 
 					<div className={styles.googleWrap}>
-						<GoogleLogin
-							theme="filled_black"
-							size="large"
-							width="320"
-							text="continue_with"
-							onSuccess={handleGoogleSuccess}
-						/>
+						<GoogleSignInButton onSuccess={handleGoogleSuccess} />
 					</div>
 
-					<p className={styles.scopeNote}># доступ лише до email та імені — жодного Gmail чи Диску</p>
+					<p className={styles.scopeNote}>{t('login.scopeNote')}</p>
 
 					<div className={styles.divider}>
-						<span>або</span>
+						<span>{t('login.or')}</span>
 					</div>
 
 					{mode === 'signin' ? (
@@ -113,10 +116,10 @@ export function LoginPage() {
 								onChange={(event) => setSigninEmail(event.target.value)}
 							/>
 							<PasswordField
-								label="Пароль"
+								label={t('auth.password')}
 								labelExtra={
 									<Link to="/reset-password" className={styles.forgotLink}>
-										Забули пароль?
+										{t('login.forgot')}
 									</Link>
 								}
 								placeholder="••••••••"
@@ -126,14 +129,14 @@ export function LoginPage() {
 								onChange={setSigninPassword}
 							/>
 							<Button type="submit" variant="primary" size="lg" disabled={login.isPending}>
-								{login.isPending ? 'Входимо…' : 'Увійти'}
+								{login.isPending ? t('login.signingIn') : t('auth.signIn')}
 							</Button>
 						</form>
 					) : (
 						<form className={styles.form} onSubmit={handleSignup}>
 							<TextField
-								label="Ім'я"
-								placeholder="Таня"
+								label={t('login.name')}
+								placeholder={t('login.namePlaceholder')}
 								required
 								autoComplete="name"
 								value={signupName}
@@ -149,17 +152,17 @@ export function LoginPage() {
 								onChange={(event) => setSignupEmail(event.target.value)}
 							/>
 							<PasswordField
-								label="Пароль"
-								placeholder="мінімум 8 символів"
+								label={t('auth.password')}
+								placeholder={t('auth.passwordPlaceholder')}
 								autoComplete="new-password"
 								required
 								minLength={8}
-								hint="Мінімум 8 символів"
+								hint={t('auth.passwordHint')}
 								value={signupPassword}
 								onChange={setSignupPassword}
 							/>
 							<Button type="submit" variant="primary" size="lg" disabled={register.isPending}>
-								{register.isPending ? 'Створюємо акаунт…' : 'Створити акаунт'}
+								{register.isPending ? t('login.creating') : t('login.create')}
 							</Button>
 						</form>
 					)}
@@ -167,24 +170,26 @@ export function LoginPage() {
 					{pendingError && <p className={styles.error}>{pendingError.message}</p>}
 
 					<p className={styles.switchLine}>
-						{switchLine.question}{' '}
+						{t(switchLine.questionKey)}{' '}
 						<button
 							type="button"
 							className={styles.switchLink}
 							onClick={() => setMode(switchLine.target)}
 						>
-							{switchLine.action}
+							{t(switchLine.actionKey)}
 						</button>
 					</p>
 
 					<p className={styles.finePrint}>
-						Продовжуючи, ти погоджуєшся з <a href="#">Умовами використання</a> та{' '}
-						<a href="#">Політикою конфіденційності</a> diff.
+						<Trans
+							i18nKey="login.terms"
+							components={{ terms: <a href="#" />, privacy: <a href="#" /> }}
+						/>
 					</p>
 				</div>
 			</main>
 
-			<p className={styles.authFooter}>diff — порівняй. виправ. пройди.</p>
+			<p className={styles.authFooter}>{t('common.tagline')}</p>
 		</div>
 	);
 }
