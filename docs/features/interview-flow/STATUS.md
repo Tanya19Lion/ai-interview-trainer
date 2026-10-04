@@ -11,6 +11,13 @@ end-to-end on both server and client, and matches everything recorded in `PRD.md
 this folder. The historical bug on this feature (`correctAnswer` silently dropped before
 persistence) is fixed and guarded by a `required: true` schema field — see `adr/0001-...`.
 
+**Skip ("Не знаю") finished (0.2.0, 2026-10-04):** the 2026-09-16 fix below only removed the
+controller's 400; saving still failed because `required: true` on `questions[].answer`/`feedback`
+rejects `''`. Now a skipped question gets a plain model answer (`answerQuestion` in
+`ai.service.ts`, no JSON review), is stored with `score: 0`, and is ignored by `averageScore` and
+`GET /api/stats`. Review cards show the user's answer neutrally ("Ось твоя відповідь") and the
+model's as "Краща відповідь"; "Завершити сесію" uses `ConfirmDialog` instead of `window.confirm`.
+
 **Fixed via code review (2026-09-16), uncommitted at time of writing:**
 - `submitAnswer` (`interview.controller.ts`) rejected an empty-string `answer` with 400, but the
   client's "skip" affordance (`AnswerForm`'s "Не знаю" button) submits `answer: ''` by convention

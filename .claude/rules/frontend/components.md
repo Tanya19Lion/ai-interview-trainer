@@ -24,6 +24,16 @@ paths:
   `ReviewModal` renders one `EditorWindow` titled `session · {topic}/{level}/answer.md` with a
   repeated question/diff/comment block per entry, closer to a real multi-hunk diff than N stacked
   cards.
+- `ConfirmDialog` (`components/ConfirmDialog/`) is the modal replacement for `window.confirm`
+  (title/message/confirm+cancel labels; Escape or an overlay click = cancel). Used by
+  `InterviewSessionPage` for "Завершити сесію"; reuse it instead of `window.confirm`.
+- `CodeDiffLine` takes an optional `label` (a bold mono badge above the text). The review cards
+  (`FeedbackCard`, `ReviewModal`, both `LandingPage` demos) show the user's answer as a neutral
+  line labelled "Ось твоя відповідь" (no strike-through, so it doesn't read as "all wrong") and the
+  model's as a green `+` line labelled "Краща відповідь"; a skipped question shows only the model's
+  answer ("Ось відповідь на питання") plus a "doesn't affect the result" note. `AnswerForm`'s
+  `skipping` prop switches the loading text for "Не знаю". The `removed` variant still exists but
+  the review UI no longer uses it.
 - `Heatmap` computes its own grid from a `completedDates: string[]` prop (raw `completedAt`
   values from a `GET /api/history` response) rather than receiving pre-bucketed cells — the
   `bucketize(count): 0-4` mapping and the 53×7-day window live inside the component

@@ -16,6 +16,11 @@ paths:
   All four fields of that JSON, including `correctAnswer`, are persisted onto the session's
   `questions[]` sub-document in `submitAnswer` (see `.claude/rules/backend/data-model.md`) — don't
   reintroduce a controller that only saves a subset of them.
+- **Skip ("Не знаю")**: the client sends `answer: ''`. `submitAnswer` treats a blank (trimmed) answer
+  as skipped: it calls `answerQuestion()` (plain-text model answer, no JSON review) instead of
+  `reviewAnswer()`, stores the entry with `answer: ''`, `feedback: ''`, `score: 0`, and computes
+  `averageScore` (and `GET /api/stats`) only over entries with `answer !== ''`. Keep those two
+  filters in sync — a skipped `score: 0` would otherwise drag both numbers down.
 - `GET /api/interview/active` (`getActiveSession`) returns the newest `status: 'in_progress'`
   session for the user (204 if none). The in-flight question text is never persisted on the
   session document (only answered `questions[]` entries are), so this handler re-generates a
