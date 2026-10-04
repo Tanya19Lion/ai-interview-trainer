@@ -85,5 +85,7 @@
 	"lang.uk": "Українська",
 	"lang.en": "English",
 	"theme.enableLight": "Увімкнути світлу тему",
-	"theme.enableDark": "Увімкнути темну тему"
+	"theme.enableDark": "Увімкнути темну тему",
+	"lang.switchAria": "Змінити мову на {{lang}}",
+	"lang.overlayAria": "Language selection / Вибір мови"
 }

@@ -8,6 +8,7 @@ import {
 	EditorWindow,
 	Eyebrow,
 	LangOverlay,
+	LangToggle,
 	LevelChip,
 	Reveal,
 	ScoreChip,
@@ -130,6 +131,7 @@ export function LandingPage() {
 								/>
 							</svg>
 						</button>
+						<LangToggle />
 						<ThemeToggle />
 						<Link to="/login" state={location.state} className={buttonClassName({ variant: 'primary' })}>
 							{t('nav.login')}

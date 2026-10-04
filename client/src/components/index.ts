@@ -49,6 +49,7 @@ export { Textarea } from './Textarea/Textarea';
 export type { TextareaProps } from './Textarea/Textarea';
 
 export { ThemeToggle } from './ThemeToggle/ThemeToggle';
+export { LangToggle } from './LangToggle/LangToggle';
 
 export { TopicPicker } from './TopicPicker/TopicPicker';
 export type { TopicPickerProps } from './TopicPicker/TopicPicker';
