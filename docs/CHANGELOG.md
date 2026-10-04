@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-04
+
+### Added
+
+- Server tests for skipped ("Не знаю") questions: `submitAnswer` stores a zero-score entry and leaves it out of `averageScore`, `GET /api/stats` ignores it, and `answerQuestion` returns the model's plain-text answer
+- Client tests for `ConfirmDialog` (confirm, cancel, Escape, overlay click, initial focus), the `FeedbackCard` answer labels and skipped variant, and the skip-specific loading text in `AnswerForm`
+
+### Documentation
+
+- Closed the "no tests for the skip flow" open item in `PROGRESS.md` and added the 0.2.1 release notes
+
 ## [0.2.0] - 2026-10-04
 
 ### Added
@@ -115,7 +126,8 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.1
 [0.2.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.0
 [0.1.2]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.1
