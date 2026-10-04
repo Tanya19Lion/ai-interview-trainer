@@ -1,23 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LANG_STORAGE_KEY, setLanguage } from '../../i18n';
 import styles from './LangOverlay.module.css';
 
-const STORAGE_KEY = 'diff-lang-chosen';
-
 export function LangOverlay() {
-	const { i18n, t } = useTranslation();
+	const { t } = useTranslation();
 	const [visible, setVisible] = useState(false);
 	const [leaving, setLeaving] = useState(false);
 
 	useEffect(() => {
-		if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
+		try {
+			if (!localStorage.getItem(LANG_STORAGE_KEY)) setVisible(true);
+		} catch {
+			setVisible(true);
+		}
 	}, []);
 
 	if (!visible) return null;
 
 	function choose(lang: 'uk' | 'en') {
-		i18n.changeLanguage(lang);
-		localStorage.setItem(STORAGE_KEY, lang);
+		setLanguage(lang);
 		setLeaving(true);
 		setTimeout(() => setVisible(false), 250);
 	}
@@ -27,7 +29,7 @@ export function LangOverlay() {
 			className={[styles.overlay, leaving ? styles.leaving : null].filter(Boolean).join(' ')}
 			role="dialog"
 			aria-modal="true"
-			aria-label="Language selection / Вибір мови"
+			aria-label={t('lang.overlayAria')}
 		>
 			<div className={styles.card}>
 				<span className={styles.eyebrow}>{t('lang.eyebrow')}</span>

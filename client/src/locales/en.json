@@ -42,7 +42,7 @@
 	"review.cardQ": "// Q: How does the Event Loop handle micro- and macrotasks?",
 	"review.cardRemoved": "First all the code runs, then all the callbacks run one after another.",
 	"card.userAnswer": "Here is your answer",
-	"card.betterAnswer": "The better answer is",
+	"card.betterAnswer": "A possible answer",
 	"review.cardAdded": "After the synchronous code, the Event Loop drains the entire microtask queue (Promise, queueMicrotask), and only then takes a single macrotask (setTimeout, I/O).",
 	"review.cardComment": "The key inaccuracy: all microtasks run at once between each macrotask, not “one by one as they arrive.”",
 	"review.cardScore": "Accuracy: 5/10",
@@ -85,5 +85,7 @@
 	"lang.uk": "Українська",
 	"lang.en": "English",
 	"theme.enableLight": "Switch to light theme",
-	"theme.enableDark": "Switch to dark theme"
+	"theme.enableDark": "Switch to dark theme",
+	"lang.switchAria": "Switch language to {{lang}}",
+	"lang.overlayAria": "Language selection / Вибір мови"
 }
