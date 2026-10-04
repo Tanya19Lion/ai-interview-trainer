@@ -1,23 +1,11 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { currentLang } from '../../i18n';
 import styles from './Heatmap.module.css';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const WEEKS = 53;
 const CELLS = WEEKS * 7;
-const MONTH_LABELS_UK = [
-	'січ',
-	'лют',
-	'бер',
-	'кві',
-	'тра',
-	'чер',
-	'лип',
-	'сер',
-	'вер',
-	'жов',
-	'лис',
-	'гру',
-];
 
 function toUtcDayNumber(date: Date): number {
 	return Math.floor(date.getTime() / MS_PER_DAY);
@@ -38,6 +26,8 @@ export interface HeatmapProps {
 }
 
 export function Heatmap({ completedDates }: HeatmapProps) {
+	// Підписка на зміну мови: сам Intl-форматтер береться з currentLang() усередині useMemo.
+	const { i18n } = useTranslation();
 	const { cells, monthLabels } = useMemo(() => {
 		const countByDay = new Map<number, number>();
 		for (const iso of completedDates) {
@@ -53,15 +43,19 @@ export function Heatmap({ completedDates }: HeatmapProps) {
 			return { day, count, level: bucketize(count) };
 		});
 
+		const monthFormat = new Intl.DateTimeFormat(currentLang() === 'en' ? 'en-US' : 'uk-UA', {
+			month: 'short',
+			timeZone: 'UTC',
+		});
 		const labelCount = 12;
 		const monthLabels = Array.from({ length: labelCount }, (_, i) => {
 			const cellIndex = Math.floor((i / (labelCount - 1)) * (cells.length - 1));
 			const date = new Date(cells[cellIndex].day * MS_PER_DAY);
-			return MONTH_LABELS_UK[date.getUTCMonth()];
+			return monthFormat.format(date);
 		});
 
 		return { cells, monthLabels };
-	}, [completedDates]);
+	}, [completedDates, i18n.language]);
 
 	return (
 		<div className={styles.card}>
