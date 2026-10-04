@@ -6,6 +6,27 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-04
+
+### Added
+
+- Confirmation dialog for "Завершити сесію" (a modal instead of the browser `confirm` alert): "Продовжити" / "Завершити", closes on Escape or a click outside
+- Review cards now label the answers: the user's answer is shown as "Ось твоя відповідь" and the model's as "Краща відповідь" (also on the landing-page demos, in both languages, and in the history review modal)
+
+### Changed
+
+- The user's answer is no longer struck through in the review card, so a partly right answer no longer looks entirely wrong
+- "Не знаю" now shows the model's answer to the question with a note that the question does not affect the session result; the loading text for it reads "AI reviewer готує відповідь на питання…" and the check button no longer spins
+- A skipped question is left out of the session's average score and of `GET /api/stats`; the history review modal shows it without a score line
+
+### Fixed
+
+- "Не знаю" failed with "Не вдалося перевірити відповідь": the schema's `required: true` rejected the empty `answer` / `feedback` of a skipped question, so saving the session threw a validation error. A skipped question is now saved with `answer: ''`, `feedback: ''` and `score: 0`
+
+### Documentation
+
+- Recorded the `answer` / `feedback` schema change in the `docs/data-model.md` Schema-change log (with rollback), and brought the interview-flow feature docs, the `.claude/rules` notes and `PROGRESS.md` in line with the skip behaviour and the new components; added the 0.2.0 release notes
+
 ## [0.1.2] - 2026-09-29
 
 ### Fixed
@@ -94,7 +115,8 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.0
 [0.1.2]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.0
