@@ -10,6 +10,10 @@ paths:
   `topic`/`level`/`status`/`averageScore`; `TOPICS`/`LEVELS` enums are duplicated (not imported)
   in `client/src/types/interview.ts` (see `.claude/rules/frontend/api-and-hooks.md`) — keep both
   lists in sync by hand when adding a topic/level.
+- `answer` and `feedback` on `questionAttemptSchema` use a function-`required` (fails only for a
+  non-string) instead of `required: true`, because Mongoose treats `''` as missing under
+  `required: true` and a skipped question is stored with both empty. Don't "tidy" it back to
+  `required: true` — saving a skipped question would throw a `ValidationError` (500).
 - `correctAnswer` on `questionAttemptSchema` is required and was added alongside the History
   ReviewModal work: `reviewAnswer()` in `ai.service.ts` always computed it, but
   `submitAnswer` originally dropped it before the `session.questions.push(...)` write, so it was

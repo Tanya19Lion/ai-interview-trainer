@@ -17,7 +17,9 @@ Authenticated app users only — every route in this feature requires
    allowed values.
 2. **Answer a question.** `POST /api/interview/:sessionId/answer` accepts the
    question text and the free-text answer, and returns an AI review
-   (`score`, `feedback`, `correctAnswer`, `weakTopics`).
+   (`score`, `feedback`, `correctAnswer`, `weakTopics`). An empty `answer`
+   ("Не знаю") is a skip: the AI only answers the question, the entry is stored
+   with `score: 0` and is excluded from `averageScore` and from `GET /api/stats`.
 3. **Fixed-length session.** A session is exactly `QUESTIONS_PER_SESSION = 5`
    questions. On the 5th answer, the response includes `done: true` and the
    session's `averageScore`; the session is marked `completed` with a

@@ -159,6 +159,10 @@ components:
           type: string
         answer:
           type: string
+          description: >-
+            The free-text answer. An empty string means the user skipped the question ("Не знаю"):
+            the AI only answers it (`correctAnswer`), `score` is 0, `feedback` is empty, and the
+            entry is excluded from `averageScore` and from `GET /api/stats`.
 
     AnswerReview:
       type: object

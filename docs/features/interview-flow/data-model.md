@@ -19,9 +19,9 @@ Duplicated by hand (not imported) in `client/src/types/interview.ts` — see
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `question` | `String` | yes | |
-| `answer` | `String` | yes | |
+| `answer` | `String` | yes | `''` is valid and means the question was skipped ("Не знаю"). Schema `required` is a function that fails only for a non-string, because `required: true` rejects `''` — see `docs/data-model.md` Schema-change log, 2026-10-04 |
 | `score` | `Number` | yes | `min: 0, max: 10` |
-| `feedback` | `String` | yes | |
+| `feedback` | `String` | yes | `''` for a skipped question (same `required` rule as `answer`) |
 | `correctAnswer` | `String` | yes | See `adr/0001-persist-full-ai-review-json.md` — required specifically so a future regression fails loudly |
 | `weakTopics` | `[String]` | no | `default: []` |
 
@@ -33,7 +33,7 @@ Duplicated by hand (not imported) in `client/src/types/interview.ts` — see
 | `topic` | `String` (enum `TOPICS`) | yes | |
 | `level` | `String` (enum `LEVELS`) | yes | |
 | `questions` | `[questionAttemptSchema]` | no | `default: []`; grows to exactly 5 entries over a completed session |
-| `averageScore` | `Number` | no | Set once, when the session completes: mean of `questions[].score` |
+| `averageScore` | `Number` | no | Set once, when the session completes: mean of `questions[].score` over answered questions only (`answer !== ''`); `0` if every question was skipped |
 | `status` | `String` (enum `'in_progress' \| 'completed'`) | no | `default: 'in_progress'` |
 | `completedAt` | `Date` | no | Set alongside `status: 'completed'` |
 | `createdAt` / `updatedAt` | `Date` | — | `timestamps: true` |

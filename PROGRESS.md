@@ -530,3 +530,23 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
   потрібен інший ключ (IP або email+IP) і новий ADR — див. Amendment в ADR-0003.
 - Усі тести йдуть на фейку моделі в пам'яті; атомарність `findOneAndUpdate` з `upsert` на живому
   Mongo не перевірялась (ручний сценарій — у описі PR #25).
+
+---
+
+# Interview flow — skip, confirm dialog, answer display (реліз 0.2.0, 2026-10-04)
+
+**✅ Зроблено (гілка `feat/interview-skip-and-answer-display`):**
+- «Не знаю» нарешті працює end-to-end. Справжня причина збою — не JSON від моделі, а Mongoose
+  `required: true`, який відхиляє `''` в `questions[].answer`/`feedback` (500 при `session.save()`).
+  Тепер це function-`required` (запис у `docs/data-model.md`, Schema-change log 2026-10-04).
+  Пропуск → `answerQuestion()` (текст без JSON), `score: 0`, і виключення з `averageScore`
+  та з `GET /api/stats` (`answer === ''`).
+- `window.confirm` у «Завершити сесію» замінено на `ConfirmDialog`.
+- Відповідь користувача більше не закреслена: `CodeDiffLine` отримав `label`; «Ось твоя відповідь» /
+  «Краща відповідь» у `FeedbackCard`, `ReviewModal` і двох демо на `LandingPage` (ключі `card.*`).
+- `AnswerForm`: пропс `skipping` — окремий текст завантаження для «Не знаю».
+
+**Що лишилось відкритим:**
+- Ні `tsc`, ні `oxlint`, ні `vitest` не запускались до коміту; живу перевірку з Mongo/`ANTHROPIC_API_KEY`
+  під `test@demo.com` не робили. Тестів на `answerQuestion`/пропуск немає.
+- Стиль бейджа `label` не дивились у темній темі.
