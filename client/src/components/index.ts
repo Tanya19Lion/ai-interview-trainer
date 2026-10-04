@@ -8,6 +8,9 @@ export type { ButtonProps } from './Button/Button';
 export { buttonClassName } from './Button/buttonClassName';
 export type { ButtonVariant, ButtonSize, ButtonClassNameOptions } from './Button/buttonClassName';
 
+export { ConfirmDialog } from './ConfirmDialog/ConfirmDialog';
+export type { ConfirmDialogProps } from './ConfirmDialog/ConfirmDialog';
+
 export { EditorWindow } from './EditorWindow/EditorWindow';
 export type { EditorWindowProps } from './EditorWindow/EditorWindow';
 

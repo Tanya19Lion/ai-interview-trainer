@@ -192,12 +192,12 @@ export function LandingPage() {
 								{t('hero.cardQ')}
 							</CodeDiffLine>
 							<div className={[styles.animLine, styles.l1].join(' ')}>
-								<CodeDiffLine gutter="13" variant="removed">
+								<CodeDiffLine gutter="·" label={t('card.userAnswer')}>
 									{t('hero.cardRemoved')}
 								</CodeDiffLine>
 							</div>
 							<div className={[styles.animLine, styles.l2].join(' ')}>
-								<CodeDiffLine gutter="13" variant="added">
+								<CodeDiffLine gutter="+" variant="added" label={t('card.betterAnswer')}>
 									{t('hero.cardAdded')}
 								</CodeDiffLine>
 							</div>
@@ -293,10 +293,10 @@ export function LandingPage() {
 								<CodeDiffLine gutter="21" variant="question">
 									{t('review.cardQ')}
 								</CodeDiffLine>
-								<CodeDiffLine gutter="22" variant="removed">
+								<CodeDiffLine gutter="·" label={t('card.userAnswer')}>
 									{t('review.cardRemoved')}
 								</CodeDiffLine>
-								<CodeDiffLine gutter="22" variant="added">
+								<CodeDiffLine gutter="+" variant="added" label={t('card.betterAnswer')}>
 									{t('review.cardAdded')}
 								</CodeDiffLine>
 								<EditorComment>{t('review.cardComment')}</EditorComment>

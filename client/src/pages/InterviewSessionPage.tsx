@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { AnswerForm, Button, FeedbackCard, QuestionCard, SessionSummary, Spinner } from '../components';
+import { AnswerForm, Button, ConfirmDialog, FeedbackCard, QuestionCard, SessionSummary, Spinner } from '../components';
 import type { SessionResult } from '../components';
 import { useActiveSession } from '../hooks/useActiveSession';
 import { useSessionDetail } from '../hooks/useSessionDetail';
@@ -59,6 +59,7 @@ export function InterviewSessionPage() {
 	const [review, setReview] = useState<CurrentReview | null>(null);
 	const [results, setResults] = useState<SessionResult[]>([]);
 	const [finalAverageScore, setFinalAverageScore] = useState<number | null>(null);
+	const [exitDialogOpen, setExitDialogOpen] = useState(false);
 
 	const submitAnswer = useSubmitAnswer(sessionId ?? '');
 	const { setFocus } = useInterviewFocus();
@@ -81,11 +82,7 @@ export function InterviewSessionPage() {
 			questionIndex,
 			totalQuestions: bootstrap.totalQuestions,
 			branch: `${bootstrap.topic}/${bootstrap.level}`,
-			onExit: () => {
-				if (window.confirm('Завершити сесію достроково? Прогрес по поточному питанню не збережеться.')) {
-					navigate('/interview/new');
-				}
-			},
+			onExit: () => setExitDialogOpen(true),
 		});
 		return () => setFocus(null);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -212,6 +209,7 @@ export function InterviewSessionPage() {
 					onSubmit={() => submit(answer, false)}
 					onSkip={() => submit('', true)}
 					pending={submitAnswer.isPending}
+					skipping={submitAnswer.variables?.answer === ''}
 				/>
 			) : (
 				<>
@@ -234,6 +232,17 @@ export function InterviewSessionPage() {
 
 			{submitAnswer.isError && (
 				<p style={{ color: 'var(--rust-text)' }}>Не вдалося перевірити відповідь. Спробуй ще раз.</p>
+			)}
+
+			{exitDialogOpen && (
+				<ConfirmDialog
+					title="Завершити сесію?"
+					message="Прогрес по поточному питанню не збережеться."
+					confirmLabel="Завершити"
+					cancelLabel="Продовжити"
+					onConfirm={() => navigate('/interview/new')}
+					onCancel={() => setExitDialogOpen(false)}
+				/>
 			)}
 		</div>
 	);

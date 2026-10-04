@@ -10,9 +10,11 @@ export interface AnswerFormProps {
 	onSubmit: () => void;
 	onSkip: () => void;
 	pending: boolean;
+	/** Запит у польоті — це "Не знаю" (відповідь не перевіряється, лише генерується). */
+	skipping?: boolean;
 }
 
-export function AnswerForm({ value, onChange, onSubmit, onSkip, pending }: AnswerFormProps) {
+export function AnswerForm({ value, onChange, onSubmit, onSkip, pending, skipping = false }: AnswerFormProps) {
 	return (
 		<EditorWindow title={<>answer.md</>}>
 			<Textarea
@@ -33,11 +35,15 @@ export function AnswerForm({ value, onChange, onSubmit, onSkip, pending }: Answe
 						disabled={pending || value.trim().length === 0}
 						onClick={onSubmit}
 					>
-						{pending ? <Spinner variant="on-primary" /> : 'Перевірити відповідь →'}
+						{pending && !skipping ? <Spinner variant="on-primary" /> : 'Перевірити відповідь →'}
 					</Button>
 				</div>
 			</div>
-			{pending && <div className={styles.thinkingRow}>AI reviewer аналізує відповідь…</div>}
+			{pending && (
+				<div className={styles.thinkingRow}>
+					{skipping ? 'AI reviewer готує відповідь на питання…' : 'AI reviewer аналізує відповідь…'}
+				</div>
+			)}
 		</EditorWindow>
 	);
 }
