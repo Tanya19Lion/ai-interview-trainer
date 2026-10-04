@@ -547,6 +547,5 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 - `AnswerForm`: пропс `skipping` — окремий текст завантаження для «Не знаю».
 
 **Що лишилось відкритим:**
-- Ні `tsc`, ні `oxlint`, ні `vitest` не запускались до коміту; живу перевірку з Mongo/`ANTHROPIC_API_KEY`
-  під `test@demo.com` не робили. Тестів на `answerQuestion`/пропуск немає.
-- Стиль бейджа `label` не дивились у темній темі.
+- ~~Тестів на `answerQuestion`/пропуск немає.~~ Додано (гілка `feat/skip-question-tests`): `interview.controller.test.ts` (пропуск, порожній/пробільний `answer`, `averageScore` без пропусків), `stats.controller.test.ts`, `ai.service.answerQuestion.test.ts`. Живу перевірку пропуску вручну під `test@demo.com` перевірено.
+- Стиль бейджа `label` не дивились у темній темі. Тестів на `ConfirmDialog` і клієнтські підписи досі немає.
