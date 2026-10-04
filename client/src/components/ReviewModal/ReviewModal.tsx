@@ -65,20 +65,33 @@ export function ReviewModal({ sessionId, onClose }: ReviewModalProps) {
 							) : undefined
 						}
 					>
-						{detail.data.questions.map((question, index) => (
-							<div key={index} className={styles.questionBlock}>
-								<CodeDiffLine gutter="·" variant="question">
-									{question.question}
-								</CodeDiffLine>
-								<CodeDiffLine gutter="−" variant="removed">
-									{question.answer || 'Відповідь не надана.'}
-								</CodeDiffLine>
-								<CodeDiffLine gutter="+" variant="added">
-									{question.correctAnswer}
-								</CodeDiffLine>
-								<EditorComment>{question.feedback}</EditorComment>
-							</div>
-						))}
+						{detail.data.questions.map((question, index) => {
+							const skipped = question.answer === '';
+							return (
+								<div key={index} className={styles.questionBlock}>
+									<CodeDiffLine gutter="·" variant="question">
+										{question.question}
+									</CodeDiffLine>
+									{!skipped && (
+										<CodeDiffLine gutter="·" label="Ось твоя відповідь">
+											{question.answer}
+										</CodeDiffLine>
+									)}
+									<CodeDiffLine
+										gutter="+"
+										variant="added"
+										label={skipped ? 'Ось відповідь на питання' : 'Краща відповідь'}
+									>
+										{question.correctAnswer}
+									</CodeDiffLine>
+									<EditorComment>
+										{skipped
+											? 'Це питання не вплинуло на результат сесії — воно не враховане в середньому балі.'
+											: question.feedback}
+									</EditorComment>
+								</div>
+							);
+						})}
 					</EditorWindow>
 				)}
 			</div>

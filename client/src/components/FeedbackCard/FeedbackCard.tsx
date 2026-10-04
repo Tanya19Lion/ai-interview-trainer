@@ -29,23 +29,35 @@ export function FeedbackCard({
 		<EditorWindow
 			title={<>AI reviewer · рев'ю відповіді</>}
 			footer={
-				<>
-					<ScoreChip tone={scoreTone(score)}>Точність: {score}/10</ScoreChip>
+				skipped ? (
 					<LevelChip>
 						{level} · {TOPIC_LABEL[topic]}
 					</LevelChip>
-				</>
+				) : (
+					<>
+						<ScoreChip tone={scoreTone(score)}>Точність: {score}/10</ScoreChip>
+						<LevelChip>
+							{level} · {TOPIC_LABEL[topic]}
+						</LevelChip>
+					</>
+				)
 			}
 		>
-			<CodeDiffLine gutter="−" variant="removed">
-				{skipped ? 'Відповідь не надана.' : userAnswer}
-			</CodeDiffLine>
-			<CodeDiffLine gutter="+" variant="added">
+			{!skipped && (
+				<CodeDiffLine gutter="·" label="Ось твоя відповідь">
+					{userAnswer}
+				</CodeDiffLine>
+			)}
+			<CodeDiffLine
+				gutter="+"
+				variant="added"
+				label={skipped ? 'Ось відповідь на питання' : 'Краща відповідь'}
+			>
 				{correctAnswer}
 			</CodeDiffLine>
 			<EditorComment>
 				{skipped
-					? 'Нічого страшного — ось як варто відповісти. Повернись до цієї теми пізніше.'
+					? 'Це питання не впливає на результат сесії — воно не враховується в середньому балі. Повернись до цієї теми пізніше.'
 					: feedback}
 			</EditorComment>
 		</EditorWindow>

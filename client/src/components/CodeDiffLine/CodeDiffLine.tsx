@@ -7,6 +7,8 @@ export interface CodeDiffLineProps {
 	/** Номер рядка в лівій "gutter"-колонці, напр. 12 */
 	gutter: ReactNode;
 	variant?: CodeDiffLineVariant;
+	/** Необов'язковий підпис над текстом рядка, напр. "Твоя відповідь" */
+	label?: string;
 	children: ReactNode;
 }
 
@@ -17,11 +19,14 @@ const VARIANT_CLASS: Record<CodeDiffLineVariant, string | undefined> = {
 	added: styles.added,
 };
 
-export function CodeDiffLine({ gutter, variant = 'neutral', children }: CodeDiffLineProps) {
+export function CodeDiffLine({ gutter, variant = 'neutral', label, children }: CodeDiffLineProps) {
 	return (
 		<div className={[styles.line, VARIANT_CLASS[variant]].filter(Boolean).join(' ')}>
 			<span className={styles.gutter}>{gutter}</span>
-			<span className={styles.content}>{children}</span>
+			<span className={styles.content}>
+				{label && <span className={styles.label}>{label}</span>}
+				{children}
+			</span>
 		</div>
 	);
 }

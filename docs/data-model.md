@@ -140,6 +140,19 @@ no existence outside its parent session. Documented under Entities below.
   if any exist, delete or migrate them by a one-off script first, since they would fail
   enum validation on later saves.
 
+### 2026-10-04 — allow empty `answer` / `feedback` on a question attempt
+
+- **Change:** in `src/models/InterviewSession.ts`, `questions[].answer` and `questions[].feedback`
+  went from `required: true` to a function-`required` that fails only when the value is not a
+  string. Mongoose treats `''` as missing under `required: true`, which made saving a skipped
+  ("Не знаю") question throw a `ValidationError`. A skipped question is stored with
+  `answer: ''`, `feedback: ''`, `score: 0`; `averageScore` and `GET /api/stats` ignore entries
+  with `answer === ''`.
+- **Backfill:** none needed — existing documents all have non-empty values, which stay valid.
+- **Rollback:** restore `required: true` on both fields. Before doing so, check
+  `db.interviewsessions.countDocuments({ 'questions.answer': '' })`; any such sessions would fail
+  validation on later saves, so delete them or backfill a placeholder by a one-off script first.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check

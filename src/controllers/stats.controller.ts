@@ -32,7 +32,7 @@ function computeStreakDays(completedAtDates: Date[]): number {
 
 export async function getStats(req: AuthedRequest, res: Response): Promise<void> {
 	const sessions = await InterviewSessionModel.find({ userId: req.userId, status: 'completed' }).select(
-		'topic completedAt questions.score',
+		'topic completedAt questions.score questions.answer',
 	);
 
 	if (sessions.length === 0) {
@@ -46,6 +46,7 @@ export async function getStats(req: AuthedRequest, res: Response): Promise<void>
 
 	for (const session of sessions) {
 		for (const q of session.questions) {
+			if (q.answer === '') continue; // "Не знаю" не впливає на статистику
 			const entry = byTopic.get(session.topic) ?? { total: 0, count: 0 };
 			entry.total += q.score;
 			entry.count += 1;

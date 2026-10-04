@@ -17,6 +17,27 @@
 	white-space: pre-wrap;
 }
 
+.label {
+	display: block;
+	width: fit-content;
+	font-family: var(--font-mono);
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--paper-ink);
+	background: rgba(35, 38, 47, 0.1);
+	padding: 0.5rem;
+    border-radius: var(--radius-s);
+    margin-bottom: 0.35rem;
+    margin-top: 0.5rem;
+    line-height: 1;
+}
+.added .label {
+	color: #1f5a2d;
+	background: rgba(76, 154, 93, 0.22);
+}
+
 .question .content {
 	color: var(--paper-ink-soft);
 }

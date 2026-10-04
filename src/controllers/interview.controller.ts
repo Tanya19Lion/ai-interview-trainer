@@ -1,7 +1,8 @@
 import type { Response } from 'express';
 import type { AuthedRequest } from '../middleware/auth.js';
 import { InterviewSessionModel, LEVELS, TOPICS } from '../models/InterviewSession.js';
-import { generateQuestion, reviewAnswer } from '../services/ai.service.js';
+import { answerQuestion, generateQuestion, reviewAnswer } from '../services/ai.service.js';
+import type { AnswerReview } from '../services/ai.service.js';
 
 const QUESTIONS_PER_SESSION = 5;
 
@@ -74,8 +75,16 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 	const isLastQuestion = session.questions.length + 1 >= QUESTIONS_PER_SESSION;
 	const askedQuestions = session.questions.map((q) => q.question).concat(question);
 
+	// "Не знаю" надсилає порожню відповідь: модель лише відповідає на питання, а оцінка не рахується.
+	const skipped = answer.trim() === '';
+	const storedAnswer = skipped ? '' : answer;
+
 	const [review, nextQuestion] = await Promise.all([
-		reviewAnswer(session.topic, session.level, question, answer),
+		skipped
+			? answerQuestion(session.topic, session.level, question).then(
+					(correctAnswer): AnswerReview => ({ score: 0, feedback: '', correctAnswer, weakTopics: [] }),
+				)
+			: reviewAnswer(session.topic, session.level, question, answer),
 		isLastQuestion
 			? Promise.resolve(undefined)
 			: generateQuestion(session.topic, session.level, askedQuestions),
@@ -83,7 +92,7 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 
 	session.questions.push({
 		question,
-		answer,
+		answer: storedAnswer,
 		score: review.score,
 		feedback: review.feedback,
 		correctAnswer: review.correctAnswer,
@@ -91,8 +100,9 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 	});
 
 	if (isLastQuestion) {
-		const total = session.questions.reduce((sum, q) => sum + q.score, 0);
-		session.averageScore = total / session.questions.length;
+		const scored = session.questions.filter((q) => q.answer !== '');
+		const total = scored.reduce((sum, q) => sum + q.score, 0);
+		session.averageScore = scored.length ? total / scored.length : 0;
 		session.status = 'completed';
 		session.completedAt = new Date();
 		await session.save();

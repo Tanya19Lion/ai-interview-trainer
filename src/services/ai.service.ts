@@ -79,6 +79,25 @@ export function parseAnswerReview(raw: string): AnswerReview {
 	}
 }
 
+/** Для "Не знаю": просто відповідає на питання, без оцінювання і без JSON. */
+export async function answerQuestion(topic: string, level: string, question: string): Promise<string> {
+	const client = getClient();
+	const message = await client.messages.create({
+		model: MODEL,
+		max_tokens: 1024,
+		system:
+			'Ти технічний інтерв\'юер. Дай коротку, точну і сучасну еталонну відповідь на питання співбесіди. ' +
+			'Відповідай лише текстом відповіді, без вступу і без markdown-огорожі.',
+		messages: [{ role: 'user', content: `Тема: ${topic}. Рівень: ${level}.\nПитання: ${question}` }],
+	});
+
+	return message.content
+		.filter((block) => block.type === 'text')
+		.map((block) => block.text)
+		.join('\n')
+		.trim();
+}
+
 export async function reviewAnswer(
 	topic: string,
 	level: string,
