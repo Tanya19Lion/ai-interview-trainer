@@ -87,5 +87,15 @@
 	"theme.enableLight": "Увімкнути світлу тему",
 	"theme.enableDark": "Увімкнути темну тему",
 	"lang.switchAria": "Змінити мову на {{lang}}",
-	"lang.overlayAria": "Language selection / Вибір мови"
+	"lang.overlayAria": "Language selection / Вибір мови",
+	"common.loading": "Завантаження…",
+	"common.tagline": "diff — порівняй. виправ. пройди.",
+	"auth.checkingSession": "Перевірка сесії…",
+	"auth.showPassword": "Показати пароль",
+	"auth.hidePassword": "Приховати пароль",
+	"auth.backdrop.score": "Точність: 6/10",
+	"auth.backdrop.q": "// Q: Чим useMemo відрізняється від useCallback?",
+	"auth.backdrop.removed": "useMemo кешує функцію, а useCallback кешує значення.",
+	"auth.backdrop.added": "useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не створювалась заново.",
+	"auth.backdrop.comment": "Поширена плутанина. Memo → значення, Callback → сама функція."
 }

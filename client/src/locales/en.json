@@ -87,5 +87,15 @@
 	"theme.enableLight": "Switch to light theme",
 	"theme.enableDark": "Switch to dark theme",
 	"lang.switchAria": "Switch language to {{lang}}",
-	"lang.overlayAria": "Language selection / Вибір мови"
+	"lang.overlayAria": "Language selection / Вибір мови",
+	"common.loading": "Loading…",
+	"common.tagline": "diff — compare. fix. pass.",
+	"auth.checkingSession": "Checking your session…",
+	"auth.showPassword": "Show password",
+	"auth.hidePassword": "Hide password",
+	"auth.backdrop.score": "Accuracy: 6/10",
+	"auth.backdrop.q": "// Q: How does useMemo differ from useCallback?",
+	"auth.backdrop.removed": "useMemo caches the function, and useCallback caches the value.",
+	"auth.backdrop.added": "useMemo caches the value (the result of a computation), while useCallback caches the function itself, so it isn't re-created.",
+	"auth.backdrop.comment": "A common mix-up. Memo → a value, Callback → the function itself."
 }

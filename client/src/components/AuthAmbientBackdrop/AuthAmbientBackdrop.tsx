@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { CodeDiffLine } from '../CodeDiffLine/CodeDiffLine';
 import { EditorComment } from '../EditorComment/EditorComment';
@@ -7,6 +8,8 @@ import styles from './AuthAmbientBackdrop.module.css';
 
 /** Логотип-topbar і декоративна diff-картка, спільні для екранів автентифікації (LoginPage, ResetPasswordPage). */
 export function AuthAmbientBackdrop() {
+	const { t } = useTranslation();
+
 	return (
 		<>
 			<div className={styles.topbar}>
@@ -24,22 +27,21 @@ export function AuthAmbientBackdrop() {
 				}
 				footer={
 					<>
-						<ScoreChip tone="mid">Точність: 6/10</ScoreChip>
+						<ScoreChip tone="mid">{t('auth.backdrop.score')}</ScoreChip>
 						<LevelChip>Middle · React</LevelChip>
 					</>
 				}
 			>
 				<CodeDiffLine gutter="12" variant="question">
-					// Q: Чим useMemo відрізняється від useCallback?
+					{t('auth.backdrop.q')}
 				</CodeDiffLine>
 				<CodeDiffLine gutter="13" variant="removed">
-					useMemo кешує функцію, а useCallback кешує значення.
+					{t('auth.backdrop.removed')}
 				</CodeDiffLine>
 				<CodeDiffLine gutter="13" variant="added">
-					useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не
-					створювалась заново.
+					{t('auth.backdrop.added')}
 				</CodeDiffLine>
-				<EditorComment>Поширена плутанина. Memo → значення, Callback → сама функція.</EditorComment>
+				<EditorComment>{t('auth.backdrop.comment')}</EditorComment>
 			</EditorWindow>
 		</>
 	);
