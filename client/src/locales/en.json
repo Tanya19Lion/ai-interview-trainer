@@ -116,5 +116,22 @@
 	"login.namePlaceholder": "Tanya",
 	"login.creating": "Creating account…",
 	"login.create": "Create account",
-	"login.terms": "By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of diff."
+	"login.terms": "By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of diff.",
+	"reset.checkTitle": "Check your email",
+	"reset.checkBody": "If an account with <b>{{email}}</b> exists, we've sent a password reset link.",
+	"reset.back": "← Back to sign in",
+	"reset.forgotTitle": "Forgot your password?",
+	"reset.forgotSubtitle": "Enter your email — we'll send a reset link.",
+	"reset.send": "Send link",
+	"reset.sending": "Sending…",
+	"reset.remembered": "Remembered your password?",
+	"reset.mismatch": "Passwords don't match",
+	"reset.doneTitle": "Password changed",
+	"reset.doneBody": "You can now sign in with your new password.",
+	"reset.newTitle": "New password",
+	"reset.newSubtitle": "Enter a new password for your account.",
+	"reset.newLabel": "New password",
+	"reset.confirmLabel": "Confirm password",
+	"reset.save": "Change password",
+	"reset.saving": "Saving…"
 }

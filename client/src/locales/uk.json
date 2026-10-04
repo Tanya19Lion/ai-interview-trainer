@@ -116,5 +116,22 @@
 	"login.namePlaceholder": "Таня",
 	"login.creating": "Створюємо акаунт…",
 	"login.create": "Створити акаунт",
-	"login.terms": "Продовжуючи, ти погоджуєшся з <terms>Умовами використання</terms> та <privacy>Політикою конфіденційності</privacy> diff."
+	"login.terms": "Продовжуючи, ти погоджуєшся з <terms>Умовами використання</terms> та <privacy>Політикою конфіденційності</privacy> diff.",
+	"reset.checkTitle": "Перевір пошту",
+	"reset.checkBody": "Якщо акаунт з адресою <b>{{email}}</b> існує, ми надіслали лінк для відновлення пароля.",
+	"reset.back": "← Повернутися до входу",
+	"reset.forgotTitle": "Забули пароль?",
+	"reset.forgotSubtitle": "Введи email — надішлемо лінк для відновлення.",
+	"reset.send": "Надіслати лінк",
+	"reset.sending": "Надсилаємо…",
+	"reset.remembered": "Згадав(-ла) пароль?",
+	"reset.mismatch": "Паролі не збігаються",
+	"reset.doneTitle": "Пароль змінено",
+	"reset.doneBody": "Тепер можеш увійти з новим паролем.",
+	"reset.newTitle": "Новий пароль",
+	"reset.newSubtitle": "Введи новий пароль для свого акаунта.",
+	"reset.newLabel": "Новий пароль",
+	"reset.confirmLabel": "Підтвердь пароль",
+	"reset.save": "Змінити пароль",
+	"reset.saving": "Зберігаємо…"
 }
