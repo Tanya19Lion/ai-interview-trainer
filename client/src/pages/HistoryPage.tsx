@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eyebrow, HistoryTable, ReviewModal } from '../components';
 import { useHistory } from '../hooks/useHistory';
 import { LEVEL_LABEL } from '../lib/levelLabel';
@@ -7,6 +8,7 @@ import { LEVELS, TOPICS, type Level, type Topic } from '../types/interview';
 import styles from './HistoryPage.module.css';
 
 export function HistoryPage() {
+	const { t } = useTranslation();
 	const [topic, setTopic] = useState<Topic | null>(null);
 	const [level, setLevel] = useState<Level | null>(null);
 	const [reviewId, setReviewId] = useState<string | null>(null);
@@ -17,36 +19,35 @@ export function HistoryPage() {
 		<div className={styles.page}>
 			<div className={styles.head}>
 				<Eyebrow>$ diff --log</Eyebrow>
-				<h1 className={styles.h1}>Історія проходжень</h1>
+				<h1 className={styles.h1}>{t('history.title')}</h1>
 				<p className={styles.subtitle}>
-					Кожна сесія — окремий запис: тема, рівень, оцінка й статус. Натисни «переглянути», щоб
-					побачити рев'ю відповіді.
+					{t('history.subtitle')}
 				</p>
 			</div>
 
 			<div className={styles.filterBar}>
 				<div className={styles.filterGroup}>
-					<span className={styles.fl}>тема:</span>
+					<span className={styles.fl}>{t('history.filterTopic')}</span>
 					<button
 						type="button"
 						className={[styles.chip, topic === null ? styles.chipActive : null].filter(Boolean).join(' ')}
 						onClick={() => setTopic(null)}
 					>
-						Усі
+						{t('history.all')}
 					</button>
-					{TOPICS.map((t) => (
+					{TOPICS.map((topicOption) => (
 						<button
-							key={t}
+							key={topicOption}
 							type="button"
-							className={[styles.chip, topic === t ? styles.chipActive : null].filter(Boolean).join(' ')}
-							onClick={() => setTopic(t)}
+							className={[styles.chip, topic === topicOption ? styles.chipActive : null].filter(Boolean).join(' ')}
+							onClick={() => setTopic(topicOption)}
 						>
-							{TOPIC_LABEL[t]}
+							{TOPIC_LABEL[topicOption]}
 						</button>
 					))}
 				</div>
 				<div className={styles.filterGroup}>
-					<span className={styles.fl}>рівень:</span>
+					<span className={styles.fl}>{t('history.filterLevel')}</span>
 					<button
 						type="button"
 						className={[styles.chip, styles.chipLvl, level === null ? styles.chipActive : null]
@@ -54,7 +55,7 @@ export function HistoryPage() {
 							.join(' ')}
 						onClick={() => setLevel(null)}
 					>
-						Усі
+						{t('history.all')}
 					</button>
 					{LEVELS.map((l) => (
 						<button

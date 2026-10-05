@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { formatCompletedAt } from '../../lib/formatCompletedAt';
 import { LEVEL_LABEL } from '../../lib/levelLabel';
 import { TOPIC_LABEL } from '../../lib/topicLabel';
@@ -10,9 +11,10 @@ export interface HistoryTableProps {
 }
 
 export function HistoryTable({ sessions, onReview }: HistoryTableProps) {
+	const { t } = useTranslation();
 	if (sessions.length === 0) {
 		return (
-			<p className={styles.empty}>Нічого не знайдено за цим фільтром. Спробуй інше поєднання теми й рівня.</p>
+			<p className={styles.empty}>{t('hist.empty')}</p>
 		);
 	}
 
@@ -20,12 +22,12 @@ export function HistoryTable({ sessions, onReview }: HistoryTableProps) {
 		<table className={styles.table}>
 			<thead>
 				<tr>
-					<th>Тема</th>
-					<th>Рівень</th>
-					<th>Дата</th>
-					<th>Оцінка</th>
-					<th>Статус</th>
-					<th>Дії</th>
+					<th>{t('hist.colTopic')}</th>
+					<th>{t('hist.colLevel')}</th>
+					<th>{t('hist.colDate')}</th>
+					<th>{t('hist.colScore')}</th>
+					<th>{t('hist.colStatus')}</th>
+					<th>{t('hist.colActions')}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -33,24 +35,24 @@ export function HistoryTable({ sessions, onReview }: HistoryTableProps) {
 					const passed = (session.averageScore ?? 0) >= 7;
 					return (
 						<tr key={session.id}>
-							<td data-label="Тема" className={styles.topic}>
+							<td data-label={t('hist.colTopic')} className={styles.topic}>
 								{TOPIC_LABEL[session.topic]}
 							</td>
-							<td data-label="Рівень">{LEVEL_LABEL[session.level]}</td>
-							<td data-label="Дата">{formatCompletedAt(session.completedAt)}</td>
-							<td data-label="Оцінка" className={styles.score}>
+							<td data-label={t('hist.colLevel')}>{LEVEL_LABEL[session.level]}</td>
+							<td data-label={t('hist.colDate')}>{formatCompletedAt(session.completedAt)}</td>
+							<td data-label={t('hist.colScore')} className={styles.score}>
 								{session.averageScore !== undefined ? `${session.averageScore.toFixed(1)}/10` : '—'}
 							</td>
-							<td data-label="Статус">
+							<td data-label={t('hist.colStatus')}>
 								<span
 									className={[styles.statusBadge, passed ? styles.pass : styles.retry].join(' ')}
 								>
-									{passed ? 'схвалено' : 'повторити'}
+									{passed ? t('hist.pass') : t('hist.retry')}
 								</span>
 							</td>
-							<td data-label="Дії">
+							<td data-label={t('hist.colActions')}>
 								<button type="button" className={styles.reviewLink} onClick={() => onReview(session.id)}>
-									переглянути
+									{t('hist.view')}
 								</button>
 							</td>
 						</tr>

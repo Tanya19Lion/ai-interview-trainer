@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge, Button, Eyebrow, Spinner } from '../components';
 import { useLogout, useMe } from '../hooks/useAuth';
@@ -19,6 +20,7 @@ function mostFrequentLevel(levels: Level[]): Level | null {
 }
 
 export function HomePage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const me = useMe();
 	const logout = useLogout();
@@ -35,7 +37,7 @@ export function HomePage() {
 		<div className={styles.page}>
 			<div className={styles.head}>
 				<Eyebrow>$ diff --whoami</Eyebrow>
-				<h1 className={styles.h1}>Кабінет</h1>
+				<h1 className={styles.h1}>{t('home.title')}</h1>
 			</div>
 
 			<div className={styles.grid}>
@@ -49,36 +51,36 @@ export function HomePage() {
 					</div>
 					<h3 className={styles.name}>{user?.name}</h3>
 					<div className={styles.meta}>{user?.email}</div>
-					{typicalLevel && <span className={styles.levelTag}>рівень: {LEVEL_LABEL[typicalLevel]}</span>}
+					{typicalLevel && <span className={styles.levelTag}>{t('home.level', { level: LEVEL_LABEL[typicalLevel] })}</span>}
 					<div className={styles.divider} />
 					<button type="button" className={styles.profileLink} onClick={() => logout.mutate()}>
-						Вийти
+						{t('shell.logout')}
 					</button>
 				</aside>
 
 				<div className={styles.main}>
 					{stats.data && (
 						<div className={styles.badgeRow}>
-							<Badge label="сесій" tone="good">
+							<Badge label={t('stats.sessions')} tone="good">
 								{stats.data.totalSessions}
 							</Badge>
 							{stats.data.overallAccuracy !== null && (
-								<Badge label="точність" tone="good">
+								<Badge label={t('stats.accuracy')} tone="good">
 									{Math.round(stats.data.overallAccuracy * 100)}%
 								</Badge>
 							)}
 							{stats.data.streakDays > 0 && (
-								<Badge label="🔥 серія" tone="amber">
-									{stats.data.streakDays} {stats.data.streakDays === 1 ? 'день' : 'днів'}
+								<Badge label={t('stats.streak')} tone="amber">
+									{t('stats.streakDays', { count: stats.data.streakDays })}
 								</Badge>
 							)}
-							{strongestTopic && <Badge label="сильна тема">{TOPIC_LABEL[strongestTopic]}</Badge>}
+							{strongestTopic && <Badge label={t('stats.strongTopic')}>{TOPIC_LABEL[strongestTopic]}</Badge>}
 						</div>
 					)}
 
 					{activeSession.data ? (
 						<div className={styles.resumeCard}>
-							<span className={styles.resumeLabel}>продовжити з того, де зупинились</span>
+							<span className={styles.resumeLabel}>{t('home.resume')}</span>
 							<div className={styles.resumeLine}>
 								<span className={styles.branch}>
 									{activeSession.data.topic}/{activeSession.data.level}
@@ -103,20 +105,20 @@ export function HomePage() {
 										})
 									}
 								>
-									Продовжити тренування →
+									{t('home.resumeCta')}
 								</Button>
 								<Button variant="ghost" onClick={() => navigate('/interview/new')}>
-									Обрати нову тему
+									{t('home.chooseNew')}
 								</Button>
 							</div>
 						</div>
 					) : (
 						!activeSession.isLoading && (
 							<div className={styles.resumeCard}>
-								<span className={styles.resumeLabel}>немає активної сесії</span>
+								<span className={styles.resumeLabel}>{t('home.noActive')}</span>
 								<div className={styles.ctaRow}>
 									<Button variant="primary" onClick={() => navigate('/interview/new')}>
-										Почати співбесіду →
+										{t('new.start')}
 									</Button>
 								</div>
 							</div>
@@ -124,11 +126,11 @@ export function HomePage() {
 					)}
 
 					<div className={styles.card}>
-						<h3 className={styles.cardTitle}>останні сесії</h3>
+						<h3 className={styles.cardTitle}>{t('home.recent')}</h3>
 						{history.isLoading ? (
 							<Spinner />
 						) : recentSessions.length === 0 ? (
-							<p className={styles.empty}>Ще немає завершених сесій.</p>
+							<p className={styles.empty}>{t('common.noneCompleted')}</p>
 						) : (
 							<div className={styles.recentList}>
 								{recentSessions.map((session) => (
@@ -157,16 +159,17 @@ export function HomePage() {
 
 					<div className={styles.links}>
 						<Link to="/history" className={styles.linkCard}>
-							<span className={styles.linkTitle}>Уся історія →</span>
+							<span className={styles.linkTitle}>{t('home.historyLink')}</span>
 							<span className={styles.linkDesc}>
-								{stats.data ? `${stats.data.totalSessions} пройдених співбесід ` : ''}з фільтрами за
-								темою й рівнем
+								{stats.data
+										? t('home.historyDescCount', { count: stats.data.totalSessions })
+										: t('home.historyDesc')}
 							</span>
 						</Link>
 						<Link to="/progress" className={styles.linkCard}>
-							<span className={styles.linkTitle}>Детальна статистика →</span>
+							<span className={styles.linkTitle}>{t('home.statsLink')}</span>
 							<span className={styles.linkDesc}>
-								Графік активності, точність за темами, тренд і рекомендації
+								{t('home.statsDesc')}
 							</span>
 						</Link>
 					</div>
