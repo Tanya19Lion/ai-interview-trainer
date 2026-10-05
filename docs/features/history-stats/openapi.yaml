@@ -73,7 +73,8 @@ paths:
         '200':
           description: >
             Totals, accuracy and streak. With no completed sessions the response is
-            `totalSessions: 0`, `overallAccuracy: null`, `byTopic: []`, `streakDays: 0`.
+            `totalSessions: 0`, `overallAccuracy: null`, `byTopic: []`, `streakDays: 0`,
+            `activityByDay: {}` (`today` is always set).
           content:
             application/json:
               schema:
@@ -187,7 +188,7 @@ components:
 
     StatsResponse:
       type: object
-      required: [totalSessions, overallAccuracy, byTopic, streakDays]
+      required: [totalSessions, overallAccuracy, byTopic, streakDays, activityByDay, today]
       properties:
         totalSessions:
           type: integer
@@ -205,3 +206,17 @@ components:
         streakDays:
           type: integer
           description: Consecutive UTC days with a completed session, ending today or yesterday.
+        activityByDay:
+          type: object
+          description: >
+            Completed sessions per UTC calendar day, keyed by `YYYY-MM-DD`; days with no
+            sessions are absent. Bucketed with the same UTC-day boundary as `streakDays`.
+          additionalProperties:
+            type: integer
+          example:
+            '2026-10-04': 2
+            '2026-10-05': 1
+        today:
+          type: string
+          description: The server's current UTC day as `YYYY-MM-DD` — the last day of the heatmap window.
+          example: '2026-10-05'
