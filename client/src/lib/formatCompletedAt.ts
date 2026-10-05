@@ -1,6 +1,4 @@
-import { currentLang, type Lang } from '../i18n';
-
-const LOCALE: Record<Lang, string> = { uk: 'uk-UA', en: 'en-US' };
+import { currentLang, LOCALE, type Lang } from '../i18n';
 
 /** completedAt — ISO-дата завершення сесії, якщо вона вже завершена. */
 export function formatCompletedAt(completedAt: string | undefined, lang: Lang = currentLang()): string {

@@ -1,5 +1,4 @@
 {
-	"meta.title": "diff — AI Technical Interview Trainer",
 	"meta.desc": "diff — an AI simulator for technical interviews in React, JavaScript, Node.js, and TypeScript. Get your answer reviewed like a pull request.",
 	"nav.features": "Features",
 	"nav.how": "How it works",
@@ -15,7 +14,6 @@
 	"hero.ctaPrimary": "Start training",
 	"hero.ctaSecondary": "See a sample review ↓",
 	"hero.topicsLabel": "practice topics:",
-	"hero.cardAria": "Sample answer review: a question about useMemo and useCallback, AI shows the mistake and the correct phrasing",
 	"hero.cardQ": "// Q: How does useMemo differ from useCallback?",
 	"hero.cardRemoved": "useMemo caches the function, and useCallback caches the value.",
 	"hero.cardAdded": "useMemo caches the value (the result of a computation), while useCallback caches the function itself, so it isn't re-created on every render.",

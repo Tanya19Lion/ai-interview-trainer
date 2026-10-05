@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LANG_STORAGE_KEY, setLanguage } from '../../i18n';
+import { LANG_STORAGE_KEY, LANGS, setLanguage, type Lang } from '../../i18n';
 import styles from './LangOverlay.module.css';
 
 export function LangOverlay() {
@@ -18,7 +18,7 @@ export function LangOverlay() {
 
 	if (!visible) return null;
 
-	function choose(lang: 'uk' | 'en') {
+	function choose(lang: Lang) {
 		setLanguage(lang);
 		setLeaving(true);
 		setTimeout(() => setVisible(false), 250);
@@ -36,12 +36,11 @@ export function LangOverlay() {
 				<p className={styles.question}>{t('lang.q')}</p>
 				<p className={styles.questionSub}>{t('lang.qSub')}</p>
 				<div className={styles.options}>
-					<button type="button" className={styles.langBtn} onClick={() => choose('uk')}>
-						{t('lang.uk')}
-					</button>
-					<button type="button" className={styles.langBtn} onClick={() => choose('en')}>
-						{t('lang.en')}
-					</button>
+					{LANGS.map((lang) => (
+						<button key={lang} type="button" className={styles.langBtn} onClick={() => choose(lang)}>
+							{t(`lang.${lang}`)}
+						</button>
+					))}
 				</div>
 			</div>
 		</div>

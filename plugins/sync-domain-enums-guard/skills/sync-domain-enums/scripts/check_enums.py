@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Diff the TOPICS/LEVELS `as const` arrays between client and server.
+"""Diff the TOPICS/LEVELS/LANGS `as const` arrays between client and server.
 
 Usage: python check_enums.py [repo_root]
 Exit code 0 = in sync, 1 = drift found, 2 = couldn't parse one of the files.
@@ -15,7 +15,7 @@ SERVER_REL = "src/models/InterviewSession.ts"
 # Matches `export const NAME = [ ... ] as const;` across single or multiple lines,
 # tolerating single/double quotes, trailing commas, and comments on their own line.
 ARRAY_RE = re.compile(
-    r"export\s+const\s+(TOPICS|LEVELS)\s*=\s*\[(?P<body>.*?)\]\s*as\s+const",
+    r"export\s+const\s+(TOPICS|LEVELS|LANGS)\s*=\s*\[(?P<body>.*?)\]\s*as\s+const",
     re.DOTALL,
 )
 STRING_ITEM_RE = re.compile(r"""['"]([^'"]+)['"]""")
@@ -64,7 +64,7 @@ def main() -> int:
     server_enums = load(server_path)
 
     ok = True
-    for enum_name in ("TOPICS", "LEVELS"):
+    for enum_name in ("TOPICS", "LEVELS", "LANGS"):
         if enum_name not in client_enums:
             print(f"ERROR: could not find `{enum_name}` in {client_path}", file=sys.stderr)
             return 2

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { currentLang } from '../../i18n';
+import { currentLang, LOCALE } from '../../i18n';
 import styles from './Heatmap.module.css';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -43,7 +43,7 @@ export function Heatmap({ completedDates }: HeatmapProps) {
 			return { day, count, level: bucketize(count) };
 		});
 
-		const monthFormat = new Intl.DateTimeFormat(currentLang() === 'en' ? 'en-US' : 'uk-UA', {
+		const monthFormat = new Intl.DateTimeFormat(LOCALE[currentLang()], {
 			month: 'short',
 			timeZone: 'UTC',
 		});
