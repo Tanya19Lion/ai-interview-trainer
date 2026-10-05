@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '../Button/Button';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
 import { Spinner } from '../Spinner/Spinner';
@@ -15,19 +16,20 @@ export interface AnswerFormProps {
 }
 
 export function AnswerForm({ value, onChange, onSubmit, onSkip, pending, skipping = false }: AnswerFormProps) {
+	const { t } = useTranslation();
 	return (
 		<EditorWindow title={<>answer.md</>}>
 			<Textarea
-				placeholder="Введи свою відповідь…"
+				placeholder={t('answer.placeholder')}
 				value={value}
 				disabled={pending}
 				onChange={(event) => onChange(event.target.value)}
 			/>
 			<div className={styles.footer}>
-				<span className={styles.charCount}>{value.length} символів</span>
+				<span className={styles.charCount}>{t('answer.chars', { count: value.length })}</span>
 				<div className={styles.actions}>
 					<Button variant="ghost" type="button" disabled={pending} onClick={onSkip}>
-						Не знаю
+						{t('answer.skip')}
 					</Button>
 					<Button
 						variant="primary"
@@ -35,13 +37,13 @@ export function AnswerForm({ value, onChange, onSubmit, onSkip, pending, skippin
 						disabled={pending || value.trim().length === 0}
 						onClick={onSubmit}
 					>
-						{pending && !skipping ? <Spinner variant="on-primary" /> : 'Перевірити відповідь →'}
+						{pending && !skipping ? <Spinner variant="on-primary" /> : t('answer.submit')}
 					</Button>
 				</div>
 			</div>
 			{pending && (
 				<div className={styles.thinkingRow}>
-					{skipping ? 'AI reviewer готує відповідь на питання…' : 'AI reviewer аналізує відповідь…'}
+					{skipping ? t('answer.skipping') : t('answer.reviewing')}
 				</div>
 			)}
 		</EditorWindow>

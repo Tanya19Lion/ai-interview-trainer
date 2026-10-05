@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge, ScoreChip } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { scoreTone } from '../../lib/scoreTone';
@@ -29,6 +30,7 @@ export function SessionSummary({
 	onRestart,
 	onHome,
 }: SessionSummaryProps) {
+	const { t } = useTranslation();
 	const weakTopics = [...new Set(results.flatMap((result) => result.weakTopics))].slice(0, 3);
 
 	return (
@@ -36,7 +38,7 @@ export function SessionSummary({
 			<div className={styles.score}>
 				<span className={styles.big}>{averageScore.toFixed(1)}</span>
 				<span className={styles.lbl}>
-					середній бал · {TOPIC_LABEL[topic]}/{level}
+					{t('summary.average', { topic: TOPIC_LABEL[topic], level })}
 				</span>
 			</div>
 
@@ -45,7 +47,7 @@ export function SessionSummary({
 					<div key={index} className={styles.row}>
 						<span className={styles.question}>{result.question}</span>
 						<ScoreChip tone={result.skipped ? 'low' : scoreTone(result.score)}>
-							{result.skipped ? 'пропущено' : `${result.score}/10`}
+							{result.skipped ? t('summary.skipped') : `${result.score}/10`}
 						</ScoreChip>
 					</div>
 				))}
@@ -53,7 +55,7 @@ export function SessionSummary({
 
 			{weakTopics.length > 0 && (
 				<div className={styles.weak}>
-					<span className={styles.weakLabel}>рекомендовано підтягнути:</span>
+					<span className={styles.weakLabel}>{t('summary.weak')}</span>
 					{weakTopics.map((weakTopic) => (
 						<Badge key={weakTopic} tone="amber">
 							{weakTopic}
@@ -64,10 +66,10 @@ export function SessionSummary({
 
 			<div className={styles.actions}>
 				<Button variant="primary" onClick={onRestart}>
-					Ще одна сесія
+					{t('summary.again')}
 				</Button>
 				<Button variant="ghost" onClick={onHome}>
-					На головну
+					{t('summary.home')}
 				</Button>
 			</div>
 		</div>

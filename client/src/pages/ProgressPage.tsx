@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge, Eyebrow, Heatmap, Spinner } from '../components';
 import { useHistory } from '../hooks/useHistory';
 import { useStats } from '../hooks/useStats';
@@ -18,6 +19,7 @@ const RECOMMENDATION_THRESHOLD = 0.8;
 const RECOMMENDATION_LIMIT = 2;
 
 export function ProgressPage() {
+	const { t } = useTranslation();
 	const stats = useStats();
 	const history = useHistory();
 
@@ -42,7 +44,7 @@ export function ProgressPage() {
 	const totalForLevels = sessions.length;
 
 	const recommendations = (stats.data?.byTopic ?? [])
-		.filter((t) => t.accuracy < RECOMMENDATION_THRESHOLD)
+		.filter((topicStat) => topicStat.accuracy < RECOMMENDATION_THRESHOLD)
 		.sort((a, b) => a.accuracy - b.accuracy)
 		.slice(0, RECOMMENDATION_LIMIT);
 
@@ -50,28 +52,27 @@ export function ProgressPage() {
 		<div className={styles.page}>
 			<div className={styles.head}>
 				<Eyebrow>$ diff --stats</Eyebrow>
-				<h1 className={styles.h1}>Детальна статистика</h1>
+				<h1 className={styles.h1}>{t('stats.h1')}</h1>
 				<p className={styles.subtitle}>
-					Мова конкретна: скільки питань, яка точність і де саме прогалини — щоб знати, що
-					повторити перед співбесідою.
+					{t('stats.subtitle')}
 				</p>
 			</div>
 
 			{stats.data && (
 				<div className={styles.badgeRow}>
 					{stats.data.overallAccuracy !== null && (
-						<Badge label="точність" tone="good">
+						<Badge label={t('stats.accuracy')} tone="good">
 							{Math.round(stats.data.overallAccuracy * 100)}%
 						</Badge>
 					)}
 					{stats.data.streakDays > 0 && (
-						<Badge label="🔥 серія" tone="amber">
-							{stats.data.streakDays} {stats.data.streakDays === 1 ? 'день' : 'днів'}
+						<Badge label={t('stats.streak')} tone="amber">
+							{t('stats.streakDays', { count: stats.data.streakDays })}
 						</Badge>
 					)}
-					<Badge label="сесій усього">{stats.data.totalSessions}</Badge>
+					<Badge label={t('stats.totalSessions')}>{stats.data.totalSessions}</Badge>
 					{stats.data.byTopic[0] && (
-						<Badge label="сильна тема" tone="good">
+						<Badge label={t('stats.strongTopic')} tone="good">
 							{TOPIC_LABEL[stats.data.byTopic[0].topic]}
 						</Badge>
 					)}
@@ -82,7 +83,7 @@ export function ProgressPage() {
 
 			<div className={styles.twoCol}>
 				<div className={styles.card}>
-					<h3 className={styles.cardTitle}>точність за темами</h3>
+					<h3 className={styles.cardTitle}>{t('stats.byTopic')}</h3>
 					{stats.data && stats.data.byTopic.length > 0 ? (
 						stats.data.byTopic.map((topicStat) => (
 							<div key={topicStat.topic} className={styles.barRow}>
@@ -97,23 +98,23 @@ export function ProgressPage() {
 							</div>
 						))
 					) : (
-						<p className={styles.empty}>Ще немає даних по темах.</p>
+						<p className={styles.empty}>{t('stats.noTopics')}</p>
 					)}
 				</div>
 
 				<div className={styles.card}>
-					<h3 className={styles.cardTitle}>тренд точності — останні {TREND_SIZE} сесій</h3>
+					<h3 className={styles.cardTitle}>{t('stats.trendTitle', { count: TREND_SIZE })}</h3>
 					{trendSessions.length >= 2 ? (
 						<TrendChart sessions={trendSessions} />
 					) : (
-						<p className={styles.empty}>Недостатньо даних для тренду.</p>
+						<p className={styles.empty}>{t('stats.noTrend')}</p>
 					)}
 				</div>
 			</div>
 
 			{recommendations.length > 0 && (
 				<div className={styles.card}>
-					<h3 className={styles.cardTitle}>рекомендовано підтягнути</h3>
+					<h3 className={styles.cardTitle}>{t('stats.recommend')}</h3>
 					<div className={styles.recoList}>
 						{recommendations.map((rec) => (
 							<div
@@ -123,12 +124,14 @@ export function ProgressPage() {
 								)}
 							>
 								<div className={styles.recoTitle}>
-									{TOPIC_LABEL[rec.topic]} — {Math.round(rec.accuracy * 100)}% точності, {rec.count}{' '}
-									{rec.count === 1 ? 'спроба' : 'спроб'}
+									{t('stats.recAttempts', {
+											topic: TOPIC_LABEL[rec.topic],
+											pct: Math.round(rec.accuracy * 100),
+											count: rec.count,
+										})}
 								</div>
 								<div className={styles.recoDesc}>
-									Точність нижче цільової — варто приділити цій темі більше уваги перед наступною
-									співбесідою.
+									{t('stats.recNote')}
 								</div>
 							</div>
 						))}
@@ -137,7 +140,7 @@ export function ProgressPage() {
 			)}
 
 			<div className={styles.card}>
-				<h3 className={styles.cardTitle}>розподіл за рівнем складності</h3>
+				<h3 className={styles.cardTitle}>{t('stats.levels')}</h3>
 				{totalForLevels > 0 ? (
 					<>
 						<div className={styles.levelBar}>
@@ -163,11 +166,11 @@ export function ProgressPage() {
 						</div>
 					</>
 				) : (
-					<p className={styles.empty}>Ще немає завершених сесій.</p>
+					<p className={styles.empty}>{t('common.noneCompleted')}</p>
 				)}
 			</div>
 
-			<p className={styles.footerNote}>diff — порівняй. виправ. пройди.</p>
+			<p className={styles.footerNote}>{t('common.tagline')}</p>
 		</div>
 	);
 }
@@ -177,7 +180,8 @@ function TrendChart({
 }: {
 	sessions: { averageScore?: number; completedAt?: string }[];
 }) {
-	const scores = sessions.map((s) => s.averageScore ?? 0);
+	const { t } = useTranslation();
+	const scores =sessions.map((s) => s.averageScore ?? 0);
 	const points = scores.map((score, i) => {
 		const x = scores.length === 1 ? 4 : 4 + i * (252 / (scores.length - 1));
 		const y = 82 - (score / 10) * 74;
@@ -194,7 +198,7 @@ function TrendChart({
 				width="100%"
 				height="90"
 				role="img"
-				aria-label={`Тренд точності: ${firstPct}% → ${lastPct}%`}
+				aria-label={t('stats.trendAria', { first: firstPct, last: lastPct })}
 			>
 				<polyline
 					points={points.join(' ')}
@@ -207,8 +211,8 @@ function TrendChart({
 				<circle cx={last[0]} cy={last[1]} r="3.5" fill="#4C9A5D" />
 			</svg>
 			<div className={styles.trendLabels}>
-				<span>{sessions.length} сесій тому · {firstPct}%</span>
-				<span>сьогодні · {lastPct}%</span>
+				<span>{t('stats.trendAgo', { count: sessions.length, pct: firstPct })}</span>
+				<span>{t('stats.today', { pct: lastPct })}</span>
 			</div>
 		</div>
 	);

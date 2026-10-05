@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import i18n from '../i18n';
 import en from './en.json';
 import uk from './uk.json';
 
@@ -39,5 +40,23 @@ describe('locales', () => {
 	it('words the model answer as a possibility, not a verdict', () => {
 		expect(uk['card.betterAnswer']).toBe('Можлива відповідь');
 		expect(en['card.betterAnswer']).toBe('A possible answer');
+	});
+});
+
+describe('Ukrainian plurals', () => {
+	it.each([
+		[1, '1 день'],
+		[2, '2 дні'],
+		[5, '5 днів'],
+		[11, '11 днів'],
+		[21, '21 день'],
+		[22, '22 дні'],
+	])('stats.streakDays for %i', (count, expected) => {
+		expect(i18n.t('stats.streakDays', { count, lng: 'uk' })).toBe(expected);
+	});
+
+	it('uses singular/plural in English', () => {
+		expect(i18n.t('stats.streakDays', { count: 1, lng: 'en' })).toBe('1 day');
+		expect(i18n.t('stats.streakDays', { count: 2, lng: 'en' })).toBe('2 days');
 	});
 });

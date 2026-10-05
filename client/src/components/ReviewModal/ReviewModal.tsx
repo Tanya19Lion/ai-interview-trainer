@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CodeDiffLine } from '../CodeDiffLine/CodeDiffLine';
 import { EditorComment } from '../EditorComment/EditorComment';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
@@ -15,6 +16,7 @@ export interface ReviewModalProps {
 }
 
 export function ReviewModal({ sessionId, onClose }: ReviewModalProps) {
+	const { t } = useTranslation();
 	const detail = useSessionDetail(sessionId);
 
 	useEffect(() => {
@@ -37,7 +39,7 @@ export function ReviewModal({ sessionId, onClose }: ReviewModalProps) {
 			}}
 		>
 			<div className={styles.modalCard}>
-				<button type="button" className={styles.close} aria-label="Закрити" onClick={onClose}>
+				<button type="button" className={styles.close} aria-label={t('modal.close')} onClick={onClose}>
 					✕
 				</button>
 
@@ -56,7 +58,7 @@ export function ReviewModal({ sessionId, onClose }: ReviewModalProps) {
 							detail.data.averageScore !== undefined ? (
 								<>
 									<ScoreChip tone={scoreTone(detail.data.averageScore)}>
-										Точність: {detail.data.averageScore.toFixed(1)}/10
+										{t('card.accuracy', { score: detail.data.averageScore.toFixed(1) })}
 									</ScoreChip>
 									<LevelChip>
 										{detail.data.level} · {TOPIC_LABEL[detail.data.topic]}
@@ -73,20 +75,20 @@ export function ReviewModal({ sessionId, onClose }: ReviewModalProps) {
 										{question.question}
 									</CodeDiffLine>
 									{!skipped && (
-										<CodeDiffLine gutter="·" label="Ось твоя відповідь">
+										<CodeDiffLine gutter="·" label={t('card.userAnswer')}>
 											{question.answer}
 										</CodeDiffLine>
 									)}
 									<CodeDiffLine
 										gutter="+"
 										variant="added"
-										label={skipped ? 'Ось відповідь на питання' : 'Можлива відповідь'}
+										label={skipped ? t('card.skippedAnswer') : t('card.betterAnswer')}
 									>
 										{question.correctAnswer}
 									</CodeDiffLine>
 									<EditorComment>
 										{skipped
-											? 'Це питання не вплинуло на результат сесії — воно не враховане в середньому балі.'
+											? t('modal.skippedNote')
 											: question.feedback}
 									</EditorComment>
 								</div>
