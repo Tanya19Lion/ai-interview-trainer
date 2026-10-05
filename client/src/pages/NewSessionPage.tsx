@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button, Eyebrow, LevelPicker, TopicPicker } from '../components';
+import { currentLang } from '../i18n';
 import { useStartSession } from '../hooks/useStartSession';
 import type { Level, Topic } from '../types/interview';
 
@@ -15,7 +16,7 @@ export function NewSessionPage() {
 	function handleStart() {
 		if (!topic || !level) return;
 		startSession.mutate(
-			{ topic, level },
+			{ topic, level, lang: currentLang() },
 			{
 				onSuccess: (session) => {
 					navigate(`/interview/${session.sessionId}`, {
