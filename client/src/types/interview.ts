@@ -15,9 +15,13 @@ export type Topic = (typeof TOPICS)[number];
 export const LEVELS = ['junior', 'middle', 'senior'] as const;
 export type Level = (typeof LEVELS)[number];
 
+export const LANGS = ['uk', 'en'] as const;
+export type Lang = (typeof LANGS)[number];
+
 export interface StartSessionRequest {
 	topic: Topic;
 	level: Level;
+	lang?: Lang;
 }
 
 export interface StartSessionResponse {
