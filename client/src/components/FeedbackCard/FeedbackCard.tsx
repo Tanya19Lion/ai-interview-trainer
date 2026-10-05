@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { CodeDiffLine } from '../CodeDiffLine/CodeDiffLine';
 import { EditorComment } from '../EditorComment/EditorComment';
 import { EditorWindow } from '../EditorWindow/EditorWindow';
@@ -25,9 +26,10 @@ export function FeedbackCard({
 	feedback,
 	score,
 }: FeedbackCardProps) {
+	const { t } = useTranslation();
 	return (
 		<EditorWindow
-			title={<>AI reviewer · рев'ю відповіді</>}
+			title={<>{t('card.title')}</>}
 			footer={
 				skipped ? (
 					<LevelChip>
@@ -35,7 +37,7 @@ export function FeedbackCard({
 					</LevelChip>
 				) : (
 					<>
-						<ScoreChip tone={scoreTone(score)}>Точність: {score}/10</ScoreChip>
+						<ScoreChip tone={scoreTone(score)}>{t('card.accuracy', { score })}</ScoreChip>
 						<LevelChip>
 							{level} · {TOPIC_LABEL[topic]}
 						</LevelChip>
@@ -44,20 +46,20 @@ export function FeedbackCard({
 			}
 		>
 			{!skipped && (
-				<CodeDiffLine gutter="·" label="Ось твоя відповідь">
+				<CodeDiffLine gutter="·" label={t('card.userAnswer')}>
 					{userAnswer}
 				</CodeDiffLine>
 			)}
 			<CodeDiffLine
 				gutter="+"
 				variant="added"
-				label={skipped ? 'Ось відповідь на питання' : 'Можлива відповідь'}
+				label={skipped ? t('card.skippedAnswer') : t('card.betterAnswer')}
 			>
 				{correctAnswer}
 			</CodeDiffLine>
 			<EditorComment>
 				{skipped
-					? 'Це питання не впливає на результат сесії — воно не враховується в середньому балі. Повернись до цієї теми пізніше.'
+					? t('card.skippedNote')
 					: feedback}
 			</EditorComment>
 		</EditorWindow>

@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button, Eyebrow, LevelPicker, TopicPicker } from '../components';
 import { useStartSession } from '../hooks/useStartSession';
 import type { Level, Topic } from '../types/interview';
 
 export function NewSessionPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [topic, setTopic] = useState<Topic | null>(null);
 	const [level, setLevel] = useState<Level | null>(null);
@@ -33,9 +35,9 @@ export function NewSessionPage() {
 	return (
 		<div style={{ display: 'grid', gap: 'var(--space-4)', maxWidth: 760, marginInline: 'auto' }}>
 			<div>
-				<Eyebrow>нова співбесіда</Eyebrow>
+				<Eyebrow>{t('new.eyebrow')}</Eyebrow>
 				<h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-strong)' }}>
-					Обери тему та рівень складності
+					{t('new.title')}
 				</h1>
 			</div>
 
@@ -43,7 +45,7 @@ export function NewSessionPage() {
 			<LevelPicker value={level} onChange={setLevel} />
 
 			{startSession.isError && (
-				<p style={{ color: 'var(--rust-text)' }}>Не вдалося створити сесію. Спробуй ще раз.</p>
+				<p style={{ color: 'var(--rust-text)' }}>{t('new.error')}</p>
 			)}
 
 			<Button
@@ -52,7 +54,7 @@ export function NewSessionPage() {
 				disabled={!topic || !level || startSession.isPending}
 				onClick={handleStart}
 			>
-				{startSession.isPending ? 'Створюємо сесію…' : 'Почати співбесіду →'}
+				{startSession.isPending ? t('new.starting') : t('new.start')}
 			</Button>
 		</div>
 	);

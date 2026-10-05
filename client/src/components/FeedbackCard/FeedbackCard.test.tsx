@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import i18n from '../../i18n';
 import { FeedbackCard } from './FeedbackCard';
 
 const BASE = {
@@ -23,6 +24,15 @@ describe('FeedbackCard', () => {
 		expect(screen.getByText('Еталонна відповідь')).toBeInTheDocument();
 		expect(screen.getByText('Непогано, але неповно.')).toBeInTheDocument();
 		expect(screen.getByText(/Точність: 6\/10/)).toBeInTheDocument();
+	});
+
+	it('renders English labels', async () => {
+		await i18n.changeLanguage('en');
+		render(<FeedbackCard {...BASE} skipped={false} />);
+
+		expect(screen.getByText('Here is your answer')).toBeInTheDocument();
+		expect(screen.getByText('A possible answer')).toBeInTheDocument();
+		expect(screen.getByText(/Accuracy: 6\/10/)).toBeInTheDocument();
 	});
 
 	it('for a skipped question shows only the model answer, with a note and no score', () => {

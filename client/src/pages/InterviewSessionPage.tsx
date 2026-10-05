@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AnswerForm, Button, ConfirmDialog, FeedbackCard, QuestionCard, SessionSummary, Spinner } from '../components';
 import type { SessionResult } from '../components';
@@ -29,6 +30,7 @@ interface CurrentReview {
 }
 
 export function InterviewSessionPage() {
+	const { t } = useTranslation();
 	const { sessionId } = useParams<{ sessionId: string }>();
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -91,9 +93,9 @@ export function InterviewSessionPage() {
 	if (!sessionId) {
 		return (
 			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
-				<p style={{ color: 'var(--text-soft)' }}>Сесія не знайдена — почни нову.</p>
+				<p style={{ color: 'var(--text-soft)' }}>{t('session.notFound')}</p>
 				<Button variant="primary" onClick={() => navigate('/interview/new')}>
-					Нова сесія
+					{t('session.new')}
 				</Button>
 			</div>
 		);
@@ -132,10 +134,10 @@ export function InterviewSessionPage() {
 		return (
 			<div style={{ display: 'grid', gap: 'var(--space-3)', maxWidth: 480 }}>
 				<p style={{ color: 'var(--text-soft)' }}>
-					Ця сесія недоступна — можливо, вона вже неактивна. Почни нову.
+					{t('session.unavailable')}
 				</p>
 				<Button variant="primary" onClick={() => navigate('/interview/new')}>
-					Нова сесія
+					{t('session.new')}
 				</Button>
 			</div>
 		);
@@ -224,22 +226,22 @@ export function InterviewSessionPage() {
 					/>
 					<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 						<Button variant="primary" onClick={handleContinue}>
-							{review.done ? 'Переглянути підсумок →' : 'Наступне питання →'}
+							{review.done ? t('session.summary') : t('session.next')}
 						</Button>
 					</div>
 				</>
 			)}
 
 			{submitAnswer.isError && (
-				<p style={{ color: 'var(--rust-text)' }}>Не вдалося перевірити відповідь. Спробуй ще раз.</p>
+				<p style={{ color: 'var(--rust-text)' }}>{t('session.reviewError')}</p>
 			)}
 
 			{exitDialogOpen && (
 				<ConfirmDialog
-					title="Завершити сесію?"
-					message="Прогрес по поточному питанню не збережеться."
-					confirmLabel="Завершити"
-					cancelLabel="Продовжити"
+					title={t('session.endTitle')}
+					message={t('session.endMessage')}
+					confirmLabel={t('session.endConfirm')}
+					cancelLabel={t('session.endCancel')}
 					onConfirm={() => navigate('/interview/new')}
 					onCancel={() => setExitDialogOpen(false)}
 				/>
