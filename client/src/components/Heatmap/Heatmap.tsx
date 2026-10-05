@@ -27,7 +27,7 @@ export interface HeatmapProps {
 
 export function Heatmap({ completedDates }: HeatmapProps) {
 	// Підписка на зміну мови: сам Intl-форматтер береться з currentLang() усередині useMemo.
-	const { i18n } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { cells, monthLabels } = useMemo(() => {
 		const countByDay = new Map<number, number>();
 		for (const iso of completedDates) {
@@ -61,16 +61,16 @@ export function Heatmap({ completedDates }: HeatmapProps) {
 		<div className={styles.card}>
 			<div className={styles.head}>
 				<span className={styles.count}>
-					<b>{completedDates.length}</b> співбесід за останні 12 місяців
+					<b>{completedDates.length}</b> {t('progress.count')}
 				</span>
 				<span className={styles.legend}>
-					менше
+					{t('progress.less')}
 					<span className={styles.swatch} data-level={0} />
 					<span className={styles.swatch} data-level={1} />
 					<span className={styles.swatch} data-level={2} />
 					<span className={styles.swatch} data-level={3} />
 					<span className={styles.swatch} data-level={4} />
-					більше
+					{t('progress.more')}
 				</span>
 			</div>
 			<div className={styles.months}>
@@ -84,7 +84,7 @@ export function Heatmap({ completedDates }: HeatmapProps) {
 						key={index}
 						className={styles.cell}
 						data-level={cell.level}
-						title={cell.count === 0 ? 'Немає сесій' : `${cell.count} сесій`}
+						title={cell.count === 0 ? t('heat.none') : t('heat.sessions', { count: cell.count })}
 					/>
 				))}
 			</div>

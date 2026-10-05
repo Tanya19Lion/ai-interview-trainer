@@ -214,5 +214,22 @@
 	"history.all": "All",
 	"hist.colActions": "Actions",
 	"hist.view": "view",
-	"hist.empty": "Nothing found for this filter. Try a different topic and level combination."
+	"hist.empty": "Nothing found for this filter. Try a different topic and level combination.",
+	"stats.h1": "Detailed statistics",
+	"stats.subtitle": "The language is specific: how many questions, what accuracy and exactly where the gaps are — so you know what to review before the interview.",
+	"stats.byTopic": "accuracy by topic",
+	"stats.noTopics": "No topic data yet.",
+	"stats.trendTitle": "accuracy trend — last {{count}} sessions",
+	"stats.noTrend": "Not enough data for a trend.",
+	"stats.recommend": "recommended to review",
+	"stats.recAttempts_one": "{{topic}} — {{pct}}% accuracy, {{count}} attempt",
+	"stats.recAttempts_other": "{{topic}} — {{pct}}% accuracy, {{count}} attempts",
+	"stats.recNote": "Accuracy is below target — this topic deserves more attention before your next interview.",
+	"stats.levels": "distribution by difficulty level",
+	"stats.trendAria": "Accuracy trend: {{first}}% → {{last}}%",
+	"stats.trendAgo_one": "{{count}} session ago · {{pct}}%",
+	"stats.trendAgo_other": "{{count}} sessions ago · {{pct}}%",
+	"stats.today": "today · {{pct}}%",
+	"heat.sessions_one": "{{count}} session",
+	"heat.sessions_other": "{{count}} sessions"
 }
