@@ -168,6 +168,51 @@ no existence outside its parent session. Documented under Entities below.
   documents are ignored by Mongoose once the field is gone, so no data cleanup is required; sessions
   started in English will simply resume in the default language.
 
+### 2026-09-10 — add `User.tokenVersion` and the `LoginAttempt` collection
+
+*(Recorded retroactively on 2026-10-05; shipped in commit `fc60514`, remember-me phase 1.)*
+
+- **Change:** `User` gained `tokenVersion: { type: Number, required: true, default: 0 }` — a counter
+  embedded in every JWT; bumping it (logout, password reset/change) revokes all tokens issued
+  earlier. New collection `LoginAttempt` (`src/models/LoginAttempt.ts`): `{ email (unique),
+  windowStart, count }` with a TTL index on `windowStart` (`expireAfterSeconds: 900`), used by the
+  per-email login rate limit. Both the starting value `0` and the limit of 5 attempts are applied
+  in code (`auth.controller.ts`, `loginAttempt.service.ts`), not by the schema.
+- **Backfill:** none needed — existing users without the field are read as `0` (the schema default
+  applies on load), and `LoginAttempt` starts empty.
+- **Rollback:** remove the field and the model and redeploy. Dropping `tokenVersion` makes every
+  token's version check meaningless, so also revert `requireAuth`/`refreshSession` first; stored
+  values are ignored once the field is gone. Drop the collection with
+  `db.loginattempts.drop()` — it only holds short-lived counters, nothing to preserve.
+
+### 2026-09-15 — add the `PasswordReset` collection
+
+*(Recorded retroactively on 2026-10-05; shipped in commit `9714e28`.)*
+
+- **Change:** new collection `PasswordReset` (`src/models/PasswordReset.ts`): `{ userId, tokenHash
+  (unique, SHA-256 hex), expiresAt, attemptsRemaining, createdAt }`, a TTL index on `expiresAt`
+  (`expireAfterSeconds: 0`) and an index on `userId`. The raw token is never stored, only its hash.
+  Known leftover: `attemptsRemaining` (schema `default: 3`) is not read or written by
+  `passwordReset.service.ts` — the reset limit is counted from `createdAt` in code
+  (`RATE_LIMIT_MAX`). It is dead weight and a business-rule default in the schema, to be removed
+  in a later change (drop in two deploys, per the zero-downtime rules).
+- **Backfill:** none needed — the collection starts empty.
+- **Rollback:** remove the model and the `passwordReset.service.ts` calls, redeploy, then
+  `db.passwordresets.drop()`. Pending reset links stop working, which is acceptable: they live at
+  most a short time and users can request a new one once the feature is restored.
+
+### 2026-10-05 — add the `IpAttempt` collection (per-IP rate limit for register and Google sign-in)
+
+- **Change:** new collection `IpAttempt` (`src/models/IpAttempt.ts`): `{ key (unique), windowStart,
+  count }` with a TTL index on `windowStart` (`expireAfterSeconds: 900`). `key` is
+  `"<scope>:<ip>"` (`register:203.0.113.7`, `google:203.0.113.7`). Same atomic-increment pattern as
+  `LoginAttempt`, but keyed by address and never given back on success. The limit (10 requests per
+  window per scope) lives in `auth.routes.ts`, not the schema.
+- **Backfill:** none needed — the collection starts empty and fills as requests arrive.
+- **Rollback:** remove `ipRateLimit` from `POST /api/auth/register` and `/google`, delete the model
+  and `ipAttempt.service.ts`, redeploy, then `db.ipattempts.drop()`. The documents are short-lived
+  counters, so nothing needs preserving.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check
