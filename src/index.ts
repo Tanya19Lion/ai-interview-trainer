@@ -1,33 +1,8 @@
 import 'dotenv/config';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import express from 'express';
-import helmet from 'helmet';
+import { app } from './app.js';
 import { connectDB } from './config/db.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { authRouter } from './routes/auth.routes.js';
-import { historyRouter } from './routes/history.routes.js';
-import { interviewRouter } from './routes/interview.routes.js';
-import { statsRouter } from './routes/stats.routes.js';
 
-const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json());
-app.use(cookieParser());
-app.use(helmet());
-
-app.get('/health', (_req, res) => {
-	res.json({ status: 'ok', uptime: process.uptime() });
-});
-
-app.use('/api/auth', authRouter);
-app.use('/api/interview', interviewRouter);
-app.use('/api/history', historyRouter);
-app.use('/api/stats', statsRouter);
-
-app.use(errorHandler);
 
 async function main(): Promise<void> {
 	await connectDB();
