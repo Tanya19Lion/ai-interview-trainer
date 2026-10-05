@@ -82,14 +82,36 @@ export function parseAnswerReview(raw: string): AnswerReview {
 		.replace(/^```(?:json)?\s*/i, '')
 		.replace(/```\s*$/, '')
 		.trim();
+	let parsed: unknown;
 	try {
-		return JSON.parse(cleaned) as AnswerReview;
+		parsed = JSON.parse(cleaned);
 	} catch (err) {
 		const reason = err instanceof Error ? err.message : String(err);
 		throw new Error(
 			`AI review response is not valid JSON (${reason}). Raw response (first 500 chars): ${cleaned.slice(0, 500)}`,
 		);
 	}
+	// Same shape questionAttemptSchema enforces — checking it here fails before the paid-for review
+	// is lost to a Mongoose ValidationError in session.save().
+	if (!isAnswerReview(parsed)) {
+		throw new Error(`AI review response has an unexpected shape. Raw response (first 500 chars): ${cleaned.slice(0, 500)}`);
+	}
+	return parsed;
+}
+
+function isAnswerReview(value: unknown): value is AnswerReview {
+	if (typeof value !== 'object' || value === null) return false;
+	const review = value as Record<string, unknown>;
+	return (
+		typeof review.score === 'number' &&
+		review.score >= 0 &&
+		review.score <= 10 &&
+		typeof review.feedback === 'string' &&
+		typeof review.correctAnswer === 'string' &&
+		review.correctAnswer !== '' &&
+		Array.isArray(review.weakTopics) &&
+		review.weakTopics.every((topic) => typeof topic === 'string')
+	);
 }
 
 /** Для "Не знаю": просто відповідає на питання, без оцінювання і без JSON. */
