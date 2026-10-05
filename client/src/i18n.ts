@@ -2,8 +2,12 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from './locales/en.json';
 import uk from './locales/uk.json';
+import { LANGS, type Lang } from './types/interview';
 
-export type Lang = 'uk' | 'en';
+export { LANGS, type Lang };
+
+/** BCP-47 локаль для `toLocaleDateString` / `Intl.DateTimeFormat` за мовою інтерфейсу. */
+export const LOCALE: Record<Lang, string> = { uk: 'uk-UA', en: 'en-US' };
 
 export const LANG_STORAGE_KEY = 'diff-lang-chosen';
 const DEFAULT_LANG: Lang = 'uk';
@@ -13,7 +17,7 @@ const DEFAULT_LANG: Lang = 'uk';
 export function detectInitialLang(): Lang {
 	try {
 		const stored = localStorage.getItem(LANG_STORAGE_KEY);
-		if (stored === 'uk' || stored === 'en') return stored;
+		if (LANGS.includes(stored as Lang)) return stored as Lang;
 	} catch {
 		// storage недоступний — не страшно, визначаємо за браузером
 	}

@@ -1,5 +1,4 @@
 {
-	"meta.title": "diff — AI-тренажер технічних співбесід",
 	"meta.desc": "diff — AI-симулятор технічних співбесід для React, JavaScript, Node.js та TypeScript. Отримай рев'ю своєї відповіді, як pull request.",
 	"nav.features": "Можливості",
 	"nav.how": "Як це працює",
@@ -15,7 +14,6 @@
 	"hero.ctaPrimary": "Почати тренування",
 	"hero.ctaSecondary": "Подивитись приклад рев'ю ↓",
 	"hero.topicsLabel": "теми тренувань:",
-	"hero.cardAria": "Приклад рев'ю відповіді: питання про useMemo і useCallback, AI показує помилку та правильне формулювання",
 	"hero.cardQ": "// Q: Чим useMemo відрізняється від useCallback?",
 	"hero.cardRemoved": "useMemo кешує функцію, а useCallback кешує значення.",
 	"hero.cardAdded": "useMemo кешує значення (результат обчислення), а useCallback — саму функцію, щоб вона не створювалась заново.",
