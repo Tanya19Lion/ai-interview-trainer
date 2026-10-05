@@ -1,17 +1,18 @@
+import { useTranslation } from 'react-i18next';
 import { TOPICS, type Topic } from '../../types/interview';
 import styles from './TopicPicker.module.css';
 
-const TOPIC_META: Record<Topic, { tag: string; desc: string }> = {
-	react: { tag: '#react', desc: 'Компоненти, хуки, рендер-цикл' },
-	javascript: { tag: '#javascript', desc: 'Замикання, асинхронність, прототипи' },
-	nodejs: { tag: '#node.js', desc: 'Event Loop, потоки, npm-екосистема' },
-	typescript: { tag: '#typescript', desc: 'Типи, дженерики, строгість' },
-	nextjs: { tag: '#next.js', desc: 'SSR/SSG, роутинг, серверні компоненти' },
-	css: { tag: '#css', desc: 'Каскад, флекс/ґрід, специфічність' },
-	html: { tag: '#html', desc: 'Семантика, доступність, форми' },
-	sql: { tag: '#sql', desc: 'Джойни, індекси, нормалізація' },
-	restapi: { tag: '#restapi', desc: 'Ресурси, статус-коди, версіонування' },
-	'system-design': { tag: '#system-design', desc: 'Масштабування, компроміси, архітектура систем' },
+const TOPIC_META: Record<Topic, { tag: string }> = {
+	react: { tag: '#react' },
+	javascript: { tag: '#javascript' },
+	nodejs: { tag: '#node.js' },
+	typescript: { tag: '#typescript' },
+	nextjs: { tag: '#next.js' },
+	css: { tag: '#css' },
+	html: { tag: '#html' },
+	sql: { tag: '#sql' },
+	restapi: { tag: '#restapi' },
+	'system-design': { tag: '#system-design' },
 };
 
 export interface TopicPickerProps {
@@ -20,8 +21,9 @@ export interface TopicPickerProps {
 }
 
 export function TopicPicker({ value, onChange }: TopicPickerProps) {
+	const { t } = useTranslation();
 	return (
-		<div className={styles.grid} role="radiogroup" aria-label="Тема співбесіди">
+		<div className={styles.grid} role="radiogroup" aria-label={t('picker.topicAria')}>
 			{TOPICS.map((topic) => {
 				const meta = TOPIC_META[topic];
 				const selected = value === topic;
@@ -35,7 +37,7 @@ export function TopicPicker({ value, onChange }: TopicPickerProps) {
 						onClick={() => onChange(topic)}
 					>
 						<span className={styles.tag}>{meta.tag}</span>
-						<div className={styles.desc}>{meta.desc}</div>
+						<div className={styles.desc}>{t(`topic.${topic}.desc`)}</div>
 					</button>
 				);
 			})}

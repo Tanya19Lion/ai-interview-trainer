@@ -1,22 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { LEVELS, type Level } from '../../types/interview';
 import styles from './LevelPicker.module.css';
 
-const LEVEL_META: Record<Level, { name: string; desc: string; color: string }> = {
-	junior: {
-		name: 'Junior',
-		desc: 'Основи мови й фреймворку, типові патерни.',
-		color: 'var(--green)',
-	},
-	middle: {
-		name: 'Middle',
-		desc: 'Нюанси, оптимізація, поширені підводні камені.',
-		color: 'var(--amber)',
-	},
-	senior: {
-		name: 'Senior',
-		desc: 'Архітектура, компроміси, обґрунтування рішень.',
-		color: 'var(--plum)',
-	},
+const LEVEL_META: Record<Level, { name: string; descKey: string; color: string }> = {
+	junior: { name: 'Junior', descKey: 'progress.junior', color: 'var(--green)' },
+	middle: { name: 'Middle', descKey: 'progress.middle', color: 'var(--amber)' },
+	senior: { name: 'Senior', descKey: 'progress.senior', color: 'var(--plum)' },
 };
 
 export interface LevelPickerProps {
@@ -25,8 +14,9 @@ export interface LevelPickerProps {
 }
 
 export function LevelPicker({ value, onChange }: LevelPickerProps) {
+	const { t } = useTranslation();
 	return (
-		<div className={styles.grid} role="radiogroup" aria-label="Рівень складності">
+		<div className={styles.grid} role="radiogroup" aria-label={t('picker.levelAria')}>
 			{LEVELS.map((level) => {
 				const meta = LEVEL_META[level];
 				const selected = value === level;
@@ -42,7 +32,7 @@ export function LevelPicker({ value, onChange }: LevelPickerProps) {
 						<span className={styles.dot} style={{ background: meta.color }} />
 						<div>
 							<div className={styles.name}>{meta.name}</div>
-							<div className={styles.desc}>{meta.desc}</div>
+							<div className={styles.desc}>{t(meta.descKey)}</div>
 						</div>
 					</button>
 				);

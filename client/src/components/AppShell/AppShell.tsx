@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useLogout, useMe } from '../../hooks/useAuth';
 import type { InterviewFocusState } from '../../lib/interviewFocus';
@@ -8,10 +9,10 @@ import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import styles from './AppShell.module.css';
 
 const NAV_ITEMS = [
-	{ to: '/home', label: 'Кабінет', end: true },
-	{ to: '/interview/new', label: 'Нова сесія', end: false },
-	{ to: '/history', label: 'Історія', end: false },
-	{ to: '/progress', label: 'Прогрес', end: false },
+	{ to: '/home', labelKey: 'shell.nav.home', end: true },
+	{ to: '/interview/new', labelKey: 'shell.nav.new', end: false },
+	{ to: '/history', labelKey: 'shell.nav.history', end: false },
+	{ to: '/progress', labelKey: 'shell.nav.progress', end: false },
 ];
 
 export interface AppShellProps {
@@ -40,6 +41,7 @@ interface MainNavProps {
 }
 
 function MainNav({ user, onLogout }: MainNavProps) {
+	const { t } = useTranslation();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +73,7 @@ function MainNav({ user, onLogout }: MainNavProps) {
 								[styles.tab, isActive ? styles.tabActive : null].filter(Boolean).join(' ')
 							}
 						>
-							{item.label}
+							{t(item.labelKey)}
 						</NavLink>
 					))}
 				</div>
@@ -84,7 +86,7 @@ function MainNav({ user, onLogout }: MainNavProps) {
 						className={styles.avatarBtn}
 						onClick={() => setMenuOpen((v) => !v)}
 						aria-expanded={menuOpen}
-						aria-label="Меню профілю"
+						aria-label={t('shell.profileMenu')}
 					>
 						{user?.avatarUrl ? (
 							<img src={user.avatarUrl} alt="" className={styles.avatarImg} />
@@ -101,7 +103,7 @@ function MainNav({ user, onLogout }: MainNavProps) {
 								<div className={styles.menuEmail}>{user?.email}</div>
 							</div>
 							<button type="button" className={styles.menuItem} onClick={onLogout}>
-								Вийти
+								{t('shell.logout')}
 							</button>
 						</div>
 					)}
@@ -112,6 +114,7 @@ function MainNav({ user, onLogout }: MainNavProps) {
 }
 
 function FocusBar({ focus }: { focus: InterviewFocusState }) {
+	const { t } = useTranslation();
 	return (
 		<div className={styles.focusBar}>
 			<div className={styles.focusInner}>
@@ -123,7 +126,7 @@ function FocusBar({ focus }: { focus: InterviewFocusState }) {
 					</span>
 				</div>
 				<button type="button" className={styles.focusExit} onClick={focus.onExit}>
-					Завершити сесію
+					{t('shell.endSession')}
 				</button>
 			</div>
 		</div>
