@@ -37,7 +37,8 @@ paths:
 - `types/stats.ts`'s `TopicAccuracy` is `{topic, accuracy, count}` — `count` is the number of
   answered questions for that topic, added for `ProgressPage`'s recommendation cards; don't strip
   it back down to `{topic, accuracy}`, `ProgressPage` reads it.
-- `ProgressPage` doesn't have its own hook beyond `useHistory()`/`useStats()` — the heatmap/trend/
-  level-distribution math is computed inline in the page (and inside `components/Heatmap/
-  Heatmap.tsx` for the heatmap specifically) from the unfiltered history response, not fetched
-  from a dedicated endpoint (none exists — see `.claude/rules/backend/history-and-stats.md`).
+- `ProgressPage` doesn't have its own hook beyond `useHistory()`/`useStats()` — the trend/
+  level-distribution math is computed inline in the page from the unfiltered history response,
+  while the heatmap reads `activityByDay`/`today` from `useStats()` (the server buckets sessions
+  into UTC days — see `.claude/rules/backend/history-and-stats.md`). `types/stats.ts` mirrors both
+  fields; keep it in step with `stats.controller.ts`.

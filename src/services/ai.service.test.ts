@@ -26,4 +26,18 @@ describe('parseAnswerReview', () => {
 		const raw = '{"score": 7, "feedback": "still writing the feedback when it got cut';
 		expect(() => parseAnswerReview(raw)).toThrow(/still writing the feedback when it got cut/);
 	});
+
+	it.each([
+		['a score above 10', '{"score": 11, "feedback": "ok", "correctAnswer": "x", "weakTopics": []}'],
+		['a negative score', '{"score": -1, "feedback": "ok", "correctAnswer": "x", "weakTopics": []}'],
+		['a score that is a string', '{"score": "7", "feedback": "ok", "correctAnswer": "x", "weakTopics": []}'],
+		['a missing feedback', '{"score": 7, "correctAnswer": "x", "weakTopics": []}'],
+		['an empty correctAnswer', '{"score": 7, "feedback": "ok", "correctAnswer": "", "weakTopics": []}'],
+		['weakTopics that is not an array', '{"score": 7, "feedback": "ok", "correctAnswer": "x", "weakTopics": "a"}'],
+		['a non-string weakTopics entry', '{"score": 7, "feedback": "ok", "correctAnswer": "x", "weakTopics": [1]}'],
+		['a JSON array instead of an object', '[1, 2, 3]'],
+		['JSON null', 'null'],
+	])('throws an unexpected-shape error for %s, before anything is persisted', (_label, raw) => {
+		expect(() => parseAnswerReview(raw)).toThrow(/unexpected shape/);
+	});
 });

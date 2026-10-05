@@ -8,6 +8,20 @@ function toUtcDayNumber(date: Date): number {
 	return Math.floor(date.getTime() / MS_PER_DAY);
 }
 
+function utcDayKey(dayNumber: number): string {
+	return new Date(dayNumber * MS_PER_DAY).toISOString().slice(0, 10);
+}
+
+/** Сесій на UTC-день ("YYYY-MM-DD"). Той самий `toUtcDayNumber`, що й для streak, — тож межа дня одна. */
+function computeActivityByDay(completedAtDates: Date[]): Record<string, number> {
+	const activity: Record<string, number> = {};
+	for (const date of completedAtDates) {
+		const key = utcDayKey(toUtcDayNumber(date));
+		activity[key] = (activity[key] ?? 0) + 1;
+	}
+	return activity;
+}
+
 function computeStreakDays(completedAtDates: Date[]): number {
 	const dayNumbers = new Set(completedAtDates.map(toUtcDayNumber));
 	const todayDayNumber = toUtcDayNumber(new Date());
@@ -35,8 +49,10 @@ export async function getStats(req: AuthedRequest, res: Response): Promise<void>
 		'topic completedAt questions.score questions.answer',
 	);
 
+	const today = utcDayKey(toUtcDayNumber(new Date()));
+
 	if (sessions.length === 0) {
-		res.json({ totalSessions: 0, overallAccuracy: null, byTopic: [], streakDays: 0 });
+		res.json({ totalSessions: 0, overallAccuracy: null, byTopic: [], streakDays: 0, activityByDay: {}, today });
 		return;
 	}
 
@@ -62,14 +78,14 @@ export async function getStats(req: AuthedRequest, res: Response): Promise<void>
 		count,
 	}));
 
-	const streakDays = computeStreakDays(
-		sessions.map((s) => s.completedAt).filter((d): d is Date => d !== undefined),
-	);
+	const completedAtDates = sessions.map((s) => s.completedAt).filter((d): d is Date => d !== undefined);
 
 	res.json({
 		totalSessions: sessions.length,
 		overallAccuracy: overallCount ? overallTotal / overallCount / 10 : null,
 		byTopic: topicStats.sort((a, b) => b.accuracy - a.accuracy),
-		streakDays,
+		streakDays: computeStreakDays(completedAtDates),
+		activityByDay: computeActivityByDay(completedAtDates),
+		today,
 	});
 }

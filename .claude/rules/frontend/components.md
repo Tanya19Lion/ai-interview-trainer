@@ -34,11 +34,12 @@ paths:
   answer ("Ось відповідь на питання") plus a "doesn't affect the result" note. `AnswerForm`'s
   `skipping` prop switches the loading text for "Не знаю". The `removed` variant still exists but
   the review UI no longer uses it.
-- `Heatmap` computes its own grid from a `completedDates: string[]` prop (raw `completedAt`
-  values from a `GET /api/history` response) rather than receiving pre-bucketed cells — the
+- `Heatmap` takes `activityByDay` (`{ 'YYYY-MM-DD': sessions }`) and `today` straight from
+  `GET /api/stats` — the server owns which UTC day a session belongs to, so the component has no
+  day-bucketing of its own (`addUtcDays` is only calendar arithmetic to lay out the window). The
   `bucketize(count): 0-4` mapping and the 53×7-day window live inside the component
   (`components/Heatmap/Heatmap.tsx`), not in `ProgressPage`, so any other screen that wants a
-  heatmap just passes dates. Both `Heatmap` and `HistoryTable` now read from `useTranslation()`
+  heatmap just passes the two stats fields. Both `Heatmap` and `HistoryTable` now read from `useTranslation()`
   (months come from `Intl` for the active language), so `LandingPage`'s local demo duplicates —
   which predate that — are candidates to delete in favor of reuse. They were written when both
   hardcoded Ukrainian copy (column headers, "співбесід за останні 12 місяців", etc.), so

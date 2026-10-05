@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { currentLang, LOCALE } from '../../i18n';
 import styles from './Heatmap.module.css';
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const WEEKS = 53;
 const CELLS = WEEKS * 7;
 
-function toUtcDayNumber(date: Date): number {
-	return Math.floor(date.getTime() / MS_PER_DAY);
+/** `YYYY-MM-DD` ± offset днів → північ цього UTC-дня. Лише календарна арифметика: до якого дня
+ * належить сесія, вирішує сервер (`activityByDay`). */
+function addUtcDays(isoDay: string, offset: number): Date {
+	const [year, month, day] = isoDay.split('-').map(Number);
+	return new Date(Date.UTC(year, month - 1, day + offset));
 }
 
 /** Кількість сесій за день → рівень інтенсивності 0-4 для кольору клітинки. */
@@ -21,26 +23,21 @@ function bucketize(count: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 export interface HeatmapProps {
-	/** `completedAt` (ISO-рядки) завершених сесій, без фільтрів. */
-	completedDates: string[];
+	/** Сесій на UTC-день (`YYYY-MM-DD`) з `GET /api/stats`. */
+	activityByDay: Record<string, number>;
+	/** Поточний UTC-день сервера (`YYYY-MM-DD`) — остання клітинка вікна. */
+	today: string;
 }
 
-export function Heatmap({ completedDates }: HeatmapProps) {
+export function Heatmap({ activityByDay, today }: HeatmapProps) {
 	// Підписка на зміну мови: сам Intl-форматтер береться з currentLang() усередині useMemo.
 	const { t, i18n } = useTranslation();
+	const total = useMemo(() => Object.values(activityByDay).reduce((sum, count) => sum + count, 0), [activityByDay]);
 	const { cells, monthLabels } = useMemo(() => {
-		const countByDay = new Map<number, number>();
-		for (const iso of completedDates) {
-			const day = toUtcDayNumber(new Date(iso));
-			countByDay.set(day, (countByDay.get(day) ?? 0) + 1);
-		}
-
-		const today = toUtcDayNumber(new Date());
-		const start = today - (CELLS - 1);
 		const cells = Array.from({ length: CELLS }, (_, i) => {
-			const day = start + i;
-			const count = countByDay.get(day) ?? 0;
-			return { day, count, level: bucketize(count) };
+			const date = addUtcDays(today, i - (CELLS - 1));
+			const count = activityByDay[date.toISOString().slice(0, 10)] ?? 0;
+			return { date, count, level: bucketize(count) };
 		});
 
 		const monthFormat = new Intl.DateTimeFormat(LOCALE[currentLang()], {
@@ -50,18 +47,17 @@ export function Heatmap({ completedDates }: HeatmapProps) {
 		const labelCount = 12;
 		const monthLabels = Array.from({ length: labelCount }, (_, i) => {
 			const cellIndex = Math.floor((i / (labelCount - 1)) * (cells.length - 1));
-			const date = new Date(cells[cellIndex].day * MS_PER_DAY);
-			return monthFormat.format(date);
+			return monthFormat.format(cells[cellIndex].date);
 		});
 
 		return { cells, monthLabels };
-	}, [completedDates, i18n.language]);
+	}, [activityByDay, today, i18n.language]);
 
 	return (
 		<div className={styles.card}>
 			<div className={styles.head}>
 				<span className={styles.count}>
-					<b>{completedDates.length}</b> {t('progress.count')}
+					<b>{total}</b> {t('progress.count')}
 				</span>
 				<span className={styles.legend}>
 					{t('progress.less')}

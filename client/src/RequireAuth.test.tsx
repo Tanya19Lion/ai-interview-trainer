@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from './api/client';
 import { RENEWAL_INTERVAL_MS } from './hooks/useAuth';
@@ -35,6 +35,42 @@ async function flush() {
 		await vi.advanceTimersByTimeAsync(0);
 	}
 }
+
+describe('RequireAuth redirect', () => {
+	afterEach(() => cleanup());
+
+	it('sends an unauthenticated visitor to /login and remembers where they were headed', async () => {
+		vi.mocked(fetchMe).mockReset();
+		vi.mocked(fetchMe).mockRejectedValue(new ApiError('Unauthorized', 401));
+
+		function LoginProbe() {
+			const location = useLocation();
+			const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
+			return <div>login page, from {from}</div>;
+		}
+
+		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const { findByText } = render(
+			<QueryClientProvider client={queryClient}>
+				<MemoryRouter initialEntries={['/history']}>
+					<Routes>
+						<Route path="/login" element={<LoginProbe />} />
+						<Route
+							path="/history"
+							element={
+								<RequireAuth>
+									<div>protected content</div>
+								</RequireAuth>
+							}
+						/>
+					</Routes>
+				</MemoryRouter>
+			</QueryClientProvider>,
+		);
+
+		expect(await findByText('login page, from /history')).toBeTruthy();
+	});
+});
 
 describe('RequireAuth silent token renewal', () => {
 	beforeEach(() => {

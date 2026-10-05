@@ -13,6 +13,9 @@ paths:
   score/review free-text answers, returning strict JSON (`{score, feedback, correctAnswer,
   weakTopics}`) that the model is prompted to produce without markdown fencing — if that parsing
   ever breaks, the prompt/response-shape contract in `ai.service.ts` is the first place to look.
+  `parseAnswerReview` also checks the parsed shape (`score` a number in 0-10, string `feedback`, a
+  non-empty string `correctAnswer`, string-array `weakTopics`) and throws before anything is saved,
+  mirroring `questionAttemptSchema` — keep the two in step.
   All four fields of that JSON, including `correctAnswer`, are persisted onto the session's
   `questions[]` sub-document in `submitAnswer` (see `.claude/rules/backend/data-model.md`) — don't
   reintroduce a controller that only saves a subset of them.

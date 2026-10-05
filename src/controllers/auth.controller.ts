@@ -57,7 +57,7 @@ function toAuthUserPayload(user: HydratedDocument<User>) {
 	return { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl };
 }
 
-export function issueSession(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
+function setSessionCookies(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
 	const tokenVersion = user.tokenVersion ?? 0;
 	const token = signToken(user.id, tokenVersion, accessTokenExpiresIn());
 	res.cookie('token', token, authCookieOptions(Boolean(rememberMe)));
@@ -66,13 +66,16 @@ export function issueSession(res: Response, user: HydratedDocument<User>, rememb
 		const refreshToken = signToken(user.id, tokenVersion, '7d');
 		res.cookie('refreshToken', refreshToken, authCookieOptions(true));
 	}
+}
 
+export function issueSession(res: Response, user: HydratedDocument<User>, rememberMe?: boolean): void {
+	setSessionCookies(res, user, rememberMe);
 	res.json({ user: toAuthUserPayload(user) });
 }
 
 export async function googleLogin(req: Request, res: Response): Promise<void> {
 	const { idToken, rememberMe } = req.body as { idToken?: string; rememberMe?: boolean };
-	if (!idToken) {
+	if (typeof idToken !== 'string' || !idToken) {
 		res.status(400).json({ error: 'idToken is required' });
 		return;
 	}
@@ -117,7 +120,8 @@ export async function register(req: Request, res: Response): Promise<void> {
 		name?: string;
 		rememberMe?: boolean;
 	};
-	if (!email || !password || !name) {
+	// typeof guards keep a JSON object (e.g. {"$ne": ""}) from reaching a Mongoose filter.
+	if (typeof email !== 'string' || typeof password !== 'string' || typeof name !== 'string' || !email || !password || !name) {
 		res.status(400).json({ error: 'email, password and name are required' });
 		return;
 	}
@@ -141,7 +145,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 
 export async function login(req: Request, res: Response): Promise<void> {
 	const { email, password, rememberMe } = req.body as { email?: string; password?: string; rememberMe?: boolean };
-	if (!email || !password) {
+	if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
 		res.status(400).json({ error: 'email and password are required' });
 		return;
 	}
@@ -218,10 +222,9 @@ function validateConfirmPasswordResetInput(token: unknown, newPassword: unknown)
 	return passwordTooShort(newPassword);
 }
 
-async function applyPasswordReset(userId: Types.ObjectId | string, newPassword: string): Promise<boolean> {
+async function applyPasswordReset(userId: Types.ObjectId | string, newPassword: string): Promise<HydratedDocument<User> | null> {
 	const passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
-	const updated = await UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } });
-	return updated !== null;
+	return UserModel.findByIdAndUpdate(userId, { passwordHash, $inc: { tokenVersion: 1 } }, { new: true });
 }
 
 function sendInvalidOrExpiredToken(res: Response): void {
@@ -245,8 +248,8 @@ export async function confirmPasswordReset(req: Request, res: Response): Promise
 		return;
 	}
 
-	const applied = await applyPasswordReset(result.userId, newPassword as string);
-	if (!applied) {
+	const updated = await applyPasswordReset(result.userId, newPassword as string);
+	if (!updated) {
 		sendInvalidOrExpiredToken(res);
 		return;
 	}
@@ -283,7 +286,16 @@ export async function changePassword(req: AuthedRequest, res: Response): Promise
 		return;
 	}
 
-	await applyPasswordReset(user.id, newPassword);
+	const updated = await applyPasswordReset(user.id, newPassword);
+	if (!updated) {
+		res.status(404).json({ error: 'User not found' });
+		return;
+	}
+
+	// The bumped tokenVersion revokes every session, this one included — reissue the cookie so the
+	// user who just changed their password stays signed in. A refreshToken cookie means the session
+	// was a remembered one, so the new cookies stay persistent.
+	setSessionCookies(res, updated, Boolean(req.cookies?.refreshToken));
 	res.json({ message: 'Password updated.' });
 }
 

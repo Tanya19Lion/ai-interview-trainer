@@ -13,4 +13,8 @@ export interface StatsResponse {
 	overallAccuracy: number | null;
 	byTopic: TopicAccuracy[];
 	streakDays: number;
+	/** Сесій на UTC-день, ключ `YYYY-MM-DD`; днів без сесій немає. */
+	activityByDay: Record<string, number>;
+	/** Поточний UTC-день сервера (`YYYY-MM-DD`) — останній день вікна теплокарти. */
+	today: string;
 }

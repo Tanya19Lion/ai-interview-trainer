@@ -30,9 +30,12 @@ paths:
   `byTopic` entries are `{topic, accuracy, count}` — `count` (answered-question count for that
   topic) was added specifically for `ProgressPage`'s recommendation cards ("N спроб"); don't drop
   it if you touch the `byTopic` mapping, it's a real consumer, not speculative.
-- `GET /api/history` and `GET /api/stats` have no server-side aggregates for a contribution
-  heatmap, a score trend over time, or a level-distribution breakdown — `ProgressPage` computes
-  all three client-side from the unfiltered `GET /api/history` response (`completedAt` per
-  session for the heatmap/trend, `level` per session for the distribution). If a future screen
-  needs the same aggregates, prefer adding them here over duplicating the client-side math a
-  second time.
+- `GET /api/stats` also returns `activityByDay` (`{ 'YYYY-MM-DD': sessions }`, UTC days, built by
+  `computeActivityByDay` with the same `toUtcDayNumber` as `streakDays`) and `today` (the server's
+  UTC day, `YYYY-MM-DD`). `Heatmap` renders from these and has no day-bucketing of its own, so a
+  timezone-aware change stays in `stats.controller.ts` only.
+- There are no server-side aggregates for a score trend over time or a level-distribution
+  breakdown — `ProgressPage` computes both client-side from the unfiltered `GET /api/history`
+  response (`completedAt`/`averageScore` per session for the trend, `level` per session for the
+  distribution). If a future screen needs the same aggregates, prefer adding them here over
+  duplicating the client-side math a second time.

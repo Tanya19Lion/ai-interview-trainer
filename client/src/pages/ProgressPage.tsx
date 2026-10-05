@@ -32,7 +32,6 @@ export function ProgressPage() {
 	}
 
 	const sessions = history.data?.sessions ?? [];
-	const completedDates = sessions.map((s) => s.completedAt).filter((d): d is string => Boolean(d));
 
 	const trendSessions = [...sessions]
 		.filter((s) => s.completedAt && s.averageScore !== undefined)
@@ -79,7 +78,7 @@ export function ProgressPage() {
 				</div>
 			)}
 
-			<Heatmap completedDates={completedDates} />
+			{stats.data && <Heatmap activityByDay={stats.data.activityByDay} today={stats.data.today} />}
 
 			<div className={styles.twoCol}>
 				<div className={styles.card}>

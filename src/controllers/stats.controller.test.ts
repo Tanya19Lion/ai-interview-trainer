@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Response } from 'express';
 import type { AuthedRequest } from '../middleware/auth.js';
 
@@ -41,5 +41,30 @@ describe('getStats — skipped questions', () => {
 		expect(body.totalSessions).toBe(1);
 		expect(body.overallAccuracy).toBeNull();
 		expect(body.byTopic).toEqual([]);
+	});
+});
+
+describe('getStats — activityByDay and today', () => {
+	beforeEach(() => {
+		find.mockReset();
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-10-05T12:00:00Z'));
+	});
+
+	afterEach(() => vi.useRealTimers());
+
+	it('buckets completedAt into UTC calendar days, so the late-evening UTC session stays on its own day', async () => {
+		const at = (iso: string) => ({ topic: 'react', completedAt: new Date(iso), questions: [{ answer: 'a', score: 5 }] });
+		const body = await stats([at('2026-10-05T00:00:01Z'), at('2026-10-04T23:59:59Z'), at('2026-10-04T08:00:00Z')]);
+
+		expect(body.activityByDay).toEqual({ '2026-10-05': 1, '2026-10-04': 2 });
+		expect(body.today).toBe('2026-10-05');
+	});
+
+	it('returns an empty activityByDay and today when there are no completed sessions', async () => {
+		const body = await stats([]);
+
+		expect(body.activityByDay).toEqual({});
+		expect(body.today).toBe('2026-10-05');
 	});
 });
