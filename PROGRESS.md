@@ -552,7 +552,7 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 
 ---
 
-# Повний i18n — UK/EN інтерфейс + мова ШІ (A–D, 2026-10-05)
+# Повний i18n — UK/EN інтерфейс + мова ШІ (A–D, реліз 0.3.0, 2026-10-05)
 
 **✅ Зроблено** (спек `docs/superpowers/specs/2026-10-04-i18n-completion-design.md`, план
 `docs/superpowers/plans/2026-10-04-i18n-completion.md`; PR-и #31–#35 + `feat/ai-session-language`):

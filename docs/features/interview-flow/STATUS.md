@@ -16,7 +16,16 @@ controller's 400; saving still failed because `required: true` on `questions[].a
 rejects `''`. Now a skipped question gets a plain model answer (`answerQuestion` in
 `ai.service.ts`, no JSON review), is stored with `score: 0`, and is ignored by `averageScore` and
 `GET /api/stats`. Review cards show the user's answer neutrally ("Ось твоя відповідь") and the
-model's as "Краща відповідь"; "Завершити сесію" uses `ConfirmDialog` instead of `window.confirm`.
+model's as "Краща відповідь" (renamed "Можлива відповідь" / "A possible answer" in 0.3.0);
+"Завершити сесію" uses `ConfirmDialog` instead of `window.confirm`.
+
+**Session language (0.3.0, 2026-10-05):** `POST /api/interview/start` accepts `lang` (`uk`/`en`,
+default `uk`, invalid → 400), stored in `InterviewSession.lang`; `generateQuestion`/`reviewAnswer`/
+`answerQuestion` all take it, and `submitAnswer`/`getActiveSession` read `session.lang ?? 'uk'`
+from the session, so a resumed session keeps its language even if the UI language changed. Also in
+0.3.0: the AI reply limit went from 1024 to 2048 tokens (long Ukrainian reviews were cut off
+mid-JSON). Not verified against live Mongo; the new-session path in both languages was checked by
+hand against the live Anthropic API.
 
 **Fixed via code review (2026-09-16), uncommitted at time of writing:**
 - `submitAnswer` (`interview.controller.ts`) rejected an empty-string `answer` with 400, but the
