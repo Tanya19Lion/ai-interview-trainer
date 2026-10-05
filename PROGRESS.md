@@ -577,3 +577,42 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 
 **Свідомо поза межами:** переклад уже збережених питань/відповідей в історії (старі сесії лишаються
 українськими); показ мови сесії в UI.
+
+---
+
+# Огляди коду й деплой на Vercel (PR #38, #39, #40, 2026-10-05)
+
+**✅ Зроблено:**
+- PR #38: `LANGS` у `check_enums.py`, єдиний `Lang`/`LANGS` і `LOCALE` на клієнті, мертві ключі локалей.
+- PR #39 (старі `*_RESULTS.md` звірено з кодом): `changePassword` видає нову сесію; `typeof`-перевірки
+  в `register`/`login`/`googleLogin`/`loginRateLimit`; `RequireAuth` → `/login`; форма відповіді AI
+  перевіряється в `parseAnswerReview`; ліміт за IP для `/register` і `/google` (`IpAttempt`);
+  `GET /api/stats` віддає `activityByDay`/`today`; записи в `docs/data-model.md`.
+- PR #40: `src/app.ts` + `api/index.js` + `vercel.json`, `docs/deploy-vercel.md`, ADR-0002. На живому
+  Vercel працюють `/health`, `/api/*`, реєстрація, вхід через Google, сесія співбесіди з відповіддю AI.
+
+**Що лишилось відкритим (беремо в роботу окремими PR):**
+1. **Валідація `question`/`answer`** (`interview.controller.ts`, `ai.service.ts`): немає перевірки типу й
+   довжини, `question` не звіряється з тим, що видав сервер → prompt injection і використання моделі як
+   безкоштовного LLM-проксі; нестроковий `answer` дає 500 замість 400. Потрібні `typeof` + ліміт довжини,
+   збереження поточного питання в сесії, роздільники в промпті.
+2. **Ліміт на AI-ендпоінти** (`/start`, `/answer`, `GET /active`): кожен виклик платний, `GET /active`
+   щоразу генерує питання. Потрібні per-user ліміт, обмеження числа `in_progress` сесій, кеш питання.
+   Тепер, коли застосунок публічний, це найактуальніший пункт.
+3. **`PasswordReset.attemptsRemaining`**: мертве поле з бізнес-`default: 3` у схемі. Видалення — у два
+   деплої (перестати писати/читати → прибрати з схеми), кожен з окремим записом у Schema-change log.
+4. **`unregisteredEmailAttempts`** (`passwordReset.service.ts`): `Map` у пам'яті; на serverless кожен
+   інстанс має свій лічильник і він необмежено росте. Перенести в Mongo (новий запис у `data-model.md`).
+5. **Ліміт входу лише по email** — цільове блокування чужої адреси лишається можливим (Amendment в ADR-0003).
+6. **MongoDB Atlas відкритий для `0.0.0.0/0`** (Vercel без фіксованих IP): захист лише паролем БД.
+
+**НЕ перевірено на живому:**
+- Vercel: `maxDuration: 60` проти ліміту вашого плану (довгі відповіді AI); що production-гілка —
+  `main`; що `ipRateLimit` бачить IP відвідувача (`trust proxy`), а не Vercel; Preview-домени не
+  працюють з Google-входом (Google не приймає wildcard в origins).
+- Зміна пароля з наступним `GET /api/auth/me`; теплокарта на сторінці Progress; 429 на `/register`.
+- Після зміни `VITE_*` змінних потрібен Redeploy без build cache (вони вшиваються в клієнт).
+
+**Дрібне:** `LangOverlay` показується знову при кожному поверненні на `/`, якщо `localStorage`
+недоступний; мова не синхронізується між вкладками; попередження `oxlint` про залежність
+`i18n.language` у `useMemo` в `Heatmap.tsx` було до цих змін.
