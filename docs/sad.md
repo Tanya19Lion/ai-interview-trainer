@@ -370,7 +370,7 @@ measurement plan.
 | Password hashing | `bcryptjs` | `src/controllers/auth.controller.ts` |
 | AI calls | Isolated in one service; controllers never import the Anthropic SDK directly | `src/services/ai.service.ts` |
 | Domain type sync | Manual sync of enums (`TOPICS`/`LEVELS`) client↔server, checked by a pre-commit hook | `CLAUDE.md`, `.husky/pre-commit`, `check_enums.py` |
-| Internationalisation | i18next on the client (`react-i18next`); the landing-page language toggle is unfinished (`PROGRESS.md` task 10) | `client/src/locales/` |
+| Internationalisation | i18next on the client (`react-i18next`) covers the whole client with a persistent UK/EN toggle; the AI's language is stored per session (`InterviewSession.lang`) and fixed at session start | `client/src/locales/` |
 | Error handling | N/A — no single error-mapping layer; each controller handles errors locally | — |
 
 ## 9. Architecture decisions

@@ -16,6 +16,13 @@ paths:
   All four fields of that JSON, including `correctAnswer`, are persisted onto the session's
   `questions[]` sub-document in `submitAnswer` (see `.claude/rules/backend/data-model.md`) — don't
   reintroduce a controller that only saves a subset of them.
+- **Session language**: `POST /api/interview/start` accepts `lang` (`'uk' | 'en'`; omitted → `uk`,
+  anything else → 400 `lang must be one of: uk, en`) and stores it in `InterviewSession.lang`.
+  `submitAnswer` and `getActiveSession` read `session.lang ?? 'uk'` (never the request, so a UI
+  language switch mid-interview doesn't change the session; sessions created before the field
+  existed stay Ukrainian). All three AI functions (`generateQuestion`, `answerQuestion`,
+  `reviewAnswer`) take `lang` as a required last parameter — the only `'uk'` default lives in the
+  controller (`DEFAULT_LANG`). Keep `reviewAnswer`'s JSON keys English; only the values follow `lang`.
 - **Skip ("Не знаю")**: the client sends `answer: ''`. `submitAnswer` treats a blank (trimmed) answer
   as skipped: it calls `answerQuestion()` (plain-text model answer, no JSON review) instead of
   `reviewAnswer()`, stores the entry with `answer: ''`, `feedback: ''`, `score: 0`, and computes

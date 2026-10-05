@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Full UK/EN interface with a persistent language toggle; AI questions, feedback and model answers follow the language chosen at session start (`InterviewSession.lang`, `POST /api/interview/start` accepts `lang`)
+
 ## [0.2.1] - 2026-10-04
 
 ### Added

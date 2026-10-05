@@ -32,7 +32,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StartSessionResponse'
         '400':
-          description: Invalid topic or level.
+          description: Invalid topic, level or lang.
           content:
             application/json:
               schema:
@@ -118,6 +118,10 @@ components:
           $ref: '#/components/schemas/Topic'
         level:
           $ref: '#/components/schemas/Level'
+        lang:
+          type: string
+          enum: [uk, en]
+          description: Language of AI questions, feedback and model answers for this session. Defaults to `uk`.
 
     StartSessionResponse:
       type: object
