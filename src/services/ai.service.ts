@@ -16,6 +16,10 @@ function getClient(): Anthropic {
 	return client;
 }
 
+// Cyrillic costs roughly 2.6 characters per token, so a long Ukrainian review (markdown lists in
+// `feedback`) overran 1024 tokens and the JSON was cut off mid-string.
+const REPLY_MAX_TOKENS = 2048;
+
 const LANGUAGE_NAME: Record<Lang, string> = { uk: 'Ukrainian', en: 'English' };
 
 function languageInstruction(lang: Lang): string {
@@ -98,7 +102,7 @@ export async function answerQuestion(
 	const client = getClient();
 	const message = await client.messages.create({
 		model: MODEL,
-		max_tokens: 1024,
+		max_tokens: REPLY_MAX_TOKENS,
 		system:
 			'Ти технічний інтерв\'юер. Дай коротку, точну і сучасну еталонну відповідь на питання співбесіди. ' +
 			'Відповідай лише текстом відповіді, без вступу і без markdown-огорожі.' +
@@ -123,7 +127,7 @@ export async function reviewAnswer(
 	const client = getClient();
 	const message = await client.messages.create({
 		model: MODEL,
-		max_tokens: 1024,
+		max_tokens: REPLY_MAX_TOKENS,
 		system:
 			"Ти рев'юєр технічної співбесіди. Оціни відповідь користувача на питання за темою і рівнем. " +
 			'Поверни СУВОРО валідний JSON без markdown-огорожі у форматі: ' +
@@ -137,6 +141,12 @@ export async function reviewAnswer(
 			},
 		],
 	});
+
+	// A reply cut off by the token limit is not valid JSON; say so instead of surfacing a confusing
+	// "Unterminated string" syntax error from JSON.parse.
+	if (message.stop_reason === 'max_tokens') {
+		throw new Error(`AI review response was cut off by the max_tokens limit (${REPLY_MAX_TOKENS})`);
+	}
 
 	const raw = message.content
 		.filter((block) => block.type === 'text')
