@@ -2,6 +2,8 @@ import { Schema, model, Types, type InferSchemaType } from 'mongoose';
 
 export const TOPICS = ['react', 'javascript', 'nodejs', 'typescript', 'nextjs', 'css', 'html', 'sql', 'restapi', 'system-design'] as const;
 export const LEVELS = ['junior', 'middle', 'senior'] as const;
+export const LANGS = ['uk', 'en'] as const;
+export type Lang = (typeof LANGS)[number];
 
 const questionAttemptSchema = new Schema(
 	{
@@ -22,6 +24,9 @@ const interviewSessionSchema = new Schema(
 		userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 		topic: { type: String, enum: TOPICS, required: true },
 		level: { type: String, enum: LEVELS, required: true },
+		// Мова ШІ-відповідей сесії. Optional: документи, створені до цієї зміни, її не мають — код
+		// читає це як 'uk'.
+		lang: { type: String, enum: LANGS },
 		questions: { type: [questionAttemptSchema], default: [] },
 		averageScore: { type: Number },
 		status: { type: String, enum: ['in_progress', 'completed'], default: 'in_progress' },

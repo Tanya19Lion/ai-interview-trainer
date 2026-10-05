@@ -13,11 +13,16 @@ from inside `client/`): `npm run dev` (Vite dev server), `npm run build` (`tsc -
 - **i18n is live**: `client/src/i18n.ts` initializes `react-i18next` with `keySeparator: false`/
   `nsSeparator: false` — translation keys are flat strings (`t('hero.h1pre')`) stored in
   `client/src/locales/{uk,en}.json`, not nested i18next namespacing. `main.tsx` wraps the app in
-  `I18nextProvider`. Currently only `LandingPage.tsx`
-  (`/`) uses `useTranslation()` — the rest of the app (`HomePage`, `HistoryPage`, etc.) is
-  still hardcoded Ukrainian, matching how `components/Heatmap`/`components/HistoryTable` are not
-  i18n-aware either (see `.claude/rules/frontend/components.md`). Don't assume `t()` is
-  available/meaningful outside `LandingPage`.
+  `I18nextProvider`. Every page and component reads
+  its text through `t()` — no hardcoded user-facing strings (`src/noHardcodedCyrillic.test.ts`
+  fails on Cyrillic outside comments/tests; `App.tsx`, the `/showcase` dev page, is the exception).
+  The language is resolved in `i18n.ts`: `detectInitialLang()` (`localStorage['diff-lang-chosen']`
+  → `navigator.language` → `uk`), `setLanguage()` (persists the choice), `currentLang()`; `<html
+  lang>` follows it. `LangToggle` (nav + landing) and `LangOverlay` switch it. Plurals use
+  `_one/_few/_many/_other` keys with `count`; `locales.test.ts` guards key and variable parity.
+  The UI language is separate from the **session language** the AI uses (fixed at session start —
+  `NewSessionPage` sends `currentLang()`; see `.claude/rules/backend/interview-flow.md`).
+  Stored questions/feedback in history are shown as saved, not translated.
 - `client/tsconfig.app.json` has `"resolveJsonModule": true` specifically so `i18n.ts` can
   `import uk from './locales/uk.json'` and have `tsc -b` type-check it — don't remove it while
   those imports exist.

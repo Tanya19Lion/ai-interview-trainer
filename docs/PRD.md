@@ -195,9 +195,10 @@ the data-access layer, not at the UI layer)
 - [ ] Manual verification against a live MongoDB for tasks 4–9 of the original client plan
   (`PROGRESS.md`) is still pending — does this block the next release? — owner: Tanya19Lion,
   due: TBD
-- [ ] Language toggle (i18n) and mobile nav-toggle on the landing page — the one remaining task
-  from the original plan (task 10, `PROGRESS.md`) — when is this planned? — owner: Tanya19Lion,
-  due: TBD
+- [x] Language toggle (i18n) — done: full UK/EN interface and AI session language
+  (`docs/superpowers/specs/2026-10-04-i18n-completion-design.md`)
+- [ ] Mobile nav-toggle on the landing page — the remaining part of the original plan's task 10
+  (`PROGRESS.md`) — when is this planned? — owner: Tanya19Lion, due: TBD
 
 ## Related
 

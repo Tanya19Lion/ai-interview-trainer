@@ -24,7 +24,7 @@ describe('answerQuestion', () => {
 			],
 		});
 
-		await expect(answerQuestion('react', 'junior', 'What is a hook?')).resolves.toBe(
+		await expect(answerQuestion('react', 'junior', 'What is a hook?', 'uk')).resolves.toBe(
 			'Перша частина.\nДруга частина.',
 		);
 	});
@@ -32,7 +32,7 @@ describe('answerQuestion', () => {
 	it('sends the topic, level and question to the model', async () => {
 		create.mockResolvedValue({ content: [{ type: 'text', text: 'ok' }] });
 
-		await answerQuestion('react', 'junior', 'What is a hook?');
+		await answerQuestion('react', 'junior', 'What is a hook?', 'uk');
 
 		const request = create.mock.calls[0]?.[0];
 		expect(request.messages[0].content).toContain('Тема: react. Рівень: junior.');

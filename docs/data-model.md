@@ -80,6 +80,7 @@ no existence outside its parent session. Documented under Entities below.
 | `userId` | ObjectId | required, `ref: 'User'` | Every controller query filters by this field (ownership filtering, PRD AC-05) — see Indexes below |
 | `topic` | String | required, `enum: TOPICS` (9 values, `src/models/InterviewSession.ts`) | Duplicated by hand in `client/src/types/interview.ts` — see Drift findings |
 | `level` | String | required, `enum: LEVELS` (junior/middle/senior) | Same duplication as `topic` |
+| `lang` | String | optional, `enum: LANGS` (`uk`/`en`), no schema default | Language the AI uses for the whole session; set at `POST /start`. A missing value (sessions created before 2026-10-04) is read as `uk` in `interview.controller.ts`, not at the schema layer. `LANGS` is duplicated by hand in `client/src/types/interview.ts` |
 | `questions` | [QuestionAttempt] (embedded) | default `[]` | See sub-schema below; embedded because no cross-session query needs it split into its own collection (matches ADR-0001's stated reason for choosing Mongo: shape changes more often than a rigid relational schema would allow at this stage) |
 | `averageScore` | Number | optional | Set once the session completes |
 | `status` | String | `enum: ['in_progress', 'completed']`, default `in_progress` | Domain invariant (project PRD AC-04): once `completed`, no further answer may be appended — enforced in `submitAnswer`, not at the schema layer (correct per "DB as dumb storage") |
@@ -152,6 +153,20 @@ no existence outside its parent session. Documented under Entities below.
 - **Rollback:** restore `required: true` on both fields. Before doing so, check
   `db.interviewsessions.countDocuments({ 'questions.answer': '' })`; any such sessions would fail
   validation on later saves, so delete them or backfill a placeholder by a one-off script first.
+
+### 2026-10-04 — add optional `lang` to `InterviewSession`
+
+- **Change:** added `lang: { type: String, enum: LANGS }` (`LANGS = ['uk', 'en']`) to
+  `interviewSessionSchema` in `src/models/InterviewSession.ts` (and the mirrored `LANGS` in
+  `client/src/types/interview.ts`). It records the language the AI uses for the whole session
+  (questions, feedback, model answer). No schema `default:` — choosing `'uk'` for a missing value is
+  a business decision, so `interview.controller.ts` applies it (`session.lang ?? 'uk'`).
+- **Backfill:** none needed — sessions created before this change have no `lang` and are read as
+  `'uk'`, which is the language they were created in.
+- **Rollback:** remove the `lang` field from the schema and the `lang` handling from
+  `interview.controller.ts` / `ai.service.ts`, then redeploy. Stored `lang` values in existing
+  documents are ignored by Mongoose once the field is gone, so no data cleanup is required; sessions
+  started in English will simply resume in the default language.
 
 ## Test fixtures
 

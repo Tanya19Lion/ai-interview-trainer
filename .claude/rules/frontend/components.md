@@ -38,21 +38,21 @@ paths:
   values from a `GET /api/history` response) rather than receiving pre-bucketed cells — the
   `bucketize(count): 0-4` mapping and the 53×7-day window live inside the component
   (`components/Heatmap/Heatmap.tsx`), not in `ProgressPage`, so any other screen that wants a
-  heatmap just passes dates. Neither `Heatmap` nor `HistoryTable` reads from `useTranslation()` —
-  both hardcode Ukrainian copy (column headers, "співбесід за останні 12 місяців", etc.) — so
-  `LandingPage` deliberately does **not** reuse them for its bilingual demo heatmap/history table;
-  it has its own local markup instead (see `.claude/rules/frontend/overview.md`'s i18n note). If
-  either component is ever made i18n-aware, `LandingPage`'s local duplicates become candidates to
-  delete in favor of reuse.
+  heatmap just passes dates. Both `Heatmap` and `HistoryTable` now read from `useTranslation()`
+  (months come from `Intl` for the active language), so `LandingPage`'s local demo duplicates —
+  which predate that — are candidates to delete in favor of reuse. They were written when both
+  hardcoded Ukrainian copy (column headers, "співбесід за останні 12 місяців", etc.), so
+  `LandingPage` deliberately did **not** reuse them and has its own local markup instead (see
+  `.claude/rules/frontend/overview.md`'s i18n note).
 - `Reveal` (`components/Reveal/Reveal.tsx`) wraps children in a `div` that fades/translates in via
   IntersectionObserver the first time it enters the viewport (ports the mockup's
   `.reveal`/`.reveal.is-in` pattern; a no-op under `prefers-reduced-motion: reduce`). Used
   throughout `LandingPage` for section-heads/cards/tables — not used anywhere in the authenticated
   app, where content should just be there, not animate in on scroll.
 - `LangOverlay` (`components/LangOverlay/LangOverlay.tsx`) is the once-only language picker for
-  `LandingPage`, gated on `localStorage['diff-lang-chosen']`; calls `i18n.changeLanguage()` on
-  choice. Only rendered by `LandingPage` — there's no equivalent language switcher in the
-  authenticated app since only the landing page is i18n-wired.
+  `LandingPage`, gated on `localStorage['diff-lang-chosen']`; calls `setLanguage()` (from
+  `i18n.ts`) on choice. Only rendered by `LandingPage`; the persistent switcher everywhere else is
+  `LangToggle` (`components/LangToggle/`, in `AppShell`'s nav, the landing nav and the auth screens).
 - **`client/src/App.tsx`** — now mounted only at `/showcase` (see
   `.claude/rules/frontend/routing-and-auth.md`); still a kitchen-sink page rendering primitives
   from the component library, not a real app screen.

@@ -10,6 +10,10 @@ paths:
   `topic`/`level`/`status`/`averageScore`; `TOPICS`/`LEVELS` enums are duplicated (not imported)
   in `client/src/types/interview.ts` (see `.claude/rules/frontend/api-and-hooks.md`) — keep both
   lists in sync by hand when adding a topic/level.
+- `InterviewSession.lang` (`'uk' | 'en'`, `LANGS`) is optional with **no** schema `default:` —
+  picking `'uk'` for a missing value is a business decision made in `interview.controller.ts`
+  (`session.lang ?? 'uk'`), per `.claude/rules/migrations.md`. `LANGS` is duplicated by hand in
+  `client/src/types/interview.ts` — keep both in sync.
 - `answer` and `feedback` on `questionAttemptSchema` use a function-`required` (fails only for a
   non-string) instead of `required: true`, because Mongoose treats `''` as missing under
   `required: true` and a skipped question is stored with both empty. Don't "tidy" it back to

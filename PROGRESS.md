@@ -549,3 +549,31 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 **Що лишилось відкритим:**
 - ~~Тестів на `answerQuestion`/пропуск немає.~~ Додано (гілка `feat/skip-question-tests`): `interview.controller.test.ts` (пропуск, порожній/пробільний `answer`, `averageScore` без пропусків), `stats.controller.test.ts`, `ai.service.answerQuestion.test.ts`. Живу перевірку пропуску вручну під `test@demo.com` перевірено.
 - Стиль бейджа `label` не дивились у темній темі. Клієнтські тести на `ConfirmDialog`, `FeedbackCard` і `AnswerForm` додано.
+
+---
+
+# Повний i18n — UK/EN інтерфейс + мова ШІ (A–D, 2026-10-05)
+
+**✅ Зроблено** (спек `docs/superpowers/specs/2026-10-04-i18n-completion-design.md`, план
+`docs/superpowers/plans/2026-10-04-i18n-completion.md`; PR-и #31–#35 + `feat/ai-session-language`):
+- **A** — `i18n.ts`: `detectInitialLang` / `setLanguage` / `currentLang`, `<html lang>`, `LangToggle`,
+  `LangOverlay` через `setLanguage`, дати й місяці heatmap за мовою, тест паритету локалей.
+- **B/C** — усі публічні й захищені сторінки та компоненти читають `t()`; множини
+  (`_one/_few/_many/_other`); гвардія `client/src/noHardcodedCyrillic.test.ts`.
+- **D** — `POST /api/interview/start` приймає `lang` (`uk`/`en`, невалідне → 400), зберігається в
+  `InterviewSession.lang` (optional, без `default:` у схемі; `session.lang ?? 'uk'` у контролері),
+  усі три AI-функції (`generateQuestion`/`answerQuestion`/`reviewAnswer`) отримують `lang`;
+  `NewSessionPage` передає `currentLang()`. Запис у `docs/data-model.md` Schema-change log, OpenAPI,
+  `CONTEXT.md` («Session language»).
+
+**Перевірено тестами:** сервер 99/99, клієнт 83/83, `tsc`/`build` чисті; промпти містять інструкцію
+мови (мок Anthropic SDK).
+
+**НЕ перевірено:**
+- живий Anthropic API — чи модель справді відповідає англійською (питання, фідбек, `correctAnswer`) і
+  не ламає JSON-контракт `reviewAnswer`; запусти по одній сесії кожною мовою;
+- живий Mongo — екрани за авторизацією, збереження/читання `lang` на справжніх документах;
+- мобільний nav-toggle на лендингу лишається окремим відкритим пунктом (`docs/PRD.md`).
+
+**Свідомо поза межами:** переклад уже збережених питань/відповідей в історії (старі сесії лишаються
+українськими); показ мови сесії в UI.
