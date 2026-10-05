@@ -16,7 +16,8 @@
 1. **MongoDB Atlas → Network Access:** Vercel не має фіксованих IP, тож додайте `0.0.0.0/0`
    (з сильним паролем користувача БД) або скористайтеся Vercel-інтеграцією Atlas.
 2. **Vercel → Add New → Project:** виберіть репозиторій. Root Directory — корінь репозиторію.
-   Framework Preset — `Other`; команди беруться з `vercel.json`.
+   Application Preset (раніше Framework Preset) — `Other`, а не `Express`, який Vercel може
+   запропонувати сам: з `Express` клієнт не збереться. Команди беруться з `vercel.json`.
 3. **Environment Variables** (Production і Preview):
 
    | Змінна | Значення |
