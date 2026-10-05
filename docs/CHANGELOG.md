@@ -6,9 +6,32 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-05
+
 ### Added
 
-- Full UK/EN interface with a persistent language toggle; AI questions, feedback and model answers follow the language chosen at session start (`InterviewSession.lang`, `POST /api/interview/start` accepts `lang`)
+- Full UK/EN interface: every page and component reads its text from the locale files, including login, reset password, dashboard, new session, the interview, history (and its review modal) and progress; counts use proper plural forms («1 день / 2 дні / 5 днів»)
+- A persistent UK/EN language toggle in the app navigation, on the landing page and on the auth screens; the choice is remembered, and on a first visit the language follows the browser
+- The theme toggle on the auth screens
+- AI questions, feedback and model answers follow the language chosen when a session starts (`InterviewSession.lang`; `POST /api/interview/start` accepts `lang`, an invalid value gets a 400). A session keeps its language even if the interface language changes afterwards, and sessions created before this release stay Ukrainian
+- Dates and the heatmap's month labels follow the active language
+- Tests that keep `uk.json` and `en.json` in sync (keys and interpolation variables), pin the Ukrainian plural forms, and fail when Cyrillic text is hardcoded in client source
+
+### Changed
+
+- The English label for the model's answer reads "A possible answer", matching the Ukrainian «Можлива відповідь» (it was "The better answer is")
+- The Google sign-in button renders in the active interface language
+- Ukrainian month labels in the heatmap now come from `Intl` (e.g. «січ.», with a trailing dot)
+
+### Fixed
+
+- A long review (typical for Middle-level answers written in Ukrainian) could fail with "AI review response is not valid JSON": the reply was cut off at the 1024-token limit. The limit is now 2048 for reviews and model answers, and a reply that is still cut off reports the `max_tokens` limit instead of a JSON syntax error
+
+### Documentation
+
+- Added the i18n design spec and implementation plan under `docs/superpowers/`
+- Recorded the optional `lang` field in the `docs/data-model.md` schema-change log (no backfill needed; a missing value reads as `uk`) and in the interview-flow OpenAPI contract
+- Added "Session language" to the `docs/CONTEXT.md` glossary and refreshed the frontend and backend rules, `docs/sad.md` and `docs/PRD.md` (the language toggle is done; the mobile nav-toggle on the landing page remains open)
 
 ## [0.2.1] - 2026-10-04
 
@@ -130,7 +153,8 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.3.0
 [0.2.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.1
 [0.2.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.0
 [0.1.2]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.1.2
