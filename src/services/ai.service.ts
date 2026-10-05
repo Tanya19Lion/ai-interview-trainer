@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import type { Lang } from '../models/InterviewSession.js';
 
 const MODEL = 'claude-sonnet-4-5';
 
@@ -13,6 +14,12 @@ function getClient(): Anthropic {
 		client = new Anthropic({ apiKey });
 	}
 	return client;
+}
+
+const LANGUAGE_NAME: Record<Lang, string> = { uk: 'Ukrainian', en: 'English' };
+
+function languageInstruction(lang: Lang): string {
+	return ` Write your entire response in ${LANGUAGE_NAME[lang]}.`;
 }
 
 export interface GeneratedQuestion {
@@ -30,6 +37,7 @@ export async function generateQuestion(
 	topic: string,
 	level: string,
 	askedQuestions: string[],
+	lang: Lang,
 ): Promise<GeneratedQuestion> {
 	const client = getClient();
 	const message = await client.messages.create({
@@ -39,7 +47,8 @@ export async function generateQuestion(
 			'Ти генеруєш одне технічне питання для співбесіди на позицію фронтенд/бекенд-розробника. ' +
 			'Відповідай лише текстом питання, без нумерації і без пояснень.' + 
 			'Питання мають стосуватись сучасних підходів. Наприклад, 13-а версія Next.js не підтримується з 2024 року, тому підходи, які описані в цій версії, вважай неактуальними.' +
-			'Такий підхід використовуй для будь-якої теми',
+			'Такий підхід використовуй для будь-якої теми' +
+			languageInstruction(lang),
 		messages: [
 			{
 				role: 'user',
@@ -80,14 +89,20 @@ export function parseAnswerReview(raw: string): AnswerReview {
 }
 
 /** Для "Не знаю": просто відповідає на питання, без оцінювання і без JSON. */
-export async function answerQuestion(topic: string, level: string, question: string): Promise<string> {
+export async function answerQuestion(
+	topic: string,
+	level: string,
+	question: string,
+	lang: Lang,
+): Promise<string> {
 	const client = getClient();
 	const message = await client.messages.create({
 		model: MODEL,
 		max_tokens: 1024,
 		system:
 			'Ти технічний інтерв\'юер. Дай коротку, точну і сучасну еталонну відповідь на питання співбесіди. ' +
-			'Відповідай лише текстом відповіді, без вступу і без markdown-огорожі.',
+			'Відповідай лише текстом відповіді, без вступу і без markdown-огорожі.' +
+				languageInstruction(lang),
 		messages: [{ role: 'user', content: `Тема: ${topic}. Рівень: ${level}.\nПитання: ${question}` }],
 	});
 
@@ -103,6 +118,7 @@ export async function reviewAnswer(
 	level: string,
 	question: string,
 	answer: string,
+	lang: Lang,
 ): Promise<AnswerReview> {
 	const client = getClient();
 	const message = await client.messages.create({
@@ -111,7 +127,9 @@ export async function reviewAnswer(
 		system:
 			"Ти рев'юєр технічної співбесіди. Оціни відповідь користувача на питання за темою і рівнем. " +
 			'Поверни СУВОРО валідний JSON без markdown-огорожі у форматі: ' +
-			'{"score": number 0-10, "feedback": string, "correctAnswer": string, "weakTopics": string[]}.',
+			'{"score": number 0-10, "feedback": string, "correctAnswer": string, "weakTopics": string[]}.' +
+				languageInstruction(lang) +
+				' JSON keys must stay exactly as specified.',
 		messages: [
 			{
 				role: 'user',

@@ -15,28 +15,31 @@ interface FakeSession {
 	status: 'in_progress' | 'completed';
 	topic: string;
 	level: string;
+	lang?: 'uk' | 'en';
 	questions: StoredQuestion[];
 	averageScore?: number;
 	completedAt?: Date;
 	save: ReturnType<typeof vi.fn>;
 }
 
-const { findOne, reviewAnswer, answerQuestion, generateQuestion } = vi.hoisted(() => ({
+const { findOne, create, reviewAnswer, answerQuestion, generateQuestion } = vi.hoisted(() => ({
 	findOne: vi.fn(),
+	create: vi.fn(),
 	reviewAnswer: vi.fn(),
 	answerQuestion: vi.fn(),
 	generateQuestion: vi.fn(),
 }));
 
 vi.mock('../models/InterviewSession.js', () => ({
-	InterviewSessionModel: { findOne },
+	InterviewSessionModel: { findOne, create },
 	TOPICS: ['react'],
 	LEVELS: ['junior'],
+	LANGS: ['uk', 'en'],
 }));
 
 vi.mock('../services/ai.service.js', () => ({ reviewAnswer, answerQuestion, generateQuestion }));
 
-const { submitAnswer } = await import('./interview.controller.js');
+const { submitAnswer, startSession, getActiveSession } = await import('./interview.controller.js');
 
 function answered(score: number): StoredQuestion {
 	return { question: 'q', answer: 'some answer', score, feedback: 'f', correctAnswer: 'c', weakTopics: [] };
@@ -46,11 +49,12 @@ function skippedEntry(): StoredQuestion {
 	return { question: 'q', answer: '', score: 0, feedback: '', correctAnswer: 'c', weakTopics: [] };
 }
 
-function makeSession(questions: StoredQuestion[] = []): FakeSession {
+function makeSession(questions: StoredQuestion[] = [], lang?: 'uk' | 'en'): FakeSession {
 	return {
 		status: 'in_progress',
 		topic: 'react',
 		level: 'junior',
+		lang,
 		questions,
 		save: vi.fn(async () => undefined),
 	};
@@ -82,7 +86,7 @@ describe('submitAnswer — skipped question ("Не знаю")', () => {
 
 		const res = await submit('');
 
-		expect(answerQuestion).toHaveBeenCalledWith('react', 'junior', 'What is X?');
+		expect(answerQuestion).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'uk');
 		expect(reviewAnswer).not.toHaveBeenCalled();
 		expect(session.questions).toEqual([
 			{ question: 'What is X?', answer: '', score: 0, feedback: '', correctAnswer: 'model answer', weakTopics: [] },
@@ -113,7 +117,7 @@ describe('submitAnswer — skipped question ("Не знаю")', () => {
 
 		await submit('my answer');
 
-		expect(reviewAnswer).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'my answer');
+		expect(reviewAnswer).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'my answer', 'uk');
 		expect(answerQuestion).not.toHaveBeenCalled();
 		expect(session.questions[0]).toMatchObject({ answer: 'my answer', score: 8 });
 	});
@@ -151,5 +155,89 @@ describe('submitAnswer — skipped question ("Не знаю")', () => {
 		await submit('');
 
 		expect(session.averageScore).toBe(0);
+	});
+});
+
+function mockRes() {
+	return { status: vi.fn().mockReturnThis(), json: vi.fn(), end: vi.fn() };
+}
+
+describe('startSession — lang', () => {
+	beforeEach(() => {
+		create.mockReset().mockResolvedValue({ id: 's1' });
+		generateQuestion.mockReset().mockResolvedValue({ question: 'first?' });
+	});
+
+	async function start(body: Record<string, unknown>) {
+		const res = mockRes();
+		await startSession({ body, userId: 'u1' } as unknown as AuthedRequest, res as unknown as Response);
+		return res;
+	}
+
+	it('stores the requested language on the session and generates the question in it', async () => {
+		await start({ topic: 'react', level: 'junior', lang: 'en' });
+
+		expect(create).toHaveBeenCalledWith(expect.objectContaining({ lang: 'en' }));
+		expect(generateQuestion).toHaveBeenCalledWith('react', 'junior', [], 'en');
+	});
+
+	it('defaults to Ukrainian when lang is omitted', async () => {
+		await start({ topic: 'react', level: 'junior' });
+
+		expect(create).toHaveBeenCalledWith(expect.objectContaining({ lang: 'uk' }));
+		expect(generateQuestion).toHaveBeenCalledWith('react', 'junior', [], 'uk');
+	});
+
+	it.each(['fr', null, 1, ''])('rejects lang=%s with 400 and creates nothing', async (lang) => {
+		const res = await start({ topic: 'react', level: 'junior', lang });
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.json).toHaveBeenCalledWith({ error: 'lang must be one of: uk, en' });
+		expect(create).not.toHaveBeenCalled();
+		expect(generateQuestion).not.toHaveBeenCalled();
+	});
+});
+
+describe('session language is read from the session, not the request', () => {
+	beforeEach(() => {
+		findOne.mockReset();
+		reviewAnswer.mockReset().mockResolvedValue({ score: 7, feedback: 'f', correctAnswer: 'c', weakTopics: [] });
+		answerQuestion.mockReset().mockResolvedValue('model answer');
+		generateQuestion.mockReset().mockResolvedValue({ question: 'next?' });
+	});
+
+	it('submitAnswer uses session.lang for the review and the next question', async () => {
+		findOne.mockResolvedValue(makeSession([], 'en'));
+
+		await submit('my answer');
+
+		expect(reviewAnswer).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'my answer', 'en');
+		expect(generateQuestion).toHaveBeenCalledWith('react', 'junior', ['What is X?'], 'en');
+	});
+
+	it('submitAnswer uses session.lang for a skipped question too', async () => {
+		findOne.mockResolvedValue(makeSession([], 'en'));
+
+		await submit('');
+
+		expect(answerQuestion).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'en');
+	});
+
+	it('submitAnswer treats a legacy session without lang as Ukrainian', async () => {
+		findOne.mockResolvedValue(makeSession([], undefined));
+
+		await submit('my answer');
+
+		expect(reviewAnswer).toHaveBeenCalledWith('react', 'junior', 'What is X?', 'my answer', 'uk');
+	});
+
+	it('getActiveSession regenerates the question in the session language (uk for legacy sessions)', async () => {
+		findOne.mockReturnValue({ sort: vi.fn().mockResolvedValue({ ...makeSession([], 'en'), id: 's1' }) });
+		await getActiveSession({ userId: 'u1' } as unknown as AuthedRequest, mockRes() as unknown as Response);
+		expect(generateQuestion).toHaveBeenLastCalledWith('react', 'junior', [], 'en');
+
+		findOne.mockReturnValue({ sort: vi.fn().mockResolvedValue({ ...makeSession([], undefined), id: 's2' }) });
+		await getActiveSession({ userId: 'u1' } as unknown as AuthedRequest, mockRes() as unknown as Response);
+		expect(generateQuestion).toHaveBeenLastCalledWith('react', 'junior', [], 'uk');
 	});
 });
