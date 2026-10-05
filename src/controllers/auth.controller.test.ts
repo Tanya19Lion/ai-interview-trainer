@@ -42,7 +42,7 @@ vi.mock('../services/loginAttempt.service.js', () => ({
 	releaseLoginAttempt: vi.fn(),
 }));
 
-const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword, login } = await import('./auth.controller.js');
+const { issueSession, refreshSession, logout, confirmPasswordReset, changePassword, login, register } = await import('./auth.controller.js');
 const { releaseLoginAttempt } = await import('../services/loginAttempt.service.js');
 const { requireAuth } = await import('../middleware/auth.js');
 const { verifyAndConsumePasswordResetToken } = await import('../services/passwordReset.service.js');
@@ -506,20 +506,22 @@ describe('changePassword (integration, mounted on POST /api/auth/change-password
 	let server: ReturnType<express.Express['listen']>;
 	let baseUrl: string;
 
-	async function post(body: unknown) {
+	async function post(body: unknown, headers: Record<string, string> = {}) {
 		return fetch(`${baseUrl}/api/auth/change-password`, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...headers },
 			body: JSON.stringify(body),
 		});
 	}
 
 	beforeEach(async () => {
+		process.env.JWT_SECRET = 'test-secret';
 		users.clear();
 		vi.mocked(UserModel.findByIdAndUpdate).mockClear();
 
 		const app = express();
 		app.use(express.json());
+		app.use(cookieParser());
 		// Stands in for requireAuth, which has its own tests in middleware/auth.test.ts.
 		app.post(
 			'/api/auth/change-password',
@@ -553,6 +555,38 @@ describe('changePassword (integration, mounted on POST /api/auth/change-password
 		const updated = users.get('user-1');
 		expect(updated?.tokenVersion).toBe(3);
 		await expect(bcrypt.compare('new-correct-horse', updated!.passwordHash!)).resolves.toBe(true);
+	});
+
+	it('reissues the session cookie with the bumped tokenVersion so the user stays signed in', async () => {
+		const oldHash = await bcrypt.hash('old-password-123', 4);
+		users.set('user-1', { tokenVersion: 2, passwordHash: oldHash });
+
+		const res = await post({ currentPassword: 'old-password-123', newPassword: 'new-correct-horse' });
+
+		const cookies = res.headers.getSetCookie();
+		const tokenCookie = cookies.find((c) => c.startsWith('token='));
+		expect(tokenCookie).toBeDefined();
+		expect(tokenCookie).not.toMatch(/Max-Age/i);
+		expect(cookies.some((c) => c.startsWith('refreshToken='))).toBe(false);
+		const payload = jwt.verify(tokenCookie!.split(';')[0].split('=')[1], 'test-secret') as { userId: string; tokenVersion: number };
+		expect(payload).toMatchObject({ userId: 'user-1', tokenVersion: 3 });
+	});
+
+	it('a remembered session (refreshToken cookie present) gets persistent token and refreshToken cookies back', async () => {
+		const oldHash = await bcrypt.hash('old-password-123', 4);
+		users.set('user-1', { tokenVersion: 2, passwordHash: oldHash });
+
+		const res = await post(
+			{ currentPassword: 'old-password-123', newPassword: 'new-correct-horse' },
+			{ Cookie: 'refreshToken=stale-value' },
+		);
+
+		const cookies = res.headers.getSetCookie();
+		expect(cookies.find((c) => c.startsWith('token='))).toMatch(/Max-Age/i);
+		const refresh = cookies.find((c) => c.startsWith('refreshToken='));
+		expect(refresh).toMatch(/Max-Age/i);
+		const payload = jwt.verify(refresh!.split(';')[0].split('=')[1], 'test-secret') as { tokenVersion: number };
+		expect(payload.tokenVersion).toBe(3);
 	});
 
 	// AC-04: wrong currentPassword → 400, passwordHash byte-for-byte unchanged, no write at all.
@@ -660,5 +694,64 @@ describe('login (integration, mounted on POST /api/auth/login) — rate-limit bo
 		expect(res.status).toBe(200);
 		expect(releaseLoginAttempt).toHaveBeenCalledTimes(1);
 		expect(releaseLoginAttempt).toHaveBeenCalledWith(email);
+	});
+});
+
+describe('login / register reject non-string credentials before touching Mongo', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+
+	function post(path: string, body: unknown) {
+		return fetch(`${baseUrl}${path}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+	}
+
+	beforeEach(async () => {
+		vi.mocked(UserModel.findOne).mockReset();
+
+		const app = express();
+		app.use(express.json());
+		app.post('/api/auth/login', login);
+		app.post('/api/auth/register', register);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	it('login: an operator object as email → 400, no query is made', async () => {
+		const res = await post('/api/auth/login', { email: { $gt: '' }, password: 'whatever-123' });
+
+		expect(res.status).toBe(400);
+		expect(UserModel.findOne).not.toHaveBeenCalled();
+	});
+
+	it('login: a non-string password → 400, no query is made', async () => {
+		const res = await post('/api/auth/login', { email: 'jobseeker@example.test', password: { $ne: '' } });
+
+		expect(res.status).toBe(400);
+		expect(UserModel.findOne).not.toHaveBeenCalled();
+	});
+
+	it('register: an operator object as email → 400, no query is made', async () => {
+		const res = await post('/api/auth/register', { email: { $regex: '.*' }, password: 'long-enough-1', name: 'Test User' });
+
+		expect(res.status).toBe(400);
+		expect(UserModel.findOne).not.toHaveBeenCalled();
+	});
+
+	it('register: a non-string name → 400', async () => {
+		const res = await post('/api/auth/register', { email: 'jobseeker@example.test', password: 'long-enough-1', name: { a: 1 } });
+
+		expect(res.status).toBe(400);
+		expect(UserModel.findOne).not.toHaveBeenCalled();
 	});
 });

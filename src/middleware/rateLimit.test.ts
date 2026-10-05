@@ -7,8 +7,13 @@ vi.mock('../services/loginAttempt.service.js', () => ({
 	reserveLoginAttempt: vi.fn(),
 }));
 
+vi.mock('../services/ipAttempt.service.js', () => ({
+	reserveIpAttempt: vi.fn(),
+}));
+
 const { reserveLoginAttempt } = await import('../services/loginAttempt.service.js');
-const { loginRateLimit } = await import('./rateLimit.js');
+const { reserveIpAttempt } = await import('../services/ipAttempt.service.js');
+const { loginRateLimit, ipRateLimit } = await import('./rateLimit.js');
 
 function makeRes() {
 	return {
@@ -47,6 +52,15 @@ describe('loginRateLimit (unit, mocked loginAttempt.service)', () => {
 			code: 'auth.rate_limited',
 			message: 'Too many login attempts for this email. Try again later.',
 		});
+	});
+
+	it('passes through without reserving anything when the email is not a string (login answers it with 400)', async () => {
+		const next = vi.fn() as NextFunction;
+
+		await loginRateLimit({ body: { email: { $gt: '' } } } as unknown as Request, makeRes(), next);
+
+		expect(reserveLoginAttempt).not.toHaveBeenCalled();
+		expect(next).toHaveBeenCalledTimes(1);
 	});
 
 	it('passes through without reserving anything when the body has no email', async () => {
@@ -113,5 +127,35 @@ describe('loginRateLimit (integration, mounted on POST /api/auth/login)', () => 
 			message: 'Too many login attempts for this email. Try again later.',
 		});
 		expect(credentialCheckCalls).toBe(0);
+	});
+});
+
+describe('ipRateLimit (unit, mocked ipAttempt.service)', () => {
+	beforeEach(() => {
+		vi.mocked(reserveIpAttempt).mockReset();
+	});
+
+	it('counts the request against "<scope>:<ip>" with the given limit and calls next() when within it', async () => {
+		vi.mocked(reserveIpAttempt).mockResolvedValueOnce(true);
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await ipRateLimit('register', 10)({ ip: '203.0.113.7' } as Request, res, next);
+
+		expect(reserveIpAttempt).toHaveBeenCalledWith('register:203.0.113.7', 10);
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(res.status).not.toHaveBeenCalled();
+	});
+
+	it('rejects with 429 auth.rate_limited and does not call next() once the limit is exceeded', async () => {
+		vi.mocked(reserveIpAttempt).mockResolvedValueOnce(false);
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await ipRateLimit('google', 10)({ ip: '203.0.113.7' } as Request, res, next);
+
+		expect(next).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(429);
+		expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 'auth.rate_limited' }));
 	});
 });

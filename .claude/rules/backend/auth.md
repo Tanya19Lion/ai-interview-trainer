@@ -18,6 +18,17 @@ paths:
   - `POST /api/auth/login` — `{email, password}`, compares against `passwordHash`.
   - `GET /api/auth/me` and `POST /api/auth/logout` are also wired. `middleware/auth.ts`
     (`requireAuth`) reads the `token` cookie and attaches `req.userId` for protected routes.
+- **Input types**: `register`/`login`/`googleLogin` reject non-string `email`/`password`/`name`/
+  `idToken` with a 400 before any Mongoose filter — a JSON object such as `{"$ne": ""}` would
+  otherwise be read as a query operator. Keep a `typeof … === 'string'` guard on any new body field
+  that reaches a query, and in `loginRateLimit` (which runs before the controller).
+- **Rate limits**: `POST /login` is limited per email (`loginRateLimit`, 5 per 15 min, a successful
+  login gives its attempt back); `POST /register` and `POST /google` are limited per IP
+  (`ipRateLimit`, 10 per 15 min each, `IpAttempt` collection). Behind a reverse proxy `req.ip` is
+  the proxy's address until Express's `trust proxy` is set, which would put every user in one bucket.
+- `changePassword` bumps `tokenVersion` (revoking every session) and then re-signs this request's
+  cookies via `setSessionCookies`, so the user stays signed in; a `refreshToken` cookie on the
+  request means the session was remembered, so the new cookies are persistent.
 - `User.googleId` is optional + `sparse`-indexed (not every user signs in with Google) and
   `passwordHash` is optional (not every user sets a password) — a user document may have either,
   both, or (Google-only) neither.
