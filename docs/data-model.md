@@ -225,6 +225,16 @@ no existence outside its parent session. Documented under Entities below.
   redeploy. Documents created in the meantime simply lack the field, which the restored schema
   tolerates on read.
 
+### 2026-10-06 — `PasswordReset.attemptsRemaining` phase 2: remove the field
+
+- **Change:** `attemptsRemaining` is deleted from `PasswordReset.ts`. Phase 1 (PR #42) already
+  stopped new documents getting it, and nothing reads it.
+- **Backfill:** none needed — old documents may still carry the value until their TTL removes them;
+  Mongoose ignores unknown stored fields on read. An optional cleanup:
+  `db.passwordresets.updateMany({}, { $unset: { attemptsRemaining: "" } })`.
+- **Rollback:** re-add `attemptsRemaining: { type: Number }` to `PasswordReset.ts` and redeploy;
+  no data change is needed since the field is optional and unused.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check
