@@ -6,6 +6,30 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-06
+
+### Added
+
+- Password reset by email works end to end. `POST /api/auth/password-reset/request` sends a single-use link (valid for 15 minutes) from `noreply@ai-interview-trainer.com` through Resend (`sendResetEmail` in `passwordReset.service.ts`; new env vars `RESEND_API_KEY` and `MAIL_FROM`, see `docs/deploy-vercel.md`). The answer is the same 200 for a registered and an unknown email; an account that only signs in with Google gets `hint: google_account` and no token
+- A limit of 3 reset requests per email per hour, kept in the new `ResetRequestAttempt` collection (1-hour TTL) and counted before the account lookup, so a known and an unknown email get 429 `password_reset.rate_limited` after the same number of requests; `attemptsRemaining` is in the answer for both
+- A per-IP limit on `POST /api/auth/password-reset/request` and `POST /api/auth/password-reset/confirm` (10 per 15 minutes each, `IpAttempt` collection); beyond it the answer is 429 `auth.rate_limited`
+- Integration tests for the forgot-password quality gates: every other session is rejected after a reset or a password change (QG-2), the Google-only and wrong-current-password cases (QG-3, QG-4), and the 3-then-4th issue limit
+
+### Changed
+
+- The "Forgot password?" page calls the API: it shows the generic confirmation, the Google-account explanation with a link to sign-in, or a "too many requests" message. The new-password page calls `POST /api/auth/password-reset/confirm` and shows a "link expired" screen with a way back to the request form for a used or expired link. `ApiError` on the client now carries the server's error `code`
+- A failed delivery gives the request attempt back, so an error on our side does not use up the user's hour, and the body of Resend's error goes to the log (never the reset token)
+
+### Removed
+
+- The in-memory `unregisteredEmailAttempts` map and `checkUnregisteredEmailRateLimit` (per serverless instance and never pruned), replaced by the `ResetRequestAttempt` counter
+- The mock `useFakeSubmit` hook, which only the reset page used
+
+### Documentation
+
+- The Schema-change log in `docs/data-model.md` has an entry for `ResetRequestAttempt`; the forgot-password task tracker is closed: T11 (a change-password screen in the profile) and T16 (an automated e2e test) were dropped on purpose, `POST /api/auth/change-password` stays as an API
+- `PROGRESS.md` records what was checked on the live site (the reset flow, `maxDuration`, the production branch, `trust proxy`) and what was not: that other sessions are logged out after a reset, and the response-time difference between a known and an unknown email (an open note on `waitUntil`)
+
 ## [0.4.0] - 2026-10-06
 
 ### Added
