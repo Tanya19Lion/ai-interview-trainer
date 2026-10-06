@@ -615,6 +615,11 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
    **Відкладено до T6** (`docs/features/forgot-password/tasks/route-request-reset.md`): перевірено, що
    `checkUnregisteredEmailRateLimit` і `issuePasswordReset` не викликає жоден маршрут (T6 «Not started»),
    тож у продакшні проблеми поки немає; переносити в Mongo варто разом із підключенням функції.
+   **Стан T0–T6 (2026-10-06):** T0 закрито — провайдер Resend через HTTP API, змінні `RESEND_API_KEY`
+   і `MAIL_FROM` (нотатка в `docs/features/forgot-password/tasks/spike-email-provider.md`). T5 і T6
+   заблоковані: для відправки листів потрібен підтверджений домен відправника, а власного домену
+   немає (`*.vercel.app` не підходить — DNS не наш). Розблокує купівля домену; тоді T5 → T6 разом із
+   пунктом 4 → клієнт T9/T10. Log-only заглушку в production не робити: токен потрапить у логи Vercel.
 5. ~~**Ліміт входу лише по email** — цільове блокування чужої адреси лишається можливим (Amendment в ADR-0003).~~
    Зроблено: ліміт 5/15 хв тепер на пару email+IP, а на email — стеля 30 (ADR-0004, запис у
    `docs/data-model.md`). Залишковий ризик: стелю на email можна вичерпати з багатьох адрес. Не

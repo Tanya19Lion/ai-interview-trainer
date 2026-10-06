@@ -1,5 +1,5 @@
 ---
-status: Todo
+status: Done
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
@@ -36,3 +36,15 @@ None — runs independently of T1–T4, T6–T16 (all written against `passwordR
 ## Out of scope
 
 - Actually writing `sendResetEmail` — see T5.
+
+## Outcome (2026-10-06)
+
+**Decision: Resend, sent over its HTTP API (a single `fetch`, no SMTP connection to open per serverless call), behind `sendResetEmail(email, rawToken)` in `passwordReset.service.ts`. It is not enabled yet, because a verified sending domain is required and the project has none.**
+
+- **Why Resend:** the free plan covers this feature's volume (100 emails per day, 3,000 per month, one verified domain — see [Resend's limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits)), and the HTTP API suits the Vercel function (ADR-0002) better than SMTP.
+- **Why it waits:** a mail provider has to be allowed to send from the sender's domain (SPF/DKIM records in DNS). The app lives on `*.vercel.app`, whose DNS is not ours, and the project has no domain of its own. Without one, mail either goes only to the account owner (provider test mode) or lands in spam; this was not checked against Resend's docs and is the first thing to confirm when T5 starts.
+- **Env var names (fixed for T5):** `RESEND_API_KEY` (secret, Vercel Environment Variables, never `VITE_`-prefixed) and `MAIL_FROM` (e.g. `Interview Trainer <noreply@<your-domain>>`). Add both to `.env.example` when T5 lands.
+- **No ADR:** the provider sits behind one function, so swapping it (SMTP via nodemailer, Brevo, another API) touches one file and two env vars — low blast radius, a note is enough.
+- **Do not use a log-only stub in production:** a stub that prints the reset link would put live reset tokens into Vercel's function logs, readable by everyone with project access. A stub is acceptable only when `NODE_ENV !== 'production'`.
+- **Unblocked by getting a domain:** T5 (send), T6 (`POST /password-reset/request`, together with moving the unknown-email counter from the in-memory `Map` to Mongo — PROGRESS.md item 4), then T9 and T10 (client), T14, T16.
+- **SAD §11:** the "Open architectural decision" row is resolved by this note (provider chosen, enabling blocked on a domain); `sad.md` was updated accordingly.
