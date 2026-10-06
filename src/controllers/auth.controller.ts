@@ -9,6 +9,7 @@ import type { HydratedDocument, Types } from 'mongoose';
 import { releaseLoginAttempt } from '../services/loginAttempt.service.js';
 import {
 	issuePasswordReset,
+	releaseResetRequest,
 	reserveResetRequest,
 	sendResetEmail,
 	verifyAndConsumePasswordResetToken,
@@ -272,13 +273,15 @@ export async function requestPasswordReset(req: Request, res: Response): Promise
 }
 
 // Never lets a failure reach the response: a rate-limited issue or a delivery error would otherwise
-// tell the caller the account exists. The error is logged without the token.
+// tell the caller the account exists. The error is logged without the token. A failure on our side
+// gives the attempt back, so it does not use up the user's hour.
 async function sendResetLink(userId: Types.ObjectId, email: string): Promise<void> {
 	try {
 		const issued = await issuePasswordReset(userId);
 		if (issued.status === 'issued') await sendResetEmail(email, issued.token);
 	} catch (error) {
 		console.error('password reset email failed:', error instanceof Error ? error.message : error);
+		await releaseResetRequest(email).catch(() => undefined);
 	}
 }
 

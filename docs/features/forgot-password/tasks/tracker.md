@@ -20,12 +20,12 @@ ticket: "<TBD>"
 | T2 | Create PasswordReset collection | Merged | Tanya19Lion | S | — |
 | T3 | passwordReset.service.ts: issue/verify/consume/rate-limit | Merged | Tanya19Lion | S | T2 |
 | T4 | requireAuth: tokenVersion check | Merged | Tanya19Lion | S | T1 |
-| T5 | sendResetEmail implementation | Merged | Tanya19Lion | S | T0 (done); live send needs Resend domain verified |
-| T6 | POST /api/auth/password-reset/request | Merged | Tanya19Lion | S | T3, T5 |
+| T5 | sendResetEmail implementation | Verified | Tanya19Lion | S | T0 (done); live send needs Resend domain verified |
+| T6 | POST /api/auth/password-reset/request | Verified | Tanya19Lion | S | T3, T5 |
 | T7 | POST /api/auth/password-reset/confirm | Merged | Tanya19Lion | S | T3, T4 |
 | T8 | POST /api/auth/change-password | In review | Tanya19Lion | S | T4 |
-| T9 | Client: forgot-password request form | Merged | Tanya19Lion | S | T6 |
-| T10 | Client: reset-confirm page | In review | Tanya19Lion | S | T7 |
+| T9 | Client: forgot-password request form | Verified | Tanya19Lion | S | T6 |
+| T10 | Client: reset-confirm page | Verified | Tanya19Lion | S | T7 |
 | T11 | Client: change-password form (profile) | Not started | Tanya19Lion | S | T8 |
 | T12 | Unit tests: token issue/consume/rate-limit (QG-1) | Not started | Tanya19Lion | S | T3 |
 | T13 | Integration test: session invalidation (QG-2, AC-06) | Not started | Tanya19Lion | S | T4, T7, T8 |

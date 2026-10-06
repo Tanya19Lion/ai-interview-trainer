@@ -79,8 +79,16 @@ export async function sendResetEmail(email: string, rawToken: string): Promise<v
 	});
 
 	if (!response.ok) {
-		throw new Error(`Resend responded with ${response.status}`);
+		// The body is Resend's own error ({name, message}); it does not echo the request, so the
+		// token stays out of the message. Capped so a stray HTML error page cannot flood the log.
+		const detail = (await response.text().catch(() => '')).slice(0, 300);
+		throw new Error(`Resend responded with ${response.status}${detail ? `: ${detail}` : ''}`);
 	}
+}
+
+/** Gives back the attempt taken by reserveResetRequest — called when our own delivery failed. */
+export async function releaseResetRequest(email: string): Promise<void> {
+	await ResetRequestAttemptModel.updateOne({ email: email.trim().toLowerCase(), count: { $gt: 0 } }, { $inc: { count: -1 } });
 }
 
 function incrementResetRequests(email: string) {
