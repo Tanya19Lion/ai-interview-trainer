@@ -47,6 +47,7 @@ const {
 	issuePasswordReset,
 	verifyAndConsumePasswordResetToken,
 	checkUnregisteredEmailRateLimit,
+	sendResetEmail,
 } = await import('./passwordReset.service.js');
 
 function sha256Hex(raw: string): string {
@@ -248,5 +249,69 @@ describe('passwordReset.service — rate limit, unregistered emails (AC-02 gap, 
 		const resultForB = checkUnregisteredEmailRateLimit(emailB);
 
 		expect(resultForB.allowed).toBe(true);
+	});
+});
+
+describe('passwordReset.service — sendResetEmail (T5)', () => {
+	const fetchMock = vi.fn();
+
+	beforeEach(() => {
+		fetchMock.mockReset();
+		vi.stubGlobal('fetch', fetchMock);
+		vi.stubEnv('CLIENT_URL', 'https://app.example.test');
+		vi.stubEnv('MAIL_FROM', 'Interview Trainer <noreply@example.test>');
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.unstubAllEnvs();
+	});
+
+	it('POSTs to the Resend API with the bearer key, sender, recipient and a reset link containing the token', async () => {
+		vi.stubEnv('RESEND_API_KEY', 're_test_key');
+		fetchMock.mockResolvedValue({ ok: true });
+
+		await sendResetEmail('user@example.test', 'abc123');
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.resend.com/emails');
+		expect(init.method).toBe('POST');
+		expect(init.headers.Authorization).toBe('Bearer re_test_key');
+		const body = JSON.parse(init.body);
+		expect(body.from).toBe('Interview Trainer <noreply@example.test>');
+		expect(body.to).toEqual(['user@example.test']);
+		expect(body.text).toContain('https://app.example.test/reset-password?token=abc123');
+	});
+
+	it('throws when Resend answers with a non-2xx status', async () => {
+		vi.stubEnv('RESEND_API_KEY', 're_test_key');
+		fetchMock.mockResolvedValue({ ok: false, status: 403 });
+
+		await expect(sendResetEmail('user@example.test', 'abc123')).rejects.toThrow(/403/);
+	});
+
+	it('throws in production when RESEND_API_KEY is missing, without calling Resend or logging the token', async () => {
+		vi.stubEnv('NODE_ENV', 'production');
+		vi.stubEnv('RESEND_API_KEY', '');
+		const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		await expect(sendResetEmail('user@example.test', 'abc123')).rejects.toThrow(/RESEND_API_KEY/);
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(logSpy).not.toHaveBeenCalled();
+		logSpy.mockRestore();
+	});
+
+	it('outside production with no RESEND_API_KEY, logs the link instead of calling Resend', async () => {
+		vi.stubEnv('NODE_ENV', 'development');
+		vi.stubEnv('RESEND_API_KEY', '');
+		const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		await sendResetEmail('user@example.test', 'abc123');
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('/reset-password?token=abc123'));
+		logSpy.mockRestore();
 	});
 });

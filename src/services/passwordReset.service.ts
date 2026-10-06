@@ -51,6 +51,36 @@ export async function verifyAndConsumePasswordResetToken(rawToken: string): Prom
 	return { status: 'valid', userId: doc.userId };
 }
 
+export async function sendResetEmail(email: string, rawToken: string): Promise<void> {
+	const link = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}`;
+	const apiKey = process.env.RESEND_API_KEY;
+
+	if (!apiKey) {
+		// Never log the link in production: Vercel function logs are readable by everyone with
+		// project access, so a logged token would be a live credential.
+		if (process.env.NODE_ENV === 'production') {
+			throw new Error('RESEND_API_KEY is not set');
+		}
+		console.log(`[dev] password reset link for ${email}: ${link}`);
+		return;
+	}
+
+	const response = await fetch('https://api.resend.com/emails', {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			from: process.env.MAIL_FROM,
+			to: [email],
+			subject: 'Скидання пароля — AI Interview Trainer',
+			text: `Щоб задати новий пароль, перейдіть за посиланням (дійсне 15 хвилин):\n${link}\n\nЯкщо ви не просили скидання, просто проігноруйте цей лист.`,
+		}),
+	});
+
+	if (!response.ok) {
+		throw new Error(`Resend responded with ${response.status}`);
+	}
+}
+
 const unregisteredEmailAttempts = new Map<string, number[]>();
 
 function pruneAttemptsWithinWindow(email: string, now: number): number[] {
