@@ -43,10 +43,34 @@ vi.mock('../models/PasswordReset.js', () => ({
 	},
 }));
 
+// Same idea for the per-email request counter (ResetRequestAttempt): one document per email.
+type FakeAttempt = { email: string; windowStart: Date; count: number };
+
+let attempts: FakeAttempt[] = [];
+
+vi.mock('../models/ResetRequestAttempt.js', () => ({
+	RESET_REQUEST_WINDOW_SECONDS: 3600,
+	ResetRequestAttemptModel: {
+		deleteOne: vi.fn(async (filter: { email: string; windowStart: { $lt: Date } }) => {
+			const idx = attempts.findIndex((a) => a.email === filter.email && a.windowStart < filter.windowStart.$lt);
+			if (idx !== -1) attempts.splice(idx, 1);
+		}),
+		findOneAndUpdate: vi.fn(async (filter: { email: string }) => {
+			let attempt = attempts.find((a) => a.email === filter.email);
+			if (!attempt) {
+				attempt = { email: filter.email, windowStart: new Date(), count: 0 };
+				attempts.push(attempt);
+			}
+			attempt.count += 1;
+			return attempt;
+		}),
+	},
+}));
+
 const {
 	issuePasswordReset,
 	verifyAndConsumePasswordResetToken,
-	checkUnregisteredEmailRateLimit,
+	reserveResetRequest,
 	sendResetEmail,
 } = await import('./passwordReset.service.js');
 
@@ -202,53 +226,43 @@ describe('passwordReset.service — rate limit, registered emails (PRD §6 NFR: 
 	});
 });
 
-describe('passwordReset.service — rate limit, unregistered emails (AC-02 gap, data-model.md)', () => {
-	// AC-02: no PasswordReset document is created for an unknown email, so the userId_1-based
-	// counter above cannot rate-limit this path — data-model.md's own suggested fix is a separate
-	// short-lived counter (in-memory or IP-keyed) that is NOT backed by the PasswordReset
-	// collection.
-	const email = 'unregistered@example.test';
-
+describe('passwordReset.service — reserveResetRequest (T6, AC-02: one counter for known and unknown emails)', () => {
 	beforeEach(() => {
-		docs = [];
+		attempts = [];
 	});
 
-	afterEach(() => {
-		// best-effort: if the implementation exposes no reset hook, each test uses a unique email
-		// to stay independent of prior tests' counters.
+	it('allows 3 requests per email, reporting how many are left, and rejects the 4th', async () => {
+		const email = 'someone@example.test';
+
+		const results = [];
+		for (let i = 0; i < 4; i++) results.push(await reserveResetRequest(email));
+
+		expect(results).toEqual([
+			{ allowed: true, attemptsRemaining: 2 },
+			{ allowed: true, attemptsRemaining: 1 },
+			{ allowed: true, attemptsRemaining: 0 },
+			{ allowed: false, attemptsRemaining: 0 },
+		]);
 	});
 
-	it('allows repeated requests for an email with no matching user up to the limit, without creating any PasswordReset document', () => {
-		const testEmail = `unregistered-allow-${Date.now()}@example.test`;
-		for (let i = 0; i < 3; i++) {
-			const result = checkUnregisteredEmailRateLimit(testEmail);
-			expect(result.allowed).toBe(true);
-		}
-		expect(docs).toHaveLength(0);
+	it('counts each email separately', async () => {
+		for (let i = 0; i < 3; i++) await reserveResetRequest('a@example.test');
+
+		expect(await reserveResetRequest('b@example.test')).toEqual({ allowed: true, attemptsRemaining: 2 });
 	});
 
-	it('rejects a request beyond the limit for the same unregistered email', () => {
-		const testEmail = `unregistered-reject-${Date.now()}@example.test`;
-		for (let i = 0; i < 3; i++) {
-			checkUnregisteredEmailRateLimit(testEmail);
-		}
+	it('treats differently-cased spellings of one email as the same email', async () => {
+		for (let i = 0; i < 3; i++) await reserveResetRequest('Mixed@Example.test');
 
-		const fourth = checkUnregisteredEmailRateLimit(testEmail);
-
-		expect(fourth.allowed).toBe(false);
-		expect(docs).toHaveLength(0);
+		expect((await reserveResetRequest('mixed@example.test')).allowed).toBe(false);
 	});
 
-	it('tracks unregistered-email attempts independently per email address', () => {
-		const emailA = `unregistered-a-${Date.now()}@example.test`;
-		const emailB = `unregistered-b-${Date.now()}@example.test`;
-		for (let i = 0; i < 3; i++) {
-			checkUnregisteredEmailRateLimit(emailA);
-		}
+	it('starts a fresh window once the previous one is older than an hour', async () => {
+		const email = 'window@example.test';
+		for (let i = 0; i < 3; i++) await reserveResetRequest(email);
+		attempts[0].windowStart = new Date(Date.now() - 61 * 60 * 1000);
 
-		const resultForB = checkUnregisteredEmailRateLimit(emailB);
-
-		expect(resultForB.allowed).toBe(true);
+		expect(await reserveResetRequest(email)).toEqual({ allowed: true, attemptsRemaining: 2 });
 	});
 });
 

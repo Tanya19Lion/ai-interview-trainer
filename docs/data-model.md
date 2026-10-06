@@ -276,6 +276,21 @@ no existence outside its parent session. Documented under Entities below.
 - **Rollback:** restore `MAX_ATTEMPTS_PER_EMAIL = 5` and the single-counter `reserveLoginAttempt` /
   `releaseLoginAttempt(email)`, redeploy. Optional: `db.ipattempts.deleteMany({ key: /^login:/ })`.
 
+### 2026-10-06 — add the `ResetRequestAttempt` collection (password-reset request limit)
+
+- **Change:** new collection `ResetRequestAttempt` (`src/models/ResetRequestAttempt.ts`): `{ email
+  (unique, lower-cased), windowStart, count }` with a TTL index on `windowStart`
+  (`expireAfterSeconds: 3600`). `reserveResetRequest` in `passwordReset.service.ts` takes one
+  attempt per `POST /api/auth/password-reset/request` *before* the user lookup, so a known and an
+  unknown email reach the limit (3 per hour, `RATE_LIMIT_MAX` in code, not the schema) after the
+  same number of requests (AC-02). It replaces the in-memory `unregisteredEmailAttempts` `Map` and
+  `checkUnregisteredEmailRateLimit`, which were per serverless instance and never pruned
+  (PROGRESS.md, open item 4); nothing called them.
+- **Backfill:** none needed — the collection starts empty and fills as requests arrive.
+- **Rollback:** remove the route and `reserveResetRequest`, delete the model, redeploy, then
+  `db.resetrequestattempts.drop()`. The documents are hour-long counters, so nothing needs
+  preserving.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check

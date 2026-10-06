@@ -7,7 +7,12 @@ import type { AuthedRequest } from '../middleware/auth.js';
 import { hasValidTokenVersion, verifyToken } from '../middleware/auth.js';
 import type { HydratedDocument, Types } from 'mongoose';
 import { releaseLoginAttempt } from '../services/loginAttempt.service.js';
-import { verifyAndConsumePasswordResetToken } from '../services/passwordReset.service.js';
+import {
+	issuePasswordReset,
+	reserveResetRequest,
+	sendResetEmail,
+	verifyAndConsumePasswordResetToken,
+} from '../services/passwordReset.service.js';
 
 const PASSWORD_MIN_LENGTH = 8;
 const BCRYPT_SALT_ROUNDS = 10;
@@ -232,6 +237,49 @@ function sendInvalidOrExpiredToken(res: Response): void {
 		code: 'password_reset.invalid_or_expired_token',
 		message: 'This password reset link is invalid or has expired.',
 	});
+}
+
+export async function requestPasswordReset(req: Request, res: Response): Promise<void> {
+	const { email } = req.body as { email?: unknown };
+	// typeof guard keeps a JSON object (e.g. {"$ne": ""}) from reaching a Mongoose filter.
+	if (typeof email !== 'string' || !email) {
+		res.status(400).json({ code: 'password_reset.invalid_request', message: 'email is required' });
+		return;
+	}
+
+	// The counter runs before the user lookup so a known and an unknown email get the same answer
+	// (AC-02) — including 429 after the same number of requests.
+	const { allowed, attemptsRemaining } = await reserveResetRequest(email);
+	if (!allowed) {
+		res.status(429).json({
+			code: 'password_reset.rate_limited',
+			message: 'Too many reset requests for this email. Try again later.',
+		});
+		return;
+	}
+
+	const user = await UserModel.findOne({ email });
+	if (user && !user.passwordHash) {
+		// AC-05: the one deliberate exception to existence-hiding — a Google-only account is told so.
+		res.json({ message: 'This account signs in with Google. Use "Sign in with Google" instead.', hint: 'google_account' });
+		return;
+	}
+	if (user) {
+		await sendResetLink(user._id, email);
+	}
+
+	res.json({ message: 'If that email is registered, a reset link has been sent.', attemptsRemaining });
+}
+
+// Never lets a failure reach the response: a rate-limited issue or a delivery error would otherwise
+// tell the caller the account exists. The error is logged without the token.
+async function sendResetLink(userId: Types.ObjectId, email: string): Promise<void> {
+	try {
+		const issued = await issuePasswordReset(userId);
+		if (issued.status === 'issued') await sendResetEmail(email, issued.token);
+	} catch (error) {
+		console.error('password reset email failed:', error instanceof Error ? error.message : error);
+	}
 }
 
 export async function confirmPasswordReset(req: Request, res: Response): Promise<void> {

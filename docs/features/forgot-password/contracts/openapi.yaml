@@ -203,8 +203,9 @@ components:
           description: >-
             origin: data-model.md PasswordReset.attemptsRemaining (reconciled 2026-09-09) — reset
             requests remaining for this email in the current rolling hour window (PRD §6 NFR:
-            ≤3/hour). Omitted for the AC-02 unknown-email path, since no PasswordReset document
-            exists to count against.
+            ≤3/hour). Present on the generic confirmation for registered and unknown emails alike
+            (counted in `ResetRequestAttempt`, not `PasswordReset`) — omitting it for unknown emails
+            would reveal that no account exists. Absent only on the Google-account hint.
 
     ConfirmPasswordResetBody:
       type: object

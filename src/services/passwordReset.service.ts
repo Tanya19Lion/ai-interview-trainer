@@ -1,10 +1,12 @@
 import { randomBytes, createHash } from 'crypto';
 import type { Types } from 'mongoose';
 import { PasswordResetModel } from '../models/PasswordReset.js';
+import { RESET_REQUEST_WINDOW_SECONDS, ResetRequestAttemptModel } from '../models/ResetRequestAttempt.js';
 
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 3;
+const DUPLICATE_KEY_ERROR_CODE = 11000;
 
 export type IssuePasswordResetResult =
 	| { status: 'issued'; token: string }
@@ -12,7 +14,7 @@ export type IssuePasswordResetResult =
 
 export type VerifyAndConsumeResult = { status: 'valid'; userId: Types.ObjectId } | { status: 'invalid' };
 
-export type UnregisteredEmailRateLimitResult = { allowed: boolean };
+export type ReserveResetRequestResult = { allowed: boolean; attemptsRemaining: number };
 
 function hashToken(rawToken: string): string {
 	return createHash('sha256').update(rawToken).digest('hex');
@@ -81,22 +83,35 @@ export async function sendResetEmail(email: string, rawToken: string): Promise<v
 	}
 }
 
-const unregisteredEmailAttempts = new Map<string, number[]>();
-
-function pruneAttemptsWithinWindow(email: string, now: number): number[] {
-	return (unregisteredEmailAttempts.get(email) ?? []).filter((timestamp) => timestamp > now - RATE_LIMIT_WINDOW_MS);
+function incrementResetRequests(email: string) {
+	return ResetRequestAttemptModel.findOneAndUpdate(
+		{ email },
+		{ $inc: { count: 1 }, $setOnInsert: { windowStart: new Date() } },
+		{ upsert: true, new: true },
+	);
 }
 
-export function checkUnregisteredEmailRateLimit(email: string): UnregisteredEmailRateLimitResult {
-	const now = Date.now();
-	const attempts = pruneAttemptsWithinWindow(email, now);
+/**
+ * Counts one reset request for `email` in the current hour, whether or not an account exists for
+ * it, so a known and an unknown address hit the limit after the same number of requests (AC-02).
+ * Same atomic upsert as reserveLoginAttempt; the expired window is dropped here because Mongo's
+ * TTL sweep only runs about once a minute.
+ */
+export async function reserveResetRequest(email: string): Promise<ReserveResetRequestResult> {
+	const key = email.trim().toLowerCase();
+	await ResetRequestAttemptModel.deleteOne({
+		email: key,
+		windowStart: { $lt: new Date(Date.now() - RESET_REQUEST_WINDOW_SECONDS * 1000) },
+	});
 
-	if (attempts.length >= RATE_LIMIT_MAX) {
-		unregisteredEmailAttempts.set(email, attempts);
-		return { allowed: false };
+	let attempt;
+	try {
+		attempt = await incrementResetRequests(key);
+	} catch (error) {
+		// Two first requests for a new email can both try to insert; the loser hits the unique index.
+		if ((error as { code?: number }).code !== DUPLICATE_KEY_ERROR_CODE) throw error;
+		attempt = await incrementResetRequests(key);
 	}
 
-	attempts.push(now);
-	unregisteredEmailAttempts.set(email, attempts);
-	return { allowed: true };
+	return { allowed: attempt.count <= RATE_LIMIT_MAX, attemptsRemaining: Math.max(0, RATE_LIMIT_MAX - attempt.count) };
 }
