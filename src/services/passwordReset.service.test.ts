@@ -215,6 +215,16 @@ describe('passwordReset.service — rate limit, registered emails (PRD §6 NFR: 
 		}
 	});
 
+	it('issues the 3rd request in an hour and rejects the 4th, issuing for real each time', async () => {
+		const userId = new Types.ObjectId();
+
+		const results = [];
+		for (let i = 0; i < 4; i++) results.push(await issuePasswordReset(userId));
+
+		expect(results.map((r) => r.status)).toEqual(['issued', 'issued', 'issued', 'rate_limited']);
+		expect(docs).toHaveLength(3);
+	});
+
 	it('does not count a different userId toward the same rate-limit window', async () => {
 		const userId = new Types.ObjectId();
 		const otherUserId = new Types.ObjectId();
