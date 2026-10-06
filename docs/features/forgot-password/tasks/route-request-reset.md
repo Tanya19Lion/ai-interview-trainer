@@ -35,4 +35,5 @@ T3, T5.
 
 - [ ] PR merged.
 - [ ] Response shapes match `openapi.yaml`'s `RequestPasswordResetResponse` schema exactly (including the `hint` and `attemptsRemaining` fields' conditional presence).
+- [ ] The unknown-email rate limit does not use `checkUnregisteredEmailRateLimit`'s in-memory `Map` (`passwordReset.service.ts`): it is per instance on serverless and grows without bound. Replace it with a counter in Mongo (window 1 hour, max 3, same as `RATE_LIMIT_MAX`) with a `docs/data-model.md` Schema-change log entry, or drop it if the generic 200 makes it unnecessary. Nothing calls it before this task, so it was left as is (PROGRESS.md, open item 4).
 - [ ] No response distinguishes "unknown email" from "known email" except the deliberate Google-account hint (AC-02's postcondition, stated explicitly in the SAD sequence's closing note).

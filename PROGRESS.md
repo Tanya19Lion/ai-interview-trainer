@@ -612,6 +612,9 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
    Зроблено: фаза 1 — PR #42, фаза 2 — PR #43 (обидва записи є в `docs/data-model.md`).
 4. **`unregisteredEmailAttempts`** (`passwordReset.service.ts`): `Map` у пам'яті; на serverless кожен
    інстанс має свій лічильник і він необмежено росте. Перенести в Mongo (новий запис у `data-model.md`).
+   **Відкладено до T6** (`docs/features/forgot-password/tasks/route-request-reset.md`): перевірено, що
+   `checkUnregisteredEmailRateLimit` і `issuePasswordReset` не викликає жоден маршрут (T6 «Not started»),
+   тож у продакшні проблеми поки немає; переносити в Mongo варто разом із підключенням функції.
 5. **Ліміт входу лише по email** — цільове блокування чужої адреси лишається можливим (Amendment в ADR-0003).
 6. **MongoDB Atlas відкритий для `0.0.0.0/0`** (Vercel без фіксованих IP): захист лише паролем БД.
 
