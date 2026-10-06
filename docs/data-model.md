@@ -213,6 +213,18 @@ no existence outside its parent session. Documented under Entities below.
   and `ipAttempt.service.ts`, redeploy, then `db.ipattempts.drop()`. The documents are short-lived
   counters, so nothing needs preserving.
 
+### 2026-10-06 — `PasswordReset.attemptsRemaining` phase 1: stop writing it
+
+- **Change:** `attemptsRemaining` is now `{ type: Number }` — no `required`, no `default: 3`. Nothing
+  reads it (the reset limit is counted from `createdAt` via `RATE_LIMIT_MAX` in
+  `passwordReset.service.ts`), and new documents no longer get it. Phase 2, a separate PR and
+  deploy once this one is live: delete the field from the schema.
+- **Backfill:** none needed — existing documents keep the stored `3` until their TTL removes them
+  (reset tokens live a short time); the value is ignored.
+- **Rollback:** restore `{ type: Number, required: true, default: 3 }` in `PasswordReset.ts` and
+  redeploy. Documents created in the meantime simply lack the field, which the restored schema
+  tolerates on read.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check
