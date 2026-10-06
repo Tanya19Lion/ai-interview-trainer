@@ -35,6 +35,16 @@ export function loginWithPassword(body: {
 	return apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(body) });
 }
 
+export interface RequestPasswordResetResponse {
+	message: string;
+	hint?: 'google_account' | null;
+	attemptsRemaining?: number;
+}
+
+export function requestPasswordReset(email: string): Promise<RequestPasswordResetResponse> {
+	return apiFetch('/auth/password-reset/request', { method: 'POST', body: JSON.stringify({ email }) });
+}
+
 export function refreshSession(): Promise<void> {
 	return apiFetch('/auth/refresh', { method: 'POST' });
 }
