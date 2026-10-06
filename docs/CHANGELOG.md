@@ -6,6 +6,43 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-06
+
+### Added
+
+- Deployment to Vercel: the Express app is split into `src/app.ts` (no `listen`) and `src/index.ts` (local run), runs as a Vercel function through `api/index.js` and `vercel.json`, and serves the client from the same domain; `trust proxy` is on only when Vercel sets `VERCEL`. See `docs/deploy-vercel.md` and ADR-0002
+- A checklist for hardening MongoDB Atlas while its network access is open to `0.0.0.0/0` (`docs/deploy-vercel.md`)
+- A per-IP limit on `POST /api/auth/register` and `POST /api/auth/google` (10 per 15 minutes each, `IpAttempt` collection); beyond it the answer is 429 `auth.rate_limited`
+- A per-user limit on `POST /api/interview/start` and `POST /api/interview/:sessionId/answer` (40 per 15 minutes, one shared counter, stored in `IpAttempt` under `ai:<userId>`); beyond it the answer is 429 `ai.rate_limited`
+- `InterviewSession.currentQuestion`: the question the server issued and waits for an answer to (optional, so older sessions need no backfill)
+- `GET /api/stats` returns `activityByDay` and `today`, so the progress heatmap no longer buckets days on the client
+
+### Changed
+
+- The login limit is now counted per email and address: 5 failed logins per 15 minutes for each email+IP pair, plus a ceiling of 30 per email, so someone else's failed logins from another address no longer lock the owner out (ADR-0004). A successful login still gives its attempts back
+- `POST /api/interview/:sessionId/answer` accepts only string `question` and `answer` (the question up to 1000 characters, the answer up to 4000; an empty answer is still a skip) and rejects a `question` that is not the one the server issued, with 400 instead of 500 or a graded arbitrary text
+- `GET /api/interview/active` returns the stored question instead of generating a new one on every call; a session created before this release gets one generated and saved on its first call
+- `POST /api/interview/start` generates the question before creating the session, so a failed AI call leaves no empty session, and deletes the user's older unfinished sessions (they were already unreachable from the app)
+- The question and the answer are wrapped in `<question>` / `<answer>` tags in the AI prompts, and the system prompt says their content is data, not instructions
+- The client has a single `Lang` / `LANGS` and `LOCALE`; `check_enums.py` also guards `LANGS` against drift between server and client
+
+### Fixed
+
+- Changing the password logged the user out on the next request (the bumped `tokenVersion` revoked the session that made the change); the response now reissues the session cookies
+- `register`, `login`, `googleLogin` and the login limiter let a JSON object such as `{"$ne": ""}` reach a Mongoose filter as an email; non-string values now get a 400 first
+- An AI review with a missing field or a score outside 0–10 was only caught when saving the session (a 500 after a paid call); `parseAnswerReview` now checks the shape first
+- A logged-out visit to a protected page landed on the public landing page and lost the deep link; `RequireAuth` now redirects to `/login` and `LoginPage` returns the user to the page they wanted
+
+### Removed
+
+- The unused `PasswordReset.attemptsRemaining` field (a business-rule default that nothing read), removed in two steps: it stopped being written, then left the schema
+
+### Documentation
+
+- ADR-0004 (login limit per email+IP), the Schema-change log in `docs/data-model.md` (`tokenVersion`, `LoginAttempt`, `PasswordReset`, `IpAttempt`, `currentQuestion`, the changed keys and limits), the interview-flow and auth rules, and the open follow-ups in `PROGRESS.md`
+- Removed the one-off `CODE_REVIEW_RESULTS.md`, `SECURITY_REVIEW_RESULTS.md` and `SIMPLIFY_RESULTS.md`; every finding in them is fixed or tracked in `PROGRESS.md`
+- The unknown-email limit in `passwordReset.service.ts` stays an in-memory `Map` until T6 (`POST /password-reset/request`) calls it; the move to Mongo is now part of T6's definition of done
+
 ## [0.3.0] - 2026-10-05
 
 ### Added
@@ -153,7 +190,8 @@ All notable changes to this project are documented in this file. The format foll
 - Password-reset tokens are random 32-byte values that expire and are consumed on use
 - Security headers are set with Helmet
 
-[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Tanya19Lion/ai-interview-trainer/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.3.0
 [0.2.1]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.1
 [0.2.0]: https://github.com/Tanya19Lion/ai-interview-trainer/releases/tag/v0.2.0
