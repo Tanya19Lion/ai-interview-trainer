@@ -39,6 +39,15 @@ export async function startSession(req: AuthedRequest, res: Response): Promise<v
 		currentQuestion: question,
 		questions: [],
 	});
+	// One active session per user. The older ones are unreachable anyway (getActiveSession returns
+	// only the newest, history lists only completed), so they would just pile up. Done after the
+	// create, so a failed start never deletes the session the user can still resume, and `$lt`
+	// keeps two simultaneous starts from deleting each other.
+	await InterviewSessionModel.deleteMany({
+		userId: req.userId,
+		status: 'in_progress',
+		_id: { $lt: session._id },
+	});
 
 	res.status(201).json({
 		sessionId: session.id,

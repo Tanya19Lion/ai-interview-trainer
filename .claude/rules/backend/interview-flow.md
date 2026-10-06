@@ -42,6 +42,11 @@ paths:
   `in_progress` session found via `GET /api/history/:id`) still only call it when they actually
   need the question, via `hooks/useActiveSession.ts`'s `enabled` arg (see
   `.claude/rules/frontend/api-and-hooks.md`).
+- **Limits**: `POST /start` and `POST /:sessionId/answer` share one per-user counter
+  (`userRateLimit('ai', 40)` in `interview.routes.ts`, 40 per 15 min, stored in `IpAttempt` under
+  `ai:<userId>`) and answer 429 `ai.rate_limited` beyond it; `GET /active` is not counted because it
+  makes no AI call for a session that has a `currentQuestion`. `startSession` also deletes the user's
+  older `in_progress` sessions once the new one is created, so there is at most one active session.
 - **Input validation**: `submitAnswer` requires string `question` (non-empty, ≤ 1000 chars) and
   string `answer` (may be empty = skip, ≤ 4000 chars) — anything else is a 400 before the database
   or the model is touched. When the session has a `currentQuestion`, a different `question` is a
