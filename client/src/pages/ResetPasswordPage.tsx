@@ -4,13 +4,12 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, TextField } from '../components';
 import { ApiError } from '../api/client';
-import { useRequestPasswordReset } from '../hooks/useAuth';
-import { useFakeSubmit } from '../hooks/useFakeSubmit';
+import { useConfirmPasswordReset, useRequestPasswordReset } from '../hooks/useAuth';
 import loginStyles from './LoginPage.module.css';
 import styles from './ResetPasswordPage.module.css';
 
 type RequestStep = 'form' | 'sent' | 'google';
-type ResetStep = 'form' | 'done';
+type ResetStep = 'form' | 'done' | 'expired';
 
 function RequestEmailView() {
 	const { t } = useTranslation();
@@ -89,12 +88,12 @@ function RequestEmailView() {
 	);
 }
 
-function NewPasswordView() {
+function NewPasswordView({ token }: { token: string }) {
 	const { t } = useTranslation();
 	const [step, setStep] = useState<ResetStep>('form');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
-	const { pending, run } = useFakeSubmit();
+	const { mutate, isPending: pending } = useConfirmPasswordReset();
 	const [error, setError] = useState<string | null>(null);
 
 	function handleSubmit(event: SubmitEvent) {
@@ -104,7 +103,32 @@ function NewPasswordView() {
 			return;
 		}
 		setError(null);
-		run(() => setStep('done'));
+		mutate(
+			{ token, newPassword: password },
+			{
+				onSuccess: () => setStep('done'),
+				onError: (err) => {
+					if (err instanceof ApiError && err.code === 'password_reset.invalid_or_expired_token') {
+						setStep('expired');
+						return;
+					}
+					setError(t('reset.requestError'));
+				},
+			},
+		);
+	}
+
+	if (step === 'expired') {
+		return (
+			<>
+				<Eyebrow centered>$ diff --reset-password</Eyebrow>
+				<h1 className={loginStyles.h1}>{t('reset.expiredTitle')}</h1>
+				<p className={loginStyles.subtitle}>{t('reset.expiredBody')}</p>
+				<Link to="/reset-password" className={styles.backLink}>
+					{t('reset.expiredCta')}
+				</Link>
+			</>
+		);
 	}
 
 	if (step === 'done') {
@@ -161,7 +185,7 @@ function NewPasswordView() {
 export function ResetPasswordPage() {
 	const { t } = useTranslation();
 	const [searchParams] = useSearchParams();
-	const hasToken = Boolean(searchParams.get('token'));
+	const token = searchParams.get('token');
 
 	return (
 		<div className={loginStyles.page}>
@@ -169,7 +193,7 @@ export function ResetPasswordPage() {
 
 			<main className={loginStyles.authMain}>
 				<div className={loginStyles.authCard}>
-					{hasToken ? <NewPasswordView /> : <RequestEmailView />}
+					{token ? <NewPasswordView token={token} /> : <RequestEmailView />}
 				</div>
 			</main>
 
