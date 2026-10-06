@@ -15,13 +15,13 @@ ticket: "<TBD>"
 
 | ID | Title | Status | Owner | Estimate | Blocked by |
 |----|-------|--------|-------|----------|------------|
-| T0 | Spike: decide email-delivery provider | Not started | Tanya19Lion | S | — |
+| T0 | Spike: decide email-delivery provider | Merged | Tanya19Lion | S | — |
 | T1 | Add User.tokenVersion field | Merged | Tanya19Lion | XS | — |
 | T2 | Create PasswordReset collection | Merged | Tanya19Lion | S | — |
 | T3 | passwordReset.service.ts: issue/verify/consume/rate-limit | Merged | Tanya19Lion | S | T2 |
 | T4 | requireAuth: tokenVersion check | Merged | Tanya19Lion | S | T1 |
-| T5 | sendResetEmail implementation | Not started | Tanya19Lion | S | T0 |
-| T6 | POST /api/auth/password-reset/request | Not started | Tanya19Lion | S | T3, T5 |
+| T5 | sendResetEmail implementation | Blocked | Tanya19Lion | S | T0 (done), a verified sending domain |
+| T6 | POST /api/auth/password-reset/request | Blocked | Tanya19Lion | S | T3, T5 |
 | T7 | POST /api/auth/password-reset/confirm | Merged | Tanya19Lion | S | T3, T4 |
 | T8 | POST /api/auth/change-password | In review | Tanya19Lion | S | T4 |
 | T9 | Client: forgot-password request form | Not started | Tanya19Lion | S | T6 |

@@ -435,7 +435,7 @@ ADR files live under `docs/features/forgot-password/adr/NNNN-<title>.md`.
 |---|---|---|---|
 | Building the first-ever email integration is nontrivial scope beyond token/hash logic | Medium | Isolated behind `passwordReset.service.ts`'s single send-email function; provider choice deferred, not blocking the rest of the design | Tanya |
 | `tokenVersion` check adds one DB read to every authenticated request (see ADR-0002 Negative) | Low | Acceptable at current scale (single Mongo instance, no measured load per root PRD §6); revisit if latency ever becomes measurable | Tanya |
-| Open architectural decision: which email-delivery provider to integrate | Open question | Resolve before implementation starts — PRD §8 already tracks this with owner Tanya, due before implementation; carried forward here since still unresolved | Tanya |
+| Open architectural decision: which email-delivery provider to integrate | Resolved 2026-10-06 | Resend over its HTTP API behind the send-email function (T0 outcome in `tasks/spike-email-provider.md`); enabling it needs a verified sending domain, which the project does not have yet | Tanya |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
 - No secondary recovery factor (SMS, security questions) — accepted per idea-brief §5 non-goal;
