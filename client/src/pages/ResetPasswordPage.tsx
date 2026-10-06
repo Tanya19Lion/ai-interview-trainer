@@ -3,22 +3,42 @@ import type { SubmitEvent } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AuthAmbientBackdrop, Button, Eyebrow, PasswordField, TextField } from '../components';
+import { ApiError } from '../api/client';
+import { useRequestPasswordReset } from '../hooks/useAuth';
 import { useFakeSubmit } from '../hooks/useFakeSubmit';
 import loginStyles from './LoginPage.module.css';
 import styles from './ResetPasswordPage.module.css';
 
-type RequestStep = 'form' | 'sent';
+type RequestStep = 'form' | 'sent' | 'google';
 type ResetStep = 'form' | 'done';
 
 function RequestEmailView() {
 	const { t } = useTranslation();
 	const [step, setStep] = useState<RequestStep>('form');
 	const [email, setEmail] = useState('');
-	const { pending, run } = useFakeSubmit();
+	const [error, setError] = useState<string | null>(null);
+	const { mutate, isPending: pending } = useRequestPasswordReset();
 
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		run(() => setStep('sent'));
+		setError(null);
+		mutate(email, {
+			onSuccess: (data) => setStep(data.hint === 'google_account' ? 'google' : 'sent'),
+			onError: (err) => setError(err instanceof ApiError && err.status === 429 ? t('reset.rateLimited') : t('reset.requestError')),
+		});
+	}
+
+	if (step === 'google') {
+		return (
+			<>
+				<Eyebrow centered>$ diff --forgot-password</Eyebrow>
+				<h1 className={loginStyles.h1}>{t('reset.googleTitle')}</h1>
+				<p className={loginStyles.subtitle}>{t('reset.googleBody')}</p>
+				<Link to="/login" className={styles.backLink}>
+					{t('reset.googleCta')}
+				</Link>
+			</>
+		);
 	}
 
 	if (step === 'sent') {
@@ -56,6 +76,8 @@ function RequestEmailView() {
 					{pending ? t('reset.sending') : t('reset.send')}
 				</Button>
 			</form>
+
+			{error && <p className={loginStyles.error}>{error}</p>}
 
 			<p className={loginStyles.switchLine}>
 				{t('reset.remembered')}{' '}

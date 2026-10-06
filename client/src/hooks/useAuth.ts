@@ -6,6 +6,7 @@ import {
 	logout,
 	refreshSession,
 	registerWithPassword,
+	requestPasswordReset,
 } from '../api/auth';
 
 export function useMe() {
@@ -55,6 +56,10 @@ export function useLoginWithPassword() {
 		mutationFn: loginWithPassword,
 		onSuccess: (data) => queryClient.setQueryData(['me'], data),
 	});
+}
+
+export function useRequestPasswordReset() {
+	return useMutation({ mutationFn: (email: string) => requestPasswordReset(email) });
 }
 
 export function useLogout() {
