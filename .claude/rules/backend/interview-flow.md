@@ -32,13 +32,20 @@ paths:
   `averageScore` (and `GET /api/stats`) only over entries with `answer !== ''`. Keep those two
   filters in sync — a skipped `score: 0` would otherwise drag both numbers down.
 - `GET /api/interview/active` (`getActiveSession`) returns the newest `status: 'in_progress'`
-  session for the user (204 if none). The in-flight question text is never persisted on the
-  session document (only answered `questions[]` entries are), so this handler re-generates a
-  question via `generateQuestion(topic, level, askedQuestions)` — a reload/resume will show a
-  freshly generated question, not necessarily byte-identical to whatever was on screen before the
-  reload. If multiple `in_progress` sessions exist for a user (e.g. they started a new one without
-  finishing an old one), older ones are silently ignored, not auto-abandoned. Because it calls the
-  AI service, it's not free to call speculatively — both client consumers
-  (`HomePage`'s resume card, `InterviewSessionPage`'s reload fallback for an `in_progress` session
-  found via `GET /api/history/:id`) only call it when they actually need a live question, via
-  `hooks/useActiveSession.ts`'s `enabled` arg (see `.claude/rules/frontend/api-and-hooks.md`).
+  session for the user (204 if none) together with the question it is waiting for. That question
+  is stored on the session as `currentQuestion` (set by `startSession` and `submitAnswer`, cleared
+  on completion), so a reload shows the same question and costs no AI call. Only a session created
+  before the field existed has none: the handler generates one question, saves it, and later calls
+  return the saved one. If multiple `in_progress` sessions exist for a user (e.g. they started a
+  new one without finishing an old one), older ones are silently ignored, not auto-abandoned. Both
+  client consumers (`HomePage`'s resume card, `InterviewSessionPage`'s reload fallback for an
+  `in_progress` session found via `GET /api/history/:id`) still only call it when they actually
+  need the question, via `hooks/useActiveSession.ts`'s `enabled` arg (see
+  `.claude/rules/frontend/api-and-hooks.md`).
+- **Input validation**: `submitAnswer` requires string `question` (non-empty, ≤ 1000 chars) and
+  string `answer` (may be empty = skip, ≤ 4000 chars) — anything else is a 400 before the database
+  or the model is touched. When the session has a `currentQuestion`, a different `question` is a
+  400, so the endpoint can't be used to grade or answer arbitrary text; a legacy session without
+  it accepts the request's `question`. In `ai.service.ts` the question and answer are wrapped in
+  `<question>`/`<answer>` tags and the system prompt says their content is data, not instructions
+  — keep both when changing a prompt.

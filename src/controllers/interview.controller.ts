@@ -7,6 +7,9 @@ import type { AnswerReview } from '../services/ai.service.js';
 
 const QUESTIONS_PER_SESSION = 5;
 const DEFAULT_LANG: Lang = 'uk';
+// A generated question is a few sentences (max_tokens 300); an answer is free text, but not a document.
+const MAX_QUESTION_LENGTH = 1000;
+const MAX_ANSWER_LENGTH = 4000;
 
 export async function startSession(req: AuthedRequest, res: Response): Promise<void> {
 	const { topic, level, lang } = req.body as { topic?: string; level?: string; lang?: unknown };
@@ -25,10 +28,17 @@ export async function startSession(req: AuthedRequest, res: Response): Promise<v
 	}
 	const sessionLang: Lang = (lang as Lang | undefined) ?? DEFAULT_LANG;
 
-	const [session, { question }] = await Promise.all([
-		InterviewSessionModel.create({ userId: req.userId, topic, level, lang: sessionLang, questions: [] }),
-		generateQuestion(topic, level, [], sessionLang),
-	]);
+	// The question is stored on the session, so it has to exist before the document is created.
+	// A failed AI call also no longer leaves an empty in_progress session behind.
+	const { question } = await generateQuestion(topic, level, [], sessionLang);
+	const session = await InterviewSessionModel.create({
+		userId: req.userId,
+		topic,
+		level,
+		lang: sessionLang,
+		currentQuestion: question,
+		questions: [],
+	});
 
 	res.status(201).json({
 		sessionId: session.id,
@@ -49,13 +59,17 @@ export async function getActiveSession(req: AuthedRequest, res: Response): Promi
 		return;
 	}
 
-	const askedQuestions = session.questions.map((q) => q.question);
-	const { question } = await generateQuestion(
-		session.topic,
-		session.level,
-		askedQuestions,
-		session.lang ?? DEFAULT_LANG,
-	);
+	let question = session.currentQuestion;
+	if (!question) {
+		// Session created before currentQuestion existed: generate once and keep it, so a reload
+		// neither pays for another question nor shows one the later answer wouldn't match.
+		const askedQuestions = session.questions.map((q) => q.question);
+		question = (
+			await generateQuestion(session.topic, session.level, askedQuestions, session.lang ?? DEFAULT_LANG)
+		).question;
+		session.currentQuestion = question;
+		await session.save();
+	}
 
 	res.json({
 		sessionId: session.id,
@@ -69,9 +83,15 @@ export async function getActiveSession(req: AuthedRequest, res: Response): Promi
 
 export async function submitAnswer(req: AuthedRequest, res: Response): Promise<void> {
 	const { sessionId } = req.params;
-	const { question, answer } = req.body as { question?: string; answer?: string };
-	if (!question || answer === undefined) {
-		res.status(400).json({ error: 'question and answer are required' });
+	const { question, answer } = req.body as { question?: unknown; answer?: unknown };
+	if (typeof question !== 'string' || !question || typeof answer !== 'string') {
+		res.status(400).json({ error: 'question and answer are required strings' });
+		return;
+	}
+	if (question.length > MAX_QUESTION_LENGTH || answer.length > MAX_ANSWER_LENGTH) {
+		res.status(400).json({
+			error: `question must be at most ${MAX_QUESTION_LENGTH} and answer at most ${MAX_ANSWER_LENGTH} characters`,
+		});
 		return;
 	}
 
@@ -82,6 +102,12 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 	}
 	if (session.status === 'completed') {
 		res.status(409).json({ error: 'Session is already complete - start a new one' });
+		return;
+	}
+	// Only the question the server issued may be answered; otherwise the endpoint would grade
+	// (and the model would answer) any text the client sends.
+	if (session.currentQuestion && session.currentQuestion !== question) {
+		res.status(400).json({ error: 'question does not match the current question of this session' });
 		return;
 	}
 
@@ -112,6 +138,7 @@ export async function submitAnswer(req: AuthedRequest, res: Response): Promise<v
 		correctAnswer: review.correctAnswer,
 		weakTopics: review.weakTopics,
 	});
+	session.currentQuestion = nextQuestion?.question;
 
 	if (isLastQuestion) {
 		const scored = session.questions.filter((q) => q.answer !== '');
