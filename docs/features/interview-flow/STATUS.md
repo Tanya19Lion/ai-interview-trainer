@@ -27,6 +27,15 @@ from the session, so a resumed session keeps its language even if the UI languag
 mid-JSON). Not verified against live Mongo; the new-session path in both languages was checked by
 hand against the live Anthropic API.
 
+**Input, question and limits (0.4.0, 2026-10-06):** `submitAnswer` requires string `question`/
+`answer` (≤ 1000 / ≤ 4000 characters, empty answer = skip) and, when the session has a
+`currentQuestion`, rejects a different `question` with 400. `currentQuestion` is set by
+`startSession`/`submitAnswer` and cleared on completion; `GET /active` returns it instead of
+generating one (only a pre-0.4.0 session gets one generated and saved). `POST /start` and
+`/:sessionId/answer` share a per-user limit of 40 per 15 minutes (429 `ai.rate_limited`), and `/start`
+deletes the user's older `in_progress` sessions. Question and answer are wrapped in `<question>`/
+`<answer>` tags in the prompts. Not verified against live Mongo or the live Anthropic API.
+
 **Fixed via code review (2026-09-16), uncommitted at time of writing:**
 - `submitAnswer` (`interview.controller.ts`) rejected an empty-string `answer` with 400, but the
   client's "skip" affordance (`AnswerForm`'s "Не знаю" button) submits `answer: ''` by convention
