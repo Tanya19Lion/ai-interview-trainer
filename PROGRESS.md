@@ -615,7 +615,10 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
    **Відкладено до T6** (`docs/features/forgot-password/tasks/route-request-reset.md`): перевірено, що
    `checkUnregisteredEmailRateLimit` і `issuePasswordReset` не викликає жоден маршрут (T6 «Not started»),
    тож у продакшні проблеми поки немає; переносити в Mongo варто разом із підключенням функції.
-   **Стан T0–T6 (2026-10-06):** T0 закрито — провайдер Resend через HTTP API, змінні `RESEND_API_KEY`
+   **Зроблено 2026-10-06 (T6, гілка `feat/password-reset-request-route`):** `Map` видалено, лічильник
+   у Mongo (`ResetRequestAttempt`, 3/год, рахується до пошуку користувача), запис у `data-model.md`.
+   Не перевірено на живому: реальна відправка листа через Resend. Далі: клієнт T9/T10.
+   **Стан T0–T6 (2026-10-06, до купівлі домену):** T0 закрито — провайдер Resend через HTTP API, змінні `RESEND_API_KEY`
    і `MAIL_FROM` (нотатка в `docs/features/forgot-password/tasks/spike-email-provider.md`). T5 і T6
    заблоковані: для відправки листів потрібен підтверджений домен відправника, а власного домену
    немає (`*.vercel.app` не підходить — DNS не наш). Розблокує купівля домену; тоді T5 → T6 разом із

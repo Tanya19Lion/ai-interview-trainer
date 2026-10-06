@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { changePassword, confirmPasswordReset, googleLogin, login, logout, me, refreshSession, register } from '../controllers/auth.controller.js';
+import { changePassword, confirmPasswordReset, googleLogin, login, logout, me, refreshSession, register, requestPasswordReset } from '../controllers/auth.controller.js';
 import { requireAuth } from '../middleware/auth.js';
 import { ipRateLimit, loginRateLimit } from '../middleware/rateLimit.js';
 
@@ -14,6 +14,7 @@ authRouter.post('/register', ipRateLimit('register', IP_ATTEMPTS_PER_WINDOW), re
 authRouter.post('/login', loginRateLimit, login);
 authRouter.post('/refresh', refreshSession);
 authRouter.post('/logout', logout);
+authRouter.post('/password-reset/request', requestPasswordReset);
 authRouter.post('/password-reset/confirm', confirmPasswordReset);
 authRouter.post('/change-password', requireAuth, changePassword);
 authRouter.get('/me', requireAuth, me);
