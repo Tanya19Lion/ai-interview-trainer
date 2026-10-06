@@ -2,16 +2,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeContext } from '../context/theme/ThemeContext';
 import i18n from '../i18n';
 
-vi.mock('../hooks/useFakeSubmit', () => ({
-	useFakeSubmit: () => ({ pending: false, run: (fn: () => void) => fn() }),
-}));
-
 const requestPasswordReset = vi.fn();
-vi.mock('../api/auth', () => ({ requestPasswordReset }));
+const confirmPasswordReset = vi.fn();
+vi.mock('../api/auth', () => ({ requestPasswordReset, confirmPasswordReset }));
 
 const { ResetPasswordPage } = await import('./ResetPasswordPage');
 const { ApiError } = await import('../api/client');
@@ -31,6 +28,10 @@ function renderPage(search = '', setTheme = vi.fn()) {
 }
 
 describe('ResetPasswordPage i18n', () => {
+	beforeEach(() => {
+		requestPasswordReset.mockReset();
+		confirmPasswordReset.mockReset();
+	});
 	afterEach(() => cleanup());
 
 	it('renders the request form in Ukrainian by default', () => {
@@ -116,6 +117,7 @@ describe('ResetPasswordPage i18n', () => {
 	it('walks the new-password flow in English, including the mismatch error', async () => {
 		const user = userEvent.setup();
 		await i18n.changeLanguage('en');
+		confirmPasswordReset.mockResolvedValue({ message: 'ok' });
 		renderPage('?token=abc');
 
 		expect(screen.getByRole('heading', { level: 1, name: 'New password' })).toBeInTheDocument();
@@ -123,12 +125,46 @@ describe('ResetPasswordPage i18n', () => {
 		await user.type(screen.getByLabelText('Confirm password'), 'password2');
 		await user.click(screen.getByRole('button', { name: 'Change password' }));
 		expect(screen.getByText("Passwords don't match")).toBeInTheDocument();
+		expect(confirmPasswordReset).not.toHaveBeenCalled();
 
 		await user.clear(screen.getByLabelText('Confirm password'));
 		await user.type(screen.getByLabelText('Confirm password'), 'password1');
 		await user.click(screen.getByRole('button', { name: 'Change password' }));
 
-		expect(screen.getByRole('heading', { level: 1, name: 'Password changed' })).toBeInTheDocument();
+		expect(await screen.findByRole('heading', { level: 1, name: 'Password changed' })).toBeInTheDocument();
+		expect(confirmPasswordReset).toHaveBeenCalledWith('abc', 'password1');
 		expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+	});
+
+	it('shows the expired-link screen with a way back to the request form on invalid_or_expired_token (AC-03)', async () => {
+		const user = userEvent.setup();
+		await i18n.changeLanguage('en');
+		confirmPasswordReset.mockRejectedValue(
+			new ApiError('This reset link is invalid or has expired.', 400, 'password_reset.invalid_or_expired_token'),
+		);
+		renderPage('?token=used');
+
+		await user.type(screen.getByLabelText('New password'), 'password1');
+		await user.type(screen.getByLabelText('Confirm password'), 'password1');
+		await user.click(screen.getByRole('button', { name: 'Change password' }));
+
+		expect(await screen.findByRole('heading', { level: 1, name: 'Link expired' })).toBeInTheDocument();
+		expect(screen.getByText('This reset link is invalid or has expired. Request a new one.')).toBeInTheDocument();
+		await user.click(screen.getByRole('link', { name: 'Request a new link' }));
+		expect(await screen.findByRole('heading', { level: 1, name: 'Forgot your password?' })).toBeInTheDocument();
+	});
+
+	it('keeps the form and shows a generic error on any other failure, such as a rejected password', async () => {
+		const user = userEvent.setup();
+		await i18n.changeLanguage('en');
+		confirmPasswordReset.mockRejectedValue(new ApiError('too short', 400, 'password_reset.invalid_request'));
+		renderPage('?token=abc');
+
+		await user.type(screen.getByLabelText('New password'), 'password1');
+		await user.type(screen.getByLabelText('Confirm password'), 'password1');
+		await user.click(screen.getByRole('button', { name: 'Change password' }));
+
+		expect(await screen.findByText('Something went wrong. Please try again.')).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 1, name: 'New password' })).toBeInTheDocument();
 	});
 });

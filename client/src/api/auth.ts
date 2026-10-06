@@ -45,6 +45,10 @@ export function requestPasswordReset(email: string): Promise<RequestPasswordRese
 	return apiFetch('/auth/password-reset/request', { method: 'POST', body: JSON.stringify({ email }) });
 }
 
+export function confirmPasswordReset(token: string, newPassword: string): Promise<{ message: string }> {
+	return apiFetch('/auth/password-reset/confirm', { method: 'POST', body: JSON.stringify({ token, newPassword }) });
+}
+
 export function refreshSession(): Promise<void> {
 	return apiFetch('/auth/refresh', { method: 'POST' });
 }

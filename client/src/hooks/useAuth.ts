@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+	confirmPasswordReset,
 	fetchMe,
 	googleLogin,
 	loginWithPassword,
@@ -60,6 +61,12 @@ export function useLoginWithPassword() {
 
 export function useRequestPasswordReset() {
 	return useMutation({ mutationFn: (email: string) => requestPasswordReset(email) });
+}
+
+export function useConfirmPasswordReset() {
+	return useMutation({
+		mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) => confirmPasswordReset(token, newPassword),
+	});
 }
 
 export function useLogout() {
