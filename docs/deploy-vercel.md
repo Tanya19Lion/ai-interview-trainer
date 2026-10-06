@@ -29,6 +29,8 @@
    | `VITE_GOOGLE_CLIENT_ID` | той самий client ID (клієнт, потрапляє у збірку) |
    | `JWT_SECRET` | довгий випадковий рядок |
    | `CLIENT_URL` | `https://<ваш-домен>.vercel.app` |
+   | `RESEND_API_KEY` | ключ Resend (Sending access), позначте Sensitive; без нього в production лист не відправляється і функція кидає помилку |
+   | `MAIL_FROM` | відправник на верифікованому в Resend домені, напр. `Interview Trainer <noreply@ai-interview-trainer.com>` |
 
    **Не задавайте `VITE_API_URL`:** без нього клієнт ходить на `/api` свого ж домену, і cookie
    працюють без CORS.
