@@ -32,7 +32,7 @@ ticket: "<TBD>"
 | T14 | Integration test: Google-account edge case (QG-3, AC-05) | Not started | Tanya19Lion | S | T6, T8 |
 | T15 | Integration test: wrong current password (QG-4, AC-04) | Not started | Tanya19Lion | XS | T8 |
 | T16 | E2E: happy-path reset flow (AC-01) | Not started | Tanya19Lion | S | T9, T10 |
-| T17 | Rate-limit POST /api/auth/password-reset/confirm | Not started | Tanya19Lion | XS | T7 |
+| T17 | Rate-limit POST /api/auth/password-reset/confirm | In review | Tanya19Lion | XS | T7 |
 
 ## Status legend
 
