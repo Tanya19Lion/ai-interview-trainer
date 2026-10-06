@@ -599,8 +599,9 @@ MongoDB. Логіку винесено в `src/services/loginAttempt.service.ts`
 2. **Ліміт на AI-ендпоінти** (`/start`, `/answer`, `GET /active`): кожен виклик платний, `GET /active`
    щоразу генерує питання. Потрібні per-user ліміт, обмеження числа `in_progress` сесій, кеш питання.
    Тепер, коли застосунок публічний, це найактуальніший пункт.
-3. **`PasswordReset.attemptsRemaining`**: мертве поле з бізнес-`default: 3` у схемі. Видалення — у два
-   деплої (перестати писати/читати → прибрати з схеми), кожен з окремим записом у Schema-change log.
+3. ~~**`PasswordReset.attemptsRemaining`**: мертве поле з бізнес-`default: 3` у схемі. Видалення — у два
+   деплої (перестати писати/читати → прибрати з схеми), кожен з окремим записом у Schema-change log.~~
+   Зроблено: фаза 1 — PR #42, фаза 2 — PR #43 (обидва записи є в `docs/data-model.md`).
 4. **`unregisteredEmailAttempts`** (`passwordReset.service.ts`): `Map` у пам'яті; на serverless кожен
    інстанс має свій лічильник і він необмежено росте. Перенести в Mongo (новий запис у `data-model.md`).
 5. **Ліміт входу лише по email** — цільове блокування чужої адреси лишається можливим (Amendment в ADR-0003).
