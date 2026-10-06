@@ -235,6 +235,20 @@ no existence outside its parent session. Documented under Entities below.
 - **Rollback:** re-add `attemptsRemaining: { type: Number }` to `PasswordReset.ts` and redeploy;
   no data change is needed since the field is optional and unused.
 
+### 2026-10-06 — add `InterviewSession.currentQuestion`
+
+- **Change:** new optional `currentQuestion: { type: String }` on `InterviewSession` — the question
+  the server issued and is waiting for an answer to. No `required`, no `default`. `startSession`
+  and `submitAnswer` set it (cleared when the session completes); `submitAnswer` rejects a
+  `question` that differs from it, and `getActiveSession` returns it instead of generating a new
+  one. A document without the field is a session created earlier: `submitAnswer` then accepts the
+  request's `question` as before, and `getActiveSession` generates one question and stores it.
+- **Backfill:** none needed — old `in_progress` sessions get the field lazily on their next
+  `GET /api/interview/active`. Completed sessions never need it.
+- **Rollback:** remove the field and the `currentQuestion` handling in `interview.controller.ts`,
+  then redeploy. Stored values are ignored once the field is gone; in-flight sessions fall back to
+  trusting the request's `question` and to regenerating on `GET /active`.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check

@@ -27,6 +27,9 @@ const interviewSessionSchema = new Schema(
 		// Мова ШІ-відповідей сесії. Optional: документи, створені до цієї зміни, її не мають — код
 		// читає це як 'uk'.
 		lang: { type: String, enum: LANGS },
+		// Питання, яке сервер видав і чекає відповіді. Optional: сесії, створені до цієї зміни, його не
+		// мають — submitAnswer тоді приймає питання з запиту, як раніше.
+		currentQuestion: { type: String },
 		questions: { type: [questionAttemptSchema], default: [] },
 		averageScore: { type: Number },
 		status: { type: String, enum: ['in_progress', 'completed'], default: 'in_progress' },

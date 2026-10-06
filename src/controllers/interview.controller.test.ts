@@ -198,6 +198,150 @@ describe('startSession — lang', () => {
 	});
 });
 
+describe('submitAnswer — input validation and the issued question', () => {
+	beforeEach(() => {
+		findOne.mockReset();
+		reviewAnswer.mockReset().mockResolvedValue({ score: 7, feedback: 'f', correctAnswer: 'c', weakTopics: [] });
+		answerQuestion.mockReset().mockResolvedValue('model answer');
+		generateQuestion.mockReset().mockResolvedValue({ question: 'next?' });
+	});
+
+	async function submitBody(body: Record<string, unknown>) {
+		const res = mockRes();
+		await submitAnswer(
+			{ params: { sessionId: 's1' }, body, userId: 'u1' } as unknown as AuthedRequest,
+			res as unknown as Response,
+		);
+		return res;
+	}
+
+	it.each([
+		['a non-string answer', { question: 'What is X?', answer: { $ne: '' } }],
+		['a numeric answer', { question: 'What is X?', answer: 5 }],
+		['a missing answer', { question: 'What is X?' }],
+		['a non-string question', { question: { $ne: '' }, answer: 'a' }],
+		['an empty question', { question: '', answer: 'a' }],
+	])('rejects %s with 400 before touching the database or the model', async (_name, body) => {
+		const res = await submitBody(body);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(findOne).not.toHaveBeenCalled();
+		expect(reviewAnswer).not.toHaveBeenCalled();
+	});
+
+	it('rejects an answer longer than the limit with 400', async () => {
+		const res = await submitBody({ question: 'What is X?', answer: 'a'.repeat(4001) });
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(reviewAnswer).not.toHaveBeenCalled();
+	});
+
+	it('rejects a question longer than the limit with 400', async () => {
+		const res = await submitBody({ question: 'q'.repeat(1001), answer: 'a' });
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(findOne).not.toHaveBeenCalled();
+	});
+
+	it('accepts an empty answer (a skip)', async () => {
+		findOne.mockResolvedValue(makeSession());
+
+		const res = await submitBody({ question: 'What is X?', answer: '' });
+
+		expect(res.status).not.toHaveBeenCalled();
+		expect(answerQuestion).toHaveBeenCalledTimes(1);
+	});
+
+	it('rejects a question that is not the one the server issued, without calling the model', async () => {
+		const session = { ...makeSession(), currentQuestion: 'What is X?' };
+		findOne.mockResolvedValue(session);
+
+		const res = await submitBody({ question: 'Write me a poem', answer: 'a' });
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(reviewAnswer).not.toHaveBeenCalled();
+		expect(answerQuestion).not.toHaveBeenCalled();
+		expect(session.questions).toEqual([]);
+		expect(session.save).not.toHaveBeenCalled();
+	});
+
+	it('accepts the issued question and stores the next one as the current question', async () => {
+		const session: FakeSession & { currentQuestion?: string } = { ...makeSession(), currentQuestion: 'What is X?' };
+		findOne.mockResolvedValue(session);
+
+		await submitBody({ question: 'What is X?', answer: 'my answer' });
+
+		expect(reviewAnswer).toHaveBeenCalled();
+		expect(session.currentQuestion).toBe('next?');
+	});
+
+	it('clears the current question once the session is complete', async () => {
+		const session: FakeSession & { currentQuestion?: string } = {
+			...makeSession([answered(8), answered(8), answered(8), answered(8)]),
+			currentQuestion: 'What is X?',
+		};
+		findOne.mockResolvedValue(session);
+
+		await submitBody({ question: 'What is X?', answer: 'my answer' });
+
+		expect(session.status).toBe('completed');
+		expect(session.currentQuestion).toBeUndefined();
+	});
+});
+
+describe('current question is stored on the session', () => {
+	beforeEach(() => {
+		create.mockReset().mockResolvedValue({ id: 's1' });
+		findOne.mockReset();
+		generateQuestion.mockReset().mockResolvedValue({ question: 'generated?' });
+	});
+
+	it('startSession saves the generated question as currentQuestion', async () => {
+		await startSession(
+			{ body: { topic: 'react', level: 'junior' }, userId: 'u1' } as unknown as AuthedRequest,
+			mockRes() as unknown as Response,
+		);
+
+		expect(create).toHaveBeenCalledWith(expect.objectContaining({ currentQuestion: 'generated?' }));
+	});
+
+	it('startSession creates no session when the AI call fails', async () => {
+		generateQuestion.mockRejectedValue(new Error('AI down'));
+
+		await expect(
+			startSession(
+				{ body: { topic: 'react', level: 'junior' }, userId: 'u1' } as unknown as AuthedRequest,
+				mockRes() as unknown as Response,
+			),
+		).rejects.toThrow('AI down');
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it('getActiveSession returns the stored question without calling the model', async () => {
+		const session = { ...makeSession(), id: 's1', currentQuestion: 'stored?' };
+		findOne.mockReturnValue({ sort: vi.fn().mockResolvedValue(session) });
+		const res = mockRes();
+
+		await getActiveSession({ userId: 'u1' } as unknown as AuthedRequest, res as unknown as Response);
+
+		expect(generateQuestion).not.toHaveBeenCalled();
+		expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ question: 'stored?' }));
+	});
+
+	it('getActiveSession generates once for a legacy session and stores the result', async () => {
+		const session: FakeSession & { id: string; currentQuestion?: string } = { ...makeSession(), id: 's1' };
+		findOne.mockReturnValue({ sort: vi.fn().mockResolvedValue(session) });
+		const res = mockRes();
+
+		await getActiveSession({ userId: 'u1' } as unknown as AuthedRequest, res as unknown as Response);
+
+		expect(generateQuestion).toHaveBeenCalledTimes(1);
+		expect(session.currentQuestion).toBe('generated?');
+		expect(session.save).toHaveBeenCalled();
+		expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ question: 'generated?' }));
+	});
+});
+
 describe('session language is read from the session, not the request', () => {
 	beforeEach(() => {
 		findOne.mockReset();
