@@ -28,20 +28,20 @@ describe('AnswerForm', () => {
 	it('shows no loading row while nothing is pending', () => {
 		renderForm();
 
-		expect(screen.queryByText(/AI reviewer/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/ШІ рецензент/)).not.toBeInTheDocument();
 	});
 
 	it('says the answer is being analysed while a normal answer is pending', () => {
 		renderForm({ pending: true });
 
-		expect(screen.getByText('AI reviewer аналізує відповідь…')).toBeInTheDocument();
+		expect(screen.getByText('ШІ рецензент аналізує відповідь…')).toBeInTheDocument();
 	});
 
 	it('says the model is preparing an answer (not analysing) while a skip is pending', () => {
 		renderForm({ pending: true, skipping: true });
 
-		expect(screen.getByText('AI reviewer готує відповідь на питання…')).toBeInTheDocument();
-		expect(screen.queryByText('AI reviewer аналізує відповідь…')).not.toBeInTheDocument();
+		expect(screen.getByText('ШІ рецензент готує відповідь на питання…')).toBeInTheDocument();
+		expect(screen.queryByText('ШІ рецензент аналізує відповідь…')).not.toBeInTheDocument();
 		// the check button keeps its label instead of showing a spinner for a skip
 		expect(screen.getByRole('button', { name: 'Перевірити відповідь →' })).toBeInTheDocument();
 	});
