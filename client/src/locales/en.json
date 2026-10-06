@@ -86,6 +86,7 @@
 	"theme.enableDark": "Switch to dark theme",
 	"lang.switchAria": "Switch language to {{lang}}",
 	"lang.overlayAria": "Language selection / Вибір мови",
+	"editorComment.who": "AI reviewer",
 	"common.loading": "Loading…",
 	"common.tagline": "diff — compare. fix. pass.",
 	"auth.checkingSession": "Checking your session…",

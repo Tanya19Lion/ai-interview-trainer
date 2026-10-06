@@ -86,6 +86,7 @@
 	"theme.enableDark": "Увімкнути темну тему",
 	"lang.switchAria": "Змінити мову на {{lang}}",
 	"lang.overlayAria": "Language selection / Вибір мови",
+	"editorComment.who": "ШІ рецензент",
 	"common.loading": "Завантаження…",
 	"common.tagline": "diff — порівняй. виправ. пройди.",
 	"auth.checkingSession": "Перевірка сесії…",

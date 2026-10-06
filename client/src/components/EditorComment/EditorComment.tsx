@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './EditorComment.module.css';
 
 export interface EditorCommentProps {
@@ -6,11 +7,11 @@ export interface EditorCommentProps {
 	children: ReactNode;
 }
 
-/** Жовтий callout-коментар AI reviewer всередині EditorWindow. */
-export function EditorComment({ who = 'AI reviewer', children }: EditorCommentProps) {
+export function EditorComment({ who, children }: EditorCommentProps) {
+	const { t } = useTranslation();
 	return (
 		<div className={styles.commentBlock}>
-			<span className={styles.who}>{who}</span>
+			<span className={styles.who}>{who ?? t('editorComment.who')}</span>
 			{children}
 		</div>
 	);
