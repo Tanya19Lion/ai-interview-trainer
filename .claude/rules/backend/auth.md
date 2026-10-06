@@ -25,7 +25,7 @@ paths:
 - **Rate limits**: `POST /login` takes an attempt from two counters (`loginRateLimit` →
   `reserveLoginAttempt(email, ip)`): 5 per 15 min per email+IP (`IpAttempt`, key
   `login:<email>|<ip>`, so someone else's failed logins don't lock the owner out) and a ceiling of
-  30 per email (`LoginAttempt`); a successful login gives both attempts back (ADR-0004); `POST /register`, `POST /google` and `POST /password-reset/request` are limited per IP
+  30 per email (`LoginAttempt`); a successful login gives both attempts back (ADR-0004); `POST /register`, `POST /google`, `POST /password-reset/request` and `POST /password-reset/confirm` are limited per IP
   (`ipRateLimit`, 10 per 15 min each, `IpAttempt` collection); the reset request also has a
   per-email counter (3 per hour, `ResetRequestAttempt`) that runs before the user lookup. Behind a reverse proxy `req.ip` is
   the proxy's address until Express's `trust proxy` is set, which would put every user in one bucket.

@@ -15,6 +15,6 @@ authRouter.post('/login', loginRateLimit, login);
 authRouter.post('/refresh', refreshSession);
 authRouter.post('/logout', logout);
 authRouter.post('/password-reset/request', ipRateLimit('password-reset', IP_ATTEMPTS_PER_WINDOW), requestPasswordReset);
-authRouter.post('/password-reset/confirm', confirmPasswordReset);
+authRouter.post('/password-reset/confirm', ipRateLimit('password-reset-confirm', IP_ATTEMPTS_PER_WINDOW), confirmPasswordReset);
 authRouter.post('/change-password', requireAuth, changePassword);
 authRouter.get('/me', requireAuth, me);
