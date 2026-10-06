@@ -18,7 +18,8 @@ function incrementAttempts(key: string) {
  * Counts one request against `key` for the current window and says whether it is still within
  * `maxAttempts`. Same shape as reserveLoginAttempt: the expired window is dropped here (Mongo's
  * TTL sweep only runs about once a minute) and the increment is a single atomic write. Nothing is
- * given back afterwards — every request counts, successful or not.
+ * given back unless the caller calls releaseIpAttempt — by default every request counts,
+ * successful or not.
  */
 export async function reserveIpAttempt(key: string, maxAttempts: number): Promise<boolean> {
 	await IpAttemptModel.deleteOne({ key, windowStart: { $lt: windowCutoff() } });
@@ -33,4 +34,9 @@ export async function reserveIpAttempt(key: string, maxAttempts: number): Promis
 	}
 
 	return attempt.count <= maxAttempts;
+}
+
+/** Gives back one attempt taken by reserveIpAttempt; never takes the count below zero. */
+export async function releaseIpAttempt(key: string): Promise<void> {
+	await IpAttemptModel.updateOne({ key, count: { $gt: 0 } }, { $inc: { count: -1 } });
 }

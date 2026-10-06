@@ -22,8 +22,10 @@ paths:
   `idToken` with a 400 before any Mongoose filter — a JSON object such as `{"$ne": ""}` would
   otherwise be read as a query operator. Keep a `typeof … === 'string'` guard on any new body field
   that reaches a query, and in `loginRateLimit` (which runs before the controller).
-- **Rate limits**: `POST /login` is limited per email (`loginRateLimit`, 5 per 15 min, a successful
-  login gives its attempt back); `POST /register` and `POST /google` are limited per IP
+- **Rate limits**: `POST /login` takes an attempt from two counters (`loginRateLimit` →
+  `reserveLoginAttempt(email, ip)`): 5 per 15 min per email+IP (`IpAttempt`, key
+  `login:<email>|<ip>`, so someone else's failed logins don't lock the owner out) and a ceiling of
+  30 per email (`LoginAttempt`); a successful login gives both attempts back (ADR-0004); `POST /register` and `POST /google` are limited per IP
   (`ipRateLimit`, 10 per 15 min each, `IpAttempt` collection). Behind a reverse proxy `req.ip` is
   the proxy's address until Express's `trust proxy` is set, which would put every user in one bucket.
 - `changePassword` bumps `tokenVersion` (revoking every session) and then re-signs this request's

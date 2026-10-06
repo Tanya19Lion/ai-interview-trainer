@@ -27,14 +27,14 @@ describe('loginRateLimit (unit, mocked loginAttempt.service)', () => {
 		vi.mocked(reserveLoginAttempt).mockReset();
 	});
 
-	it('reserves an attempt for the email and calls next() when one is available', async () => {
+	it('reserves an attempt for the email and address and calls next() when one is available', async () => {
 		vi.mocked(reserveLoginAttempt).mockResolvedValueOnce(true);
 		const res = makeRes();
 		const next = vi.fn() as NextFunction;
 
-		await loginRateLimit({ body: { email: 'jobseeker@example.test' } } as Request, res, next);
+		await loginRateLimit({ body: { email: 'jobseeker@example.test' }, ip: '203.0.113.7' } as Request, res, next);
 
-		expect(reserveLoginAttempt).toHaveBeenCalledWith('jobseeker@example.test');
+		expect(reserveLoginAttempt).toHaveBeenCalledWith('jobseeker@example.test', '203.0.113.7');
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.status).not.toHaveBeenCalled();
 	});
