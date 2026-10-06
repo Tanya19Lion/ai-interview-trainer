@@ -1,0 +1,30 @@
+.card {
+	max-width: 720px;
+	width: 100%;
+	text-align: left;
+}
+
+.intro {
+	margin-top: 0.9rem;
+	color: var(--text-soft);
+	font-size: 0.98rem;
+	line-height: 1.6;
+}
+
+.section {
+	margin-top: 1.8rem;
+}
+
+.sectionHeading {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--text-strong);
+	margin: 0 0 0.5rem 0;
+}
+
+.sectionBody {
+	color: var(--text-soft);
+	font-size: 0.95rem;
+	line-height: 1.65;
+	margin: 0;
+}

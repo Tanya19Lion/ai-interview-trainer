@@ -108,7 +108,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/session_start_progress.py",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_start_progress.py\"",
 						"timeout": 10
 					}
 				]
@@ -120,7 +120,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" .claude/hooks/block_sensitive_commit.py",
+						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_sensitive_commit.py\"",
 						"timeout": 10
 					}
 				]
