@@ -26,6 +26,13 @@ vi.mock('../services/loginAttempt.service.js', () => ({
 	releaseLoginAttempt: vi.fn(),
 }));
 
+const reserveIpAttempt = vi.fn();
+
+vi.mock('../services/ipAttempt.service.js', () => ({
+	reserveIpAttempt,
+	releaseIpAttempt: vi.fn(),
+}));
+
 const reserveResetRequest = vi.fn();
 const issuePasswordReset = vi.fn();
 const sendResetEmail = vi.fn();
@@ -65,6 +72,7 @@ describe('POST /api/auth/password-reset/request (T6)', () => {
 		users.clear();
 		users.set('user-1', { email: 'local@example.test', passwordHash: 'hash' });
 		users.set('user-2', { email: 'google@example.test', googleId: 'g-123' });
+		reserveIpAttempt.mockReset().mockResolvedValue(true);
 		reserveResetRequest.mockReset().mockResolvedValue({ allowed: true, attemptsRemaining: 2 });
 		issuePasswordReset.mockReset().mockResolvedValue({ status: 'issued', token: 'raw-token' });
 		sendResetEmail.mockReset().mockResolvedValue(undefined);
@@ -149,6 +157,18 @@ describe('POST /api/auth/password-reset/request (T6)', () => {
 		expect(await res.json()).toEqual({ message: GENERIC_MESSAGE, attemptsRemaining: 2 });
 		expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('raw-token');
 		errorSpy.mockRestore();
+	});
+
+	it('answers 429 when the address is over its own limit, before counting or looking up the email', async () => {
+		reserveIpAttempt.mockResolvedValue(false);
+
+		const res = await request({ email: 'local@example.test' });
+
+		expect(res.status).toBe(429);
+		expect(((await res.json()) as { code: string }).code).toBe('auth.rate_limited');
+		expect(reserveIpAttempt).toHaveBeenCalledWith(expect.stringMatching(/^password-reset:/), expect.any(Number));
+		expect(reserveResetRequest).not.toHaveBeenCalled();
+		expect(sendResetEmail).not.toHaveBeenCalled();
 	});
 
 	it.each([{}, { email: '' }, { email: 42 }, { email: { $ne: '' } }])('rejects a body without a string email: %j', async (body) => {
