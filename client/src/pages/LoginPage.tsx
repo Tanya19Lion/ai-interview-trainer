@@ -183,7 +183,7 @@ export function LoginPage() {
 					<p className={styles.finePrint}>
 						<Trans
 							i18nKey="login.terms"
-							components={{ terms: <a href="#" />, privacy: <a href="#" /> }}
+							components={{ terms: <Link to="/terms" />, privacy: <Link to="/privacy" /> }}
 						/>
 					</p>
 				</div>

@@ -7,8 +7,10 @@ import { InterviewSessionPage } from './pages/InterviewSessionPage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { NewSessionPage } from './pages/NewSessionPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { TermsPage } from './pages/TermsPage';
 
 export function AppRoutes() {
 	return (
@@ -16,6 +18,8 @@ export function AppRoutes() {
 			<Route path="/" element={<LandingPage />} />
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/reset-password" element={<ResetPasswordPage />} />
+			<Route path="/terms" element={<TermsPage />} />
+			<Route path="/privacy" element={<PrivacyPage />} />
 			<Route element={<ProtectedLayout />}>
 				<Route path="/home" element={<HomePage />} />
 				<Route path="/interview/new" element={<NewSessionPage />} />
