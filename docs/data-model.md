@@ -265,6 +265,17 @@ no existence outside its parent session. Documented under Entities below.
   `startSession`, redeploy. Optional: `db.ipattempts.deleteMany({ key: /^ai:/ })`. Sessions already
   deleted cannot be restored; they held only unfinished, unreachable answers.
 
+### 2026-10-06 — login limit keys: `IpAttempt` `login:<email>|<ip>`, `LoginAttempt` limit 5 → 30
+
+- **Change:** no structural change. Per [ADR-0004](adr/0004-login-rate-limit-email-and-ip.md) every
+  login takes an attempt from two counters: `IpAttempt` under `key = "login:<email>|<ip>"` (limit
+  5, the strict one) and `LoginAttempt` per email (the limit moves from 5 to 30, now a ceiling).
+  Both limits live in `loginAttempt.service.ts`, not the schema. A successful login gives back
+  both attempts.
+- **Backfill:** none needed. Existing `LoginAttempt` documents expire within 15 minutes.
+- **Rollback:** restore `MAX_ATTEMPTS_PER_EMAIL = 5` and the single-counter `reserveLoginAttempt` /
+  `releaseLoginAttempt(email)`, redeploy. Optional: `db.ipattempts.deleteMany({ key: /^login:/ })`.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check

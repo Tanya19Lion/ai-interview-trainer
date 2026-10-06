@@ -157,7 +157,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 	}
 
 	// loginRateLimit reserved an attempt before this check; a successful login gives it back.
-	await releaseLoginAttempt(email);
+	await releaseLoginAttempt(email, req.ip);
 	issueSession(res, user, rememberMe);
 }
 

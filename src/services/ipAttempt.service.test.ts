@@ -17,10 +17,14 @@ vi.mock('../models/IpAttempt.js', () => ({
 			const existing = store.get(filter.key);
 			if (existing && existing.windowStart < filter.windowStart.$lt) store.delete(filter.key);
 		}),
+		updateOne: vi.fn(async (filter: { key: string; count: { $gt: number } }) => {
+			const existing = store.get(filter.key);
+			if (existing && existing.count > filter.count.$gt) existing.count -= 1;
+		}),
 	},
 }));
 
-const { reserveIpAttempt } = await import('./ipAttempt.service.js');
+const { reserveIpAttempt, releaseIpAttempt } = await import('./ipAttempt.service.js');
 const { IpAttemptModel } = await import('../models/IpAttempt.js');
 
 const PAST_WINDOW_MS = 15 * 60 * 1000 + 1000;
@@ -66,3 +70,27 @@ describe('ipAttempt.service', () => {
 		await expect(reserveIpAttempt('register:203.0.113.7', 5)).rejects.toThrow('connection lost');
 	});
 });
+
+describe('releaseIpAttempt', () => {
+	beforeEach(() => {
+		store.clear();
+	});
+
+	it('gives back one attempt, so the slot can be used again', async () => {
+		await reserveIpAttempt('login:a@example.test|203.0.113.7', 1);
+
+		await releaseIpAttempt('login:a@example.test|203.0.113.7');
+
+		expect(await reserveIpAttempt('login:a@example.test|203.0.113.7', 1)).toBe(true);
+	});
+
+	it('never takes the count below zero, and ignores an unknown key', async () => {
+		await releaseIpAttempt('login:nobody@example.test|203.0.113.7');
+		await reserveIpAttempt('login:a@example.test|203.0.113.7', 5);
+		await releaseIpAttempt('login:a@example.test|203.0.113.7');
+		await releaseIpAttempt('login:a@example.test|203.0.113.7');
+
+		expect(store.get('login:a@example.test|203.0.113.7')?.count).toBe(0);
+	});
+});
+

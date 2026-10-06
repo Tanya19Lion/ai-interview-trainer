@@ -84,7 +84,8 @@ without changing the decision above (still a Mongo-backed counter with a TTL ind
 
 Known limit, unchanged: the limit is per email, so anyone can still trigger a lockout for a
 victim's email by sending failed logins for it. Closing that needs a different key (e.g. per IP or
-per email+IP) and would be a new ADR.
+per email+IP) and would be a new ADR. *(Done 2026-10-06 in [ADR-0004](../../../adr/0004-login-rate-limit-email-and-ip.md):
+the strict limit is now per email+IP and the per-email limit is a ceiling of 30.)*
 
 ## Links
 

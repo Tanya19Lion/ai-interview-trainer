@@ -11,7 +11,7 @@ export async function loginRateLimit(req: Request, res: Response, next: NextFunc
 		return;
 	}
 
-	if (!(await reserveLoginAttempt(email))) {
+	if (!(await reserveLoginAttempt(email, req.ip))) {
 		res.status(429).json({
 			code: 'auth.rate_limited',
 			message: 'Too many login attempts for this email. Try again later.',

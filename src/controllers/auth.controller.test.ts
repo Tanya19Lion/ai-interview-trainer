@@ -693,7 +693,7 @@ describe('login (integration, mounted on POST /api/auth/login) — rate-limit bo
 
 		expect(res.status).toBe(200);
 		expect(releaseLoginAttempt).toHaveBeenCalledTimes(1);
-		expect(releaseLoginAttempt).toHaveBeenCalledWith(email);
+		expect(releaseLoginAttempt).toHaveBeenCalledWith(email, expect.any(String));
 	});
 });
 
