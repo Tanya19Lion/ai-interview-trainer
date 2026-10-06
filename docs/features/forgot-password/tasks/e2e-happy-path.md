@@ -1,5 +1,5 @@
 ---
-status: Todo
+status: Dropped
 owner: "Tanya19Lion"
 reviewers: []
 updated_at: "2026-09-10"
