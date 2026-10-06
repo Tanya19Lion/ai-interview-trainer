@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import type { AuthedRequest } from './auth.js';
 import { reserveIpAttempt } from '../services/ipAttempt.service.js';
 import { reserveLoginAttempt } from '../services/loginAttempt.service.js';
 
@@ -19,6 +20,23 @@ export async function loginRateLimit(req: Request, res: Response, next: NextFunc
 	}
 
 	next();
+}
+
+/**
+ * Per-user throttle for the paid AI endpoints. Runs after requireAuth, so `req.userId` is the
+ * verified user. Routes sharing one returned middleware share one counter.
+ */
+export function userRateLimit(scope: string, maxAttempts: number) {
+	return async (req: AuthedRequest, res: Response, next: NextFunction): Promise<void> => {
+		if (!(await reserveIpAttempt(`${scope}:${req.userId}`, maxAttempts))) {
+			res.status(429).json({
+				code: 'ai.rate_limited',
+				message: 'Too many interview requests. Try again in a few minutes.',
+			});
+			return;
+		}
+		next();
+	};
 }
 
 /** Per-IP throttle for the endpoints that have no email-keyed limit of their own (register, Google). */

@@ -22,16 +22,17 @@ interface FakeSession {
 	save: ReturnType<typeof vi.fn>;
 }
 
-const { findOne, create, reviewAnswer, answerQuestion, generateQuestion } = vi.hoisted(() => ({
+const { findOne, create, deleteMany, reviewAnswer, answerQuestion, generateQuestion } = vi.hoisted(() => ({
 	findOne: vi.fn(),
 	create: vi.fn(),
+	deleteMany: vi.fn(),
 	reviewAnswer: vi.fn(),
 	answerQuestion: vi.fn(),
 	generateQuestion: vi.fn(),
 }));
 
 vi.mock('../models/InterviewSession.js', () => ({
-	InterviewSessionModel: { findOne, create },
+	InterviewSessionModel: { findOne, create, deleteMany },
 	TOPICS: ['react'],
 	LEVELS: ['junior'],
 	LANGS: ['uk', 'en'],
@@ -164,7 +165,8 @@ function mockRes() {
 
 describe('startSession — lang', () => {
 	beforeEach(() => {
-		create.mockReset().mockResolvedValue({ id: 's1' });
+		create.mockReset().mockResolvedValue({ id: 's1', _id: 'oid-1' });
+		deleteMany.mockReset().mockResolvedValue({ deletedCount: 0 });
 		generateQuestion.mockReset().mockResolvedValue({ question: 'first?' });
 	});
 
@@ -291,7 +293,8 @@ describe('submitAnswer — input validation and the issued question', () => {
 
 describe('current question is stored on the session', () => {
 	beforeEach(() => {
-		create.mockReset().mockResolvedValue({ id: 's1' });
+		create.mockReset().mockResolvedValue({ id: 's1', _id: 'oid-1' });
+		deleteMany.mockReset().mockResolvedValue({ deletedCount: 0 });
 		findOne.mockReset();
 		generateQuestion.mockReset().mockResolvedValue({ question: 'generated?' });
 	});
@@ -315,6 +318,17 @@ describe('current question is stored on the session', () => {
 			),
 		).rejects.toThrow('AI down');
 		expect(create).not.toHaveBeenCalled();
+		expect(deleteMany).not.toHaveBeenCalled();
+	});
+
+	it('startSession deletes only the in_progress sessions of this user that are older than the new one', async () => {
+		await startSession(
+			{ body: { topic: 'react', level: 'junior' }, userId: 'u1' } as unknown as AuthedRequest,
+			mockRes() as unknown as Response,
+		);
+
+		expect(deleteMany).toHaveBeenCalledWith({ userId: 'u1', status: 'in_progress', _id: { $lt: 'oid-1' } });
+		expect(create.mock.invocationCallOrder[0]).toBeLessThan(deleteMany.mock.invocationCallOrder[0]);
 	});
 
 	it('getActiveSession returns the stored question without calling the model', async () => {

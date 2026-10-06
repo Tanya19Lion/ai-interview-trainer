@@ -249,6 +249,22 @@ no existence outside its parent session. Documented under Entities below.
   then redeploy. Stored values are ignored once the field is gone; in-flight sessions fall back to
   trusting the request's `question` and to regenerating on `GET /active`.
 
+### 2026-10-06 — `IpAttempt.key` also holds per-user keys (`ai:<userId>`)
+
+- **Change:** no structural change. The per-user throttle on `POST /api/interview/start` and
+  `/:sessionId/answer` (`userRateLimit`, 40 requests per 15-minute window, the limit lives in
+  `interview.routes.ts`) stores its counter in `IpAttempt` under `key = "ai:<userId>"`, next to the
+  existing `"register:<ip>"` and `"google:<ip>"` keys. The name says IP, the collection is really a
+  keyed fixed-window counter; renaming it is not worth a migration.
+- **Behavior change recorded here:** `POST /api/interview/start` now deletes the user's older
+  `in_progress` `InterviewSession` documents after creating the new one (they were unreachable:
+  `GET /active` returns only the newest, history lists only completed).
+- **Backfill:** none needed. Old `in_progress` sessions are removed the next time their user starts
+  a session.
+- **Rollback:** remove `aiRateLimit` from the two routes and the `deleteMany` call in
+  `startSession`, redeploy. Optional: `db.ipattempts.deleteMany({ key: /^ai:/ })`. Sessions already
+  deleted cannot be restored; they held only unfinished, unreachable answers.
+
 ## Test fixtures
 
 No dedicated test-fixture factory module exists yet (`npm run test` runs `vitest` — check

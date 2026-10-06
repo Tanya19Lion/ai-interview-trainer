@@ -13,7 +13,7 @@ vi.mock('../services/ipAttempt.service.js', () => ({
 
 const { reserveLoginAttempt } = await import('../services/loginAttempt.service.js');
 const { reserveIpAttempt } = await import('../services/ipAttempt.service.js');
-const { loginRateLimit, ipRateLimit } = await import('./rateLimit.js');
+const { loginRateLimit, ipRateLimit, userRateLimit } = await import('./rateLimit.js');
 
 function makeRes() {
 	return {
@@ -157,5 +157,35 @@ describe('ipRateLimit (unit, mocked ipAttempt.service)', () => {
 		expect(next).not.toHaveBeenCalled();
 		expect(res.status).toHaveBeenCalledWith(429);
 		expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 'auth.rate_limited' }));
+	});
+});
+
+describe('userRateLimit (unit, mocked ipAttempt.service)', () => {
+	beforeEach(() => {
+		vi.mocked(reserveIpAttempt).mockReset();
+	});
+
+	it('counts the request against "<scope>:<userId>" with the given limit and calls next() when within it', async () => {
+		vi.mocked(reserveIpAttempt).mockResolvedValueOnce(true);
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await userRateLimit('ai', 40)({ userId: 'u1' } as unknown as Request, res, next);
+
+		expect(reserveIpAttempt).toHaveBeenCalledWith('ai:u1', 40);
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(res.status).not.toHaveBeenCalled();
+	});
+
+	it('rejects with 429 ai.rate_limited and does not call next() once the limit is exceeded', async () => {
+		vi.mocked(reserveIpAttempt).mockResolvedValueOnce(false);
+		const res = makeRes();
+		const next = vi.fn() as NextFunction;
+
+		await userRateLimit('ai', 40)({ userId: 'u1' } as unknown as Request, res, next);
+
+		expect(next).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(429);
+		expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 'ai.rate_limited' }));
 	});
 });

@@ -3,7 +3,8 @@ import { Schema, model, type InferSchemaType } from 'mongoose';
 export const IP_ATTEMPT_WINDOW_SECONDS = 900;
 
 const ipAttemptSchema = new Schema({
-	// "<scope>:<ip>", e.g. "register:203.0.113.7" — one document per scope and address.
+	// "<scope>:<ip>", e.g. "register:203.0.113.7" — one document per scope and address. The AI
+	// endpoints use "<scope>:<userId>" ("ai:<userId>") in the same collection.
 	key: { type: String, required: true, unique: true },
 	windowStart: { type: Date, required: true, default: Date.now },
 	count: { type: Number, required: true },
