@@ -34,12 +34,14 @@ vi.mock('../services/ipAttempt.service.js', () => ({
 }));
 
 const reserveResetRequest = vi.fn();
+const releaseResetRequest = vi.fn();
 const issuePasswordReset = vi.fn();
 const sendResetEmail = vi.fn();
 
 vi.mock('../services/passwordReset.service.js', () => ({
 	verifyAndConsumePasswordResetToken: vi.fn(),
 	reserveResetRequest,
+	releaseResetRequest,
 	issuePasswordReset,
 	sendResetEmail,
 }));
@@ -74,6 +76,7 @@ describe('POST /api/auth/password-reset/request (T6)', () => {
 		users.set('user-2', { email: 'google@example.test', googleId: 'g-123' });
 		reserveIpAttempt.mockReset().mockResolvedValue(true);
 		reserveResetRequest.mockReset().mockResolvedValue({ allowed: true, attemptsRemaining: 2 });
+		releaseResetRequest.mockReset().mockResolvedValue(undefined);
 		issuePasswordReset.mockReset().mockResolvedValue({ status: 'issued', token: 'raw-token' });
 		sendResetEmail.mockReset().mockResolvedValue(undefined);
 	});
@@ -157,6 +160,24 @@ describe('POST /api/auth/password-reset/request (T6)', () => {
 		expect(await res.json()).toEqual({ message: GENERIC_MESSAGE, attemptsRemaining: 2 });
 		expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('raw-token');
 		errorSpy.mockRestore();
+	});
+
+	it('gives the attempt back when sending fails, so our failure does not use up the hour', async () => {
+		sendResetEmail.mockRejectedValue(new Error('Resend responded with 422'));
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		await request({ email: 'local@example.test' });
+
+		expect(releaseResetRequest).toHaveBeenCalledWith('local@example.test');
+		errorSpy.mockRestore();
+	});
+
+	it('keeps the attempt when the email was sent, and when the issuing limit stopped it', async () => {
+		await request({ email: 'local@example.test' });
+		issuePasswordReset.mockResolvedValue({ status: 'rate_limited', attemptsRemaining: 0 });
+		await request({ email: 'local@example.test' });
+
+		expect(releaseResetRequest).not.toHaveBeenCalled();
 	});
 
 	it('answers 429 when the address is over its own limit, before counting or looking up the email', async () => {

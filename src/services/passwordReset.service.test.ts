@@ -64,6 +64,10 @@ vi.mock('../models/ResetRequestAttempt.js', () => ({
 			attempt.count += 1;
 			return attempt;
 		}),
+		updateOne: vi.fn(async (filter: { email: string; count: { $gt: number } }) => {
+			const attempt = attempts.find((a) => a.email === filter.email && a.count > filter.count.$gt);
+			if (attempt) attempt.count -= 1;
+		}),
 	},
 }));
 
@@ -71,6 +75,7 @@ const {
 	issuePasswordReset,
 	verifyAndConsumePasswordResetToken,
 	reserveResetRequest,
+	releaseResetRequest,
 	sendResetEmail,
 } = await import('./passwordReset.service.js');
 
@@ -264,6 +269,24 @@ describe('passwordReset.service — reserveResetRequest (T6, AC-02: one counter 
 
 		expect(await reserveResetRequest(email)).toEqual({ allowed: true, attemptsRemaining: 2 });
 	});
+
+	it('gives an attempt back on release, so a failed delivery does not use up the hour', async () => {
+		const email = 'release@example.test';
+		for (let i = 0; i < 3; i++) await reserveResetRequest(email);
+
+		await releaseResetRequest(email);
+
+		expect(await reserveResetRequest(email)).toEqual({ allowed: true, attemptsRemaining: 0 });
+	});
+
+	it('never takes the count below zero on release, and matches the email case-insensitively', async () => {
+		await releaseResetRequest('Nobody@Example.test');
+		await reserveResetRequest('nobody@example.test');
+		await releaseResetRequest('NOBODY@example.test');
+		await releaseResetRequest('nobody@example.test');
+
+		expect(attempts[0].count).toBe(0);
+	});
 });
 
 describe('passwordReset.service — sendResetEmail (T5)', () => {
@@ -300,9 +323,27 @@ describe('passwordReset.service — sendResetEmail (T5)', () => {
 
 	it('throws when Resend answers with a non-2xx status', async () => {
 		vi.stubEnv('RESEND_API_KEY', 're_test_key');
-		fetchMock.mockResolvedValue({ ok: false, status: 403 });
+		fetchMock.mockResolvedValue({ ok: false, status: 403, text: async () => '' });
 
 		await expect(sendResetEmail('user@example.test', 'abc123')).rejects.toThrow(/403/);
+	});
+
+	it('puts the body of a Resend error into the thrown message, so the cause shows up in the logs', async () => {
+		vi.stubEnv('RESEND_API_KEY', 're_test_key');
+		fetchMock.mockResolvedValue({
+			ok: false,
+			status: 422,
+			text: async () => '{"name":"validation_error","message":"Invalid `from` field."}',
+		});
+
+		await expect(sendResetEmail('user@example.test', 'abc123')).rejects.toThrow(/422.*Invalid `from` field/);
+	});
+
+	it('never puts the reset token into the thrown message', async () => {
+		vi.stubEnv('RESEND_API_KEY', 're_test_key');
+		fetchMock.mockResolvedValue({ ok: false, status: 500, text: async () => 'upstream failure' });
+
+		await expect(sendResetEmail('user@example.test', 'abc123')).rejects.not.toThrow(/abc123/);
 	});
 
 	it('throws in production when RESEND_API_KEY is missing, without calling Resend or logging the token', async () => {
