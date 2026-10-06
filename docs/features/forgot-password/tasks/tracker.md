@@ -26,7 +26,7 @@ ticket: "<TBD>"
 | T8 | POST /api/auth/change-password | In review | Tanya19Lion | S | T4 |
 | T9 | Client: forgot-password request form | Verified | Tanya19Lion | S | T6 |
 | T10 | Client: reset-confirm page | Verified | Tanya19Lion | S | T7 |
-| T11 | Client: change-password form (profile) | Not started | Tanya19Lion | S | T8 |
+| T11 | Client: change-password form (profile) | Dropped | Tanya19Lion | S | T8 |
 | T12 | Unit tests: token issue/consume/rate-limit (QG-1) | Not started | Tanya19Lion | S | T3 |
 | T13 | Integration test: session invalidation (QG-2, AC-06) | Not started | Tanya19Lion | S | T4, T7, T8 |
 | T14 | Integration test: Google-account edge case (QG-3, AC-05) | Not started | Tanya19Lion | S | T6, T8 |
@@ -36,4 +36,6 @@ ticket: "<TBD>"
 
 ## Status legend
 
-`Not started` → `In progress` → `In review` → `Merged` → `Verified` (or `Blocked` with a note).
+`Not started` → `In progress` → `In review` → `Merged` → `Verified` (or `Blocked` / `Dropped` with a note).
+
+**T11 dropped (2026-10-06):** the owner decided the reset flow (request link → set a new password) is enough for v1, so no change-password screen in the profile. The backend `POST /api/auth/change-password` (T8) stays; T13/T14/T15 test it through the API and do not depend on T11. Reopen T11 if a profile screen is wanted later.
