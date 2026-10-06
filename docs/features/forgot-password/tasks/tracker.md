@@ -28,7 +28,7 @@ ticket: "<TBD>"
 | T10 | Client: reset-confirm page | Verified | Tanya19Lion | S | T7 |
 | T11 | Client: change-password form (profile) | Dropped | Tanya19Lion | S | T8 |
 | T12 | Unit tests: token issue/consume/rate-limit (QG-1) | Not started | Tanya19Lion | S | T3 |
-| T13 | Integration test: session invalidation (QG-2, AC-06) | Not started | Tanya19Lion | S | T4, T7, T8 |
+| T13 | Integration test: session invalidation (QG-2, AC-06) | In review | Tanya19Lion | S | T4, T7, T8 |
 | T14 | Integration test: Google-account edge case (QG-3, AC-05) | Not started | Tanya19Lion | S | T6, T8 |
 | T15 | Integration test: wrong current password (QG-4, AC-04) | Not started | Tanya19Lion | XS | T8 |
 | T16 | E2E: happy-path reset flow (AC-01) | Not started | Tanya19Lion | S | T9, T10 |
