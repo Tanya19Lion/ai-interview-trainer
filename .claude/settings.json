@@ -122,6 +122,11 @@
 						"type": "command",
 						"command": "PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; \"$PY\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_sensitive_commit.py\"",
 						"timeout": 10
+					},
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-main-push.sh\"",
+						"timeout": 10
 					}
 				]
 			}
