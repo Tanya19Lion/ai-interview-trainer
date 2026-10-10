@@ -17,6 +17,7 @@ import {
 
 const PASSWORD_MIN_LENGTH = 8;
 const BCRYPT_SALT_ROUNDS = 10;
+const DUPLICATE_KEY_ERROR_CODE = 11000;
 
 let oauthClient: OAuth2Client | undefined;
 
@@ -144,7 +145,16 @@ export async function register(req: Request, res: Response): Promise<void> {
 	}
 
 	const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-	const user = await UserModel.create({ email, name, passwordHash });
+	let user;
+	try {
+		user = await UserModel.create({ email, name, passwordHash });
+	} catch (error) {
+		// The findOne check above is racy: two concurrent signups for the same email can both pass
+		// it before either create() resolves. The loser hits the unique index on `email` here.
+		if ((error as { code?: number }).code !== DUPLICATE_KEY_ERROR_CODE) throw error;
+		res.status(409).json({ error: 'email is already registered' });
+		return;
+	}
 
 	issueSession(res, user, rememberMe);
 }

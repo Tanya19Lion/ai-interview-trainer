@@ -13,6 +13,7 @@ const users = new Map<string, { tokenVersion?: number; passwordHash?: string }>(
 vi.mock('../models/User.js', () => ({
 	UserModel: {
 		findOne: vi.fn(),
+		create: vi.fn(),
 		findById: vi.fn(async (id: string) => {
 			const user = users.get(id);
 			return user ? { id, ...user } : null;
@@ -753,5 +754,59 @@ describe('login / register reject non-string credentials before touching Mongo',
 
 		expect(res.status).toBe(400);
 		expect(UserModel.findOne).not.toHaveBeenCalled();
+	});
+});
+
+// The findOne existence check in register() is non-atomic: two concurrent signups for the same
+// email can both pass it before either create() resolves. The loser must still get the documented
+// 409, not a raw Mongo duplicate-key error surfacing as a 500.
+describe('register (integration, mounted on POST /api/auth/register) — concurrent-signup race', () => {
+	let server: ReturnType<express.Express['listen']>;
+	let baseUrl: string;
+
+	function post(body: unknown) {
+		return fetch(`${baseUrl}/api/auth/register`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+	}
+
+	beforeEach(async () => {
+		process.env.JWT_SECRET = 'test-secret';
+		vi.mocked(UserModel.findOne).mockReset();
+		vi.mocked(UserModel.create).mockReset();
+
+		const app = express();
+		app.use(express.json());
+		app.post('/api/auth/register', register);
+
+		server = app.listen(0);
+		await new Promise<void>((resolve) => server.once('listening', resolve));
+		const { port } = server.address() as AddressInfo;
+		baseUrl = `http://127.0.0.1:${port}`;
+	});
+
+	afterEach(async () => {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+	});
+
+	it('findOne sees no existing user, but create() loses the race on the unique index → 409, not 500', async () => {
+		vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
+		vi.mocked(UserModel.create).mockRejectedValueOnce({ code: 11000 });
+
+		const res = await post({ email: 'jobseeker@example.test', password: 'long-enough-1', name: 'Test User' });
+
+		expect(res.status).toBe(409);
+		await expect(res.json()).resolves.toEqual({ error: 'email is already registered' });
+	});
+
+	it('a non-duplicate-key error from create() is not swallowed as a 409', async () => {
+		vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
+		vi.mocked(UserModel.create).mockRejectedValueOnce(new Error('connection lost'));
+
+		const res = await post({ email: 'jobseeker@example.test', password: 'long-enough-1', name: 'Test User' });
+
+		expect(res.status).toBe(500);
 	});
 });
