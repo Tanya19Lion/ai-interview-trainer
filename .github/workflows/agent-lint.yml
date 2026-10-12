@@ -1,0 +1,20 @@
+name: agent-lint
+on:
+  pull_request:
+    paths: ['.claude/agents/**']
+  push:
+    branches: ['main']
+    paths: ['.claude/agents/**']
+
+# Deterministic gate: tools: frontmatter in .claude/agents/*.md must match the
+# contract checked by the promptfoo lint graders (lint_agent.py, lint_agents_multi.py)
+# — but without running the full (token-costing) agent eval. Blocking: a mismatch
+# fails the job.
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/scripts/check-agent-lint.py
