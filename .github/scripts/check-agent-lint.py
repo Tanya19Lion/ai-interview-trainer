@@ -11,6 +11,8 @@ Prints a report to stdout. Exit 0 = all agents match their contract, 1 = drift
 """
 
 import glob
+import os
+import subprocess
 import sys
 
 CONTRACT = {
@@ -33,8 +35,31 @@ def tools(agent_md):
     return {t.strip() for t in fm.get("tools", "").split(",") if t.strip()}
 
 
+def changed_under_agents():
+    """True/False if we can tell .claude/agents/ changed vs BASE_SHA, else None
+    (unknown — e.g. no BASE_SHA, or BASE_SHA is the all-zero "new branch" sentinel
+    push events use). None means: don't skip, run the full check.
+    """
+    base_sha = os.environ.get("BASE_SHA", "")
+    if not base_sha or base_sha == "0" * 40:
+        return None
+    try:
+        out = subprocess.run(
+            ["git", "diff", "--name-only", f"{base_sha}...HEAD"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    except subprocess.CalledProcessError:
+        return None
+    return any(line.startswith(".claude/agents/") for line in out.splitlines())
+
+
 def main():
     import pathlib
+
+    changed = changed_under_agents()
+    if changed is False:
+        print("No changes under .claude/agents/ vs BASE_SHA — skipping tools-contract check.")
+        return 0
 
     mismatches = []
     unknown = []
