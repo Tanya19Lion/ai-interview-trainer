@@ -1,7 +1,7 @@
 ---
 name: readonly-reviewer
 description: Read-only code reviewer для ai-interview-trainer. Перевіряє передані йому файли (список змінених файлів, напр. `git diff --name-only`, передає викликач — сам git запускати не може) на дотримання правила шарів routes → controllers → services → models, правил `.claude/rules/migrations.md` і синхронності client/server типів. Нічого не змінює — тільки звіт із file:line. Використовуй після завершення групи задач або перед відкриттям PR.
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit
 ---
 
