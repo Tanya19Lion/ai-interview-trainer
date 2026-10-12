@@ -40,7 +40,9 @@ jobs:
           NEXT_VERSION: ${{ steps.semver.outputs.next }}
           CURRENT_VERSION: ${{ steps.semver.outputs.current }}
         run: |
-          comment="$(claude -p "$(cat .github/prompts/version.md)" \
+          prompt="$(printf 'NEXT_VERSION=%s\nCURRENT_VERSION=%s\n\n%s' \
+            "$NEXT_VERSION" "$CURRENT_VERSION" "$(cat .github/prompts/version.md)")"
+          comment="$(claude -p "$prompt" \
             --allowed-tools "Bash(git log *)" \
             --model claude-haiku-4-5 \
             --max-turns 12)"

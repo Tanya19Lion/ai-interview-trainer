@@ -55,7 +55,9 @@ jobs:
         run: |
           # The deterministic detector already found the gap. The agent only
           # writes the human-facing comment (which route, which spec entry).
-          comment="$(claude -p "$(cat .github/prompts/docs-drift.md)" \
+          prompt="$(printf 'DRIFT_REPORT:\n%s\n\n%s' \
+            "$DRIFT_REPORT" "$(cat .github/prompts/docs-drift.md)")"
+          comment="$(claude -p "$prompt" \
             --allowed-tools "Read(src/**)" "Read(docs/features/**)" \
             --model claude-haiku-4-5 \
             --max-turns 4)"

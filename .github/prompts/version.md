@@ -1,12 +1,13 @@
 You are drafting a short pull-request comment that explains the next version
 this change would release. The deterministic script has already computed the
-number — it is in the `NEXT_VERSION` environment variable (e.g. `0.2.0`), and
-the current released version is in `CURRENT_VERSION` (e.g. `0.1.0`).
+number — `NEXT_VERSION` and `CURRENT_VERSION` are given above this prompt
+(e.g. `NEXT_VERSION=0.2.0`, `CURRENT_VERSION=0.1.0`).
 
 ## Workflow
 
-1. Read `NEXT_VERSION` and `CURRENT_VERSION`. The number is decided by the rule
-   in `.github/scripts/next-version.sh` — do not recompute it; explain it.
+1. Use the `NEXT_VERSION` and `CURRENT_VERSION` values given above. The number
+   is decided by the rule in `.github/scripts/next-version.sh` — do not
+   recompute it; explain it.
 2. Run `git log <last-tag>..HEAD --oneline` and identify the strongest change
    that drove the bump: a `BREAKING CHANGE` → MAJOR, a `feat:` → MINOR, only
    `fix:` → PATCH.
