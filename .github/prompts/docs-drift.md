@@ -1,14 +1,14 @@
 You are drafting a short, friendly pull-request comment about API documentation
-drift. The deterministic detector has already run — its output is in the
-`DRIFT_REPORT` environment variable. It lists the Express routes found in
+drift. The deterministic detector has already run — its `DRIFT_REPORT` output
+is given above this prompt. It lists the Express routes found in
 `src/routes/*.routes.ts` (with the `/api/...` prefix from `src/index.ts`), the
 operations documented in `docs/features/*/openapi.yaml` (or
 `docs/features/*/contracts/openapi.yaml`), and the gap in each direction.
 
 ## Workflow
 
-1. Read `DRIFT_REPORT`. It is the source of truth — do not invent routes or
-   re-derive the gap yourself.
+1. Use the `DRIFT_REPORT` given above. It is the source of truth — do not
+   invent routes or re-derive the gap yourself.
 2. For each route that is **in the code but missing from the OpenAPI specs**,
    open the matching `src/routes/*.routes.ts` and its controller in
    `src/controllers/`, read the handler, and write a minimal OpenAPI path entry
