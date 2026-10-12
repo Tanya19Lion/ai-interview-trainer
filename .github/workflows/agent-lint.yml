@@ -1,15 +1,18 @@
 name: agent-lint
 on:
   pull_request:
-    paths: ['.claude/agents/**']
   push:
     branches: ['main']
-    paths: ['.claude/agents/**']
 
 # Deterministic gate: tools: frontmatter in .claude/agents/*.md must match the
 # contract checked by the promptfoo lint graders (lint_agent.py, lint_agents_multi.py)
 # — but without running the full (token-costing) agent eval. Blocking: a mismatch
 # fails the job.
+#
+# No `paths:` filter: this job is a required status check, and a required check
+# tied to a path filter never reports on PRs that don't touch that path, leaving
+# them stuck waiting forever. check-agent-lint.py does its own cheap diff-based
+# early exit instead, so the job always runs and always reports.
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -17,4 +20,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - run: python3 .github/scripts/check-agent-lint.py
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
