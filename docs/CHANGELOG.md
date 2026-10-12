@@ -6,6 +6,29 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-12
+
+### Added
+
+- Terms of Use and Privacy Policy pages (`/terms` and `/privacy`), linked from the login page's fine print, in Ukrainian and English
+- Open Graph meta tags and a generated 1200×630 preview image on the landing page, so links shared in chat apps and social media show a title, description and image
+- Three new Claude Code agents for this repo's own workflow: `architecture-advisor`, `domain-sync-keeper` and `readonly-reviewer`
+- A promptfoo-based eval suite (`promptfoo/`) that runs headless Claude Code sessions against this repo's agents, hooks and skills in disposable sandboxes, asserting on actual environment state (git history, live HTTP responses, transcripts) instead of response text alone
+- CI: a blocking `agent-lint` check compares each `.claude/agents/*.md`'s `tools:` frontmatter against a checked-in contract, catching an agent granted — or missing — a tool without running the full, token-costing eval
+
+### Fixed
+
+- `POST /api/auth/register` returned a raw 500 instead of the documented 409 when two signups for the same email raced each other past the existence check; the loser now gets 409 `email is already registered`
+- The `block-main-push.sh` safety hook was documented in `CLAUDE.md` but never wired into Claude Code's `PreToolUse` hooks, so it never actually ran
+- Leftover English "AI" strings in the Ukrainian locale now read "ШІ", including the "AI reviewer" label, which was hardcoded in English and now follows the active UI language like the rest of the interface
+- CI: `agent-lint` no longer depends on a `paths:` trigger filter, which could leave unrelated pull requests waiting forever for a required status that would never arrive; the check itself now skips cheaply when a diff doesn't touch `.claude/agents/`
+- CI: the version-preview and docs-drift comments now receive their computed values (`NEXT_VERSION`, `CURRENT_VERSION`, `DRIFT_REPORT`) directly in the prompt text instead of through a shell environment variable the model had no tool permission to read
+- CI: ESLint no longer lints promptfoo's fixture files, which are plain CommonJS sandbox inputs for eval cases, not application source
+
+### Documentation
+
+- `PROGRESS.md` records the findings and fixes from the promptfoo eval suite's first end-to-end run
+
 ## [0.5.0] - 2026-10-06
 
 ### Added
