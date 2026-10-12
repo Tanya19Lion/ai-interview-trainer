@@ -39,7 +39,7 @@ def main():
     mismatches = []
     unknown = []
     seen = set()
-    for path in sorted(glob.glob(".claude/agents/*.md")):
+    for path in sorted(glob.glob(".claude/agents/**/*.md", recursive=True)):
         agent = pathlib.Path(path).stem
         seen.add(agent)
         if agent not in CONTRACT:
