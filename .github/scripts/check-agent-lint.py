@@ -37,11 +37,15 @@ def main():
     import pathlib
 
     mismatches = []
+    unknown = []
     seen = set()
-    for path in sorted(glob.glob(".claude/agents/*.md")):
+    for path in sorted(glob.glob(".claude/agents/**/*.md", recursive=True)):
         agent = pathlib.Path(path).stem
         seen.add(agent)
         if agent not in CONTRACT:
+            # Fail closed: a new agent file with no CONTRACT entry must not pass
+            # silently — whoever adds it has to add its tools contract here too.
+            unknown.append(agent)
             continue
         actual = tools(pathlib.Path(path))
         expected = CONTRACT[agent]
@@ -53,12 +57,14 @@ def main():
     print(f"Agents checked: {len(seen & set(CONTRACT))}/{len(CONTRACT)}")
     for agent, actual, expected in mismatches:
         print(f"  - {agent}: tools {sorted(actual)} != контракт {sorted(expected)}")
+    for agent in unknown:
+        print(f"  - {agent}: немає запису в CONTRACT — додай контракт tools у check-agent-lint.py")
     for agent in missing:
         print(f"  - {agent}: .claude/agents/{agent}.md відсутній")
-    if not mismatches and not missing:
+    if not mismatches and not unknown and not missing:
         print("  (all agents match their tools contract)")
 
-    return 1 if (mismatches or missing) else 0
+    return 1 if (mismatches or unknown or missing) else 0
 
 
 if __name__ == "__main__":
