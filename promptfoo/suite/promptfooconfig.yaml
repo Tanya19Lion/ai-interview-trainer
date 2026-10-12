@@ -28,8 +28,8 @@ tracing:
       enabled: true
       port: 4318
 
-# Агентні прогони не ділять стан: по одному за раз (два route-тести працюють
-# в одному workdir-route, паралельний прогін дав би гонку).
+# Агентні прогони не ділять стан: по одному за раз (route-auth працює
+# в workdir-route, паралельний прогін дав би гонку).
 evaluateOptions:
   maxConcurrency: 1
 
@@ -52,7 +52,7 @@ tests:
   - description: 'route-auth: /private захищено, агент сам це довів, підсумок згадує 401'
     provider:
       id: anthropic:claude-agent-sdk
-      config: &sdk
+      config:
         model: claude-sonnet-5
         working_dir: ./workdir-route
         append_allowed_tools: ['Write', 'Edit', 'MultiEdit', 'Bash']
@@ -66,7 +66,7 @@ tests:
           OTEL_EXPORTER_OTLP_ENDPOINT: 'http://127.0.0.1:4318'
           OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf'
     vars:
-      task: &route-task |
+      task: |
         У робочій директорії лежить маленький Node-сервіс (server.js, чистий
         вбудований http). Зараз роут /private відкритий для всіх.
 
