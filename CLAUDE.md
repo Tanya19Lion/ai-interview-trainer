@@ -97,3 +97,10 @@ firewall policy, not for ordinary feature work.
 - PR title - in commit format: `type(area): description`.
 - PR body: sections "What changed"; "Why"; "How to check"; "Related issues" with the next line `Closes #<issue>`.
 - We open a new PR as `--draft` until the work is completed.
+
+## Team etiquette (Agent Teams)
+- The task plan is file-disjoint: every task owns its file set, the sets never overlap.
+- Each package has exactly one owner; commit only the files of your own package.
+- Agree on cross-package contracts (e.g. event formats) directly via SendMessage - never guess.
+- Run `node --test` before closing a task; the TaskCompleted hook re-checks and keeps
+  the task open while any test is red.
