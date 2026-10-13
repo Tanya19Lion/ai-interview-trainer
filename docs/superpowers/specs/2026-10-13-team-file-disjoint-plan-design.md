@@ -71,14 +71,21 @@ Every task's `description` must contain exactly one fenced JSON block:
 ```json
 {
   "owner": "backend|client|docs",
+  "subject": "short summary",
+  "description": "details",
   "files": ["src/...", "client/src/..."],
   "requires_contract": false,
-  "contract_path": null
+  "contract_path": null,
+  "blockedBy": ["<task_id>", "..."]
 }
 ```
 
 A task description without a valid block, or with `owner` outside the fixed set, is
 rejected at `TaskCreated` — this is the "garbage task" filter.
+
+`blockedBy` lists the task ids this task must wait on. There is no manually-maintained
+`blocks` array — it is the ledger's computed inverse of every other task's `blockedBy`, so
+the two can never drift out of sync.
 
 ### 3. Ledger (`.claude/hooks/team-state/<team_name>/ledger.json`)
 
@@ -89,13 +96,20 @@ Written and read only by our own hooks (never Claude's internal task files):
   "tasks": {
     "<task_id>": {
       "owner": "backend",
+      "subject": "...",
+      "description": "...",
       "files": ["..."],
       "teammate_name": "...",
-      "status": "open|done"
+      "status": "pending|in_progress|completed",
+      "blockedBy": ["<task_id>", "..."],
+      "blocks": ["<task_id>", "..."]
     }
   }
 }
 ```
+
+`blocks` is recomputed by every hook write (never read from the JSON block) by scanning all
+other entries' `blockedBy` for this task's id.
 
 ### 4. Hooks (Python, `python3`/`python` fallback — matches the existing
 `PY=python3; command -v python3 >/dev/null 2>&1 || PY=python` pattern already used for
@@ -104,9 +118,23 @@ Written and read only by our own hooks (never Claude's internal task files):
 **`.claude/hooks/team/task_created.py`**
 - Parses the JSON block from `task_description`.
 - Rejects (exit 2) if: block missing/invalid, `owner` not in `{backend, client, docs}`,
-  any file in `files` overlaps with the `files` of any ledger entry with `status: open`, or
-  (`requires_contract: true` and `contract_path` file does not exist or is empty).
-- Otherwise appends `{task_id: {..., status: "open"}}` to the ledger and exits 0.
+  any id in `blockedBy` does not exist in the ledger, any file in `files` overlaps with the
+  `files` of another ledger entry with `status` in `{pending, in_progress}` **unless** that
+  entry's id is listed in this task's `blockedBy`, or (`requires_contract: true` and
+  `contract_path` file does not exist or is empty).
+- Otherwise appends `{task_id: {..., status: "pending", blocks: [...]}}` to the ledger
+  (recomputing every entry's `blocks` field) and exits 0.
+
+**`.claude/hooks/team/task_update_sync.py`** (`PostToolUse`, matcher `TaskUpdate` — not a
+team-hook event, a regular tool hook)
+- Only acts when the tool call's target status is `in_progress`; ignores calls targeting
+  `pending` or `completed` (the latter is owned exclusively by `task_completed.py` below, to
+  avoid two hooks racing to write the same transition).
+- Rejects (exit 2) if the task's `blockedBy` contains any id whose ledger status is not yet
+  `completed` — stderr: `"Blocked by <ids> — wait until they're completed."` The block lifts
+  automatically once every `blockedBy` entry reaches `completed` (i.e. the set of
+  *unresolved* blockers is empty); nothing needs to be removed from the array itself.
+- Otherwise updates the ledger entry's `status` to `in_progress` and exits 0.
 
 **`.claude/hooks/team/task_completed.py`**
 
@@ -124,18 +152,28 @@ Two gate steps, both must pass:
      has a new dated Schema-change log entry (grep for today's date + "Rollback")
    - always, regardless of owner: run the existing `check_enums.py` enum-drift check
    - Any failure → exit 2, stderr: `"Tests are red: <first lines of failure output>"` (or
-     the specific lint/enum/migration error). Ledger entry stays `status: open`; the same
-     teammate gets the feedback and naturally retries on their next `TaskComplete` call —
-     no extra retry bookkeeping needed.
+     the specific lint/enum/migration error). Ledger entry stays at its current status; the
+     same teammate gets the feedback and naturally retries on their next `TaskComplete` call
+     — no extra retry bookkeeping needed.
 
-Only when both steps pass does the ledger entry flip to `status: done`.
+Only when both steps pass does the ledger entry flip to `status: completed`.
 
 **`.claude/hooks/team/teammate_idle.py`**
 - Looks up ledger entries where `teammate_name` matches stdin's `teammate_name` and
-  `status == "open"`.
+  `status` is `pending` or `in_progress`.
 - Any match → exit 2, stderr: `"You still have an open task <task_id> — finish it before
   going idle."`
 - No match → exit 0.
+
+**Open question, deliberately deferred:** when a `task_completed.py` run flips a task to
+`completed` and that unblocks others (its `blocks` list), should the teammate be made to
+notify the owners via `SendMessage`? Research confirmed `TaskCompleted`'s exit-0 path has no
+documented channel that reaches the completing agent (`additionalContext` is not listed for
+this event, `systemMessage` reaches only the user). The only mechanism available within
+documented behavior is a forced-retry nudge: exit 2 once with an instruction to send the
+messages and call `TaskComplete` again, tracked via a `notify_pending` ledger flag so it
+only nags once — trust-based, not a delivery guarantee. Not decided yet; revisit before
+implementing notification. Until then, `blocks` exists for plan readability only.
 
 ### 5. Contract negotiation (direct, not via the lead)
 
@@ -149,9 +187,13 @@ negotiation strictly peer-to-peer instead of lead-mediated.
 
 ### 6. Settings wiring
 
-Three new keys under `"hooks"` in `.claude/settings.json`: `TaskCreated`, `TaskCompleted`,
-`TeammateIdle`. None carries a `"matcher"` (not supported for these events — silently
-ignored if present, so it is simply omitted). Each uses the same
+Four new keys under `"hooks"` in `.claude/settings.json`:
+- `TaskCreated`, `TaskCompleted`, `TeammateIdle` — no `"matcher"` (not supported for these
+  events — silently ignored if present, so it is simply omitted).
+- `PostToolUse` — add an entry with `"matcher": "TaskUpdate"` pointing at
+  `task_update_sync.py`, alongside the existing `Bash`-matched entry already in the file.
+
+Each uses the same
 `PY=python3; command -v python3 >/dev/null 2>&1 || PY=python; "$PY" "$CLAUDE_PROJECT_DIR/.claude/hooks/team/<script>.py"`
 invocation already established for `SessionStart`.
 
