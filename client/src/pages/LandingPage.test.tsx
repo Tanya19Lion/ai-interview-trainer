@@ -21,6 +21,7 @@ function renderPage() {
 			</ThemeContext.Provider>
 		</QueryClientProvider>,
 	);
+	return queryClient;
 }
 
 describe('LandingPage auth-aware CTA', () => {
@@ -45,5 +46,23 @@ describe('LandingPage auth-aware CTA', () => {
 		expect(links).toHaveLength(2);
 		for (const link of links) expect(link).toHaveAttribute('href', '/home');
 		expect(screen.queryByRole('link', { name: 'Увійти' })).not.toBeInTheDocument();
+	});
+
+	it('switches back to "log in" once the session ends, not stuck on stale data', async () => {
+		// react-query keeps the last successful `data` around after a failed refetch instead of
+		// clearing it — this reproduces a logout: an authenticated visitor whose session then ends
+		// (the same way useLogout's queryClient.invalidateQueries(['me']) triggers a refetch) must
+		// not keep showing "Dashboard" off the stale cached user.
+		vi.mocked(fetchMe).mockResolvedValue({
+			user: { id: 'u1', email: 'tanya@example.test', name: 'Tanya' },
+		});
+		const queryClient = renderPage();
+		await screen.findAllByRole('link', { name: 'Кабінет' });
+
+		vi.mocked(fetchMe).mockRejectedValue(new ApiError('not authenticated', 401));
+		await queryClient.invalidateQueries({ queryKey: ['me'] });
+
+		expect(await screen.findByRole('link', { name: 'Увійти' })).toHaveAttribute('href', '/login');
+		expect(screen.queryByRole('link', { name: 'Кабінет' })).not.toBeInTheDocument();
 	});
 });
