@@ -36,9 +36,11 @@ export function LoginPage() {
 	const [mode, setMode] = useState<Mode>('signin');
 	const [signinEmail, setSigninEmail] = useState('');
 	const [signinPassword, setSigninPassword] = useState('');
+	const [signinRememberMe, setSigninRememberMe] = useState(false);
 	const [signupName, setSignupName] = useState('');
 	const [signupEmail, setSignupEmail] = useState('');
 	const [signupPassword, setSignupPassword] = useState('');
+	const [signupRememberMe, setSignupRememberMe] = useState(false);
 
 	const googleLogin = useGoogleLogin();
 	const login = useLoginWithPassword();
@@ -47,7 +49,7 @@ export function LoginPage() {
 	function handleSignin(event: SubmitEvent) {
 		event.preventDefault();
 		login.mutate(
-			{ email: signinEmail, password: signinPassword },
+			{ email: signinEmail, password: signinPassword, rememberMe: signinRememberMe },
 			{ onSuccess: () => navigate(redirectTo, { replace: true }) },
 		);
 	}
@@ -55,7 +57,7 @@ export function LoginPage() {
 	function handleSignup(event: SubmitEvent) {
 		event.preventDefault();
 		register.mutate(
-			{ email: signupEmail, password: signupPassword, name: signupName },
+			{ email: signupEmail, password: signupPassword, name: signupName, rememberMe: signupRememberMe },
 			{ onSuccess: () => navigate(redirectTo, { replace: true }) },
 		);
 	}
@@ -128,6 +130,14 @@ export function LoginPage() {
 								value={signinPassword}
 								onChange={setSigninPassword}
 							/>
+							<label className={styles.checkboxRow}>
+								<input
+									type="checkbox"
+									checked={signinRememberMe}
+									onChange={(event) => setSigninRememberMe(event.target.checked)}
+								/>
+								{t('login.rememberMe')}
+							</label>
 							<Button type="submit" variant="primary" size="lg" disabled={login.isPending}>
 								{login.isPending ? t('login.signingIn') : t('auth.signIn')}
 							</Button>
@@ -161,6 +171,14 @@ export function LoginPage() {
 								value={signupPassword}
 								onChange={setSignupPassword}
 							/>
+							<label className={styles.checkboxRow}>
+								<input
+									type="checkbox"
+									checked={signupRememberMe}
+									onChange={(event) => setSignupRememberMe(event.target.checked)}
+								/>
+								{t('login.rememberMe')}
+							</label>
 							<Button type="submit" variant="primary" size="lg" disabled={register.isPending}>
 								{register.isPending ? t('login.creating') : t('login.create')}
 							</Button>

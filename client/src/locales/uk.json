@@ -110,6 +110,7 @@
 	"login.scopeNote": "# доступ лише до email та імені — жодного Gmail чи Диску",
 	"login.or": "або",
 	"login.forgot": "Забули пароль?",
+	"login.rememberMe": "Запам'ятати мене",
 	"login.signingIn": "Входимо…",
 	"login.name": "Ім'я",
 	"login.namePlaceholder": "Таня",
