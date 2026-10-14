@@ -87,6 +87,19 @@
 	text-align: left;
 }
 
+.checkboxRow {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.88rem;
+	color: var(--text-soft);
+	cursor: pointer;
+}
+
+.checkboxRow input[type='checkbox'] {
+	accent-color: var(--amber);
+}
+
 .error {
 	margin: 0.6rem 0 0 0;
 	color: var(--rust);

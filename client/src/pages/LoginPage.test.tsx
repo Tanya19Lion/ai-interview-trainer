@@ -85,3 +85,52 @@ describe('LoginPage i18n', () => {
 		expect(screen.getByText('Already have an account?')).toBeInTheDocument();
 	});
 });
+
+describe('LoginPage remember-me checkbox', () => {
+	afterEach(() => cleanup());
+
+	it('is unchecked by default on the sign-in form and sends rememberMe: true when toggled', async () => {
+		const user = userEvent.setup();
+		await i18n.changeLanguage('en');
+		renderPage();
+
+		const checkbox = screen.getByRole('checkbox', { name: 'Remember me' });
+		expect(checkbox).not.toBeChecked();
+
+		await user.click(checkbox);
+		expect(checkbox).toBeChecked();
+
+		await user.type(screen.getByLabelText('Email'), 'tanya@example.test');
+		await user.type(screen.getByLabelText('Password'), 'super-secret');
+		await user.click(screen.getByRole('button', { name: 'Sign in' }));
+
+		expect(idle.mutate).toHaveBeenCalledWith(
+			expect.objectContaining({ rememberMe: true }),
+			expect.anything(),
+		);
+	});
+
+	it('is unchecked by default on the sign-up form and sends rememberMe: true when toggled', async () => {
+		const user = userEvent.setup();
+		await i18n.changeLanguage('en');
+		renderPage();
+
+		await user.click(screen.getAllByText('Sign up')[0]);
+
+		const checkbox = screen.getByRole('checkbox', { name: 'Remember me' });
+		expect(checkbox).not.toBeChecked();
+
+		await user.click(checkbox);
+		expect(checkbox).toBeChecked();
+
+		await user.type(screen.getByLabelText('Name'), 'Tanya');
+		await user.type(screen.getByLabelText('Email'), 'tanya@example.test');
+		await user.type(screen.getByLabelText('Password'), 'super-secret');
+		await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+		expect(idle.mutate).toHaveBeenCalledWith(
+			expect.objectContaining({ rememberMe: true }),
+			expect.anything(),
+		);
+	});
+});

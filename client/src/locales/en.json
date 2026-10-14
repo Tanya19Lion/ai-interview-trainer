@@ -110,6 +110,7 @@
 	"login.scopeNote": "# access to your email and name only — no Gmail or Drive",
 	"login.or": "or",
 	"login.forgot": "Forgot password?",
+	"login.rememberMe": "Remember me",
 	"login.signingIn": "Signing in…",
 	"login.name": "Name",
 	"login.namePlaceholder": "Tanya",
