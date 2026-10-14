@@ -15,11 +15,27 @@ def commands_for(description):
     return UNIT + (E2E if E2E_LINE.search(description or "") else [])
 
 
+def kill_tree(proc):
+    # Убити лише npm.cmd/npm замало: node і vitest лишаються живими й тримають pipe відкритим.
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
+    else:
+        os.killpg(proc.pid, 9)
+
+
 def run(cmd, timeout):
     # shutil.which знаходить npm.cmd на Windows, де subprocess без shell не бачить "npm"
-    r = subprocess.run([shutil.which(cmd[0]) or cmd[0], *cmd[1:]], cwd=ROOT, timeout=timeout,
-                       capture_output=True, text=True, encoding="utf-8", errors="replace")
-    return r.returncode, r.stdout + r.stderr
+    proc = subprocess.Popen([shutil.which(cmd[0]) or cmd[0], *cmd[1:]], cwd=ROOT,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                            encoding="utf-8", errors="replace", start_new_session=os.name != "nt")
+    try:
+        output, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # Без другого communicate(): subprocess.run робить його без таймауту й на Windows висить.
+        kill_tree(proc)
+        proc.wait(timeout=10)  # чекає на процес, не на pipe — не висне
+        raise
+    return proc.returncode, output
 
 
 def block(message):

@@ -1,4 +1,4 @@
-import io, json, subprocess, sys, unittest
+import io, json, subprocess, sys, time, unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -37,6 +37,14 @@ class Main(unittest.TestCase):
         def runner(cmd, timeout):
             raise FileNotFoundError("npm")
         self.assertEqual(hook.main(runner, stdin(None)), 2)
+
+    def test_run_times_out_even_when_a_grandchild_holds_the_pipe(self):
+        # Справжній процес, що запускає "онука" — так поводиться npm -> node -> vitest.
+        child = "import subprocess, sys, time; subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); time.sleep(60)"
+        start = time.monotonic()
+        with self.assertRaises(subprocess.TimeoutExpired):
+            hook.run((sys.executable, "-c", child), timeout=2)
+        self.assertLess(time.monotonic() - start, 20)
 
     def test_timeout_blocks(self):
         def runner(cmd, timeout):
