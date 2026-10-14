@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: Verified
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-10-14"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -41,6 +41,10 @@ T1, T2, T3, T5.
 
 ## DoD
 
-- [ ] PR merged.
-- [ ] All four scenario groups above have a passing test.
-- [ ] `npm run test` (Vitest) green.
+- [x] No PR needed — audited 2026-10-14 and all four scenario groups were already covered by
+      code already merged to `main` (`src/middleware/auth.test.ts`,
+      `src/controllers/auth.controller.test.ts`, `src/services/loginAttempt.service.test.ts`,
+      `src/middleware/rateLimit.test.ts`), including QG-3's assertion that `jwt.verify` is never
+      called with a client-suppliable clock option.
+- [x] All four scenario groups above have a passing test.
+- [x] `npm run test` (Vitest) green — 194/194.

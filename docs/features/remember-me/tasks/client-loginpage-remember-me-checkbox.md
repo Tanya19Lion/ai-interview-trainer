@@ -1,8 +1,8 @@
 ---
-status: Todo
+status: In review
 owner: "Tanya19Lion"
 reviewers: []
-updated_at: "2026-09-10"
+updated_at: "2026-10-14"
 feature_size: S
 stage: "08"
 ticket: "<TBD>"
@@ -32,17 +32,24 @@ T8.
 
 ## DoD
 
-- [ ] PR merged.
-- [ ] Checkbox renders, unchecked by default, label stays simple (PRD §2: duration is
+- [x] PR opened (draft) — not yet merged.
+- [x] Checkbox renders, unchecked by default, label stays simple (PRD §2: duration is
       communicated only when it matters, at expiry — not advertised upfront as "7 days").
-- [ ] Checked state reaches the network request as `rememberMe: true` (verified via dev tools or
-      a component test).
-- [ ] `tsc -b` + `oxlint` pass in `client/`.
+- [x] Checked state reaches the network request as `rememberMe: true` (verified via a component
+      test, `client/src/pages/LoginPage.test.tsx`).
+- [x] `tsc -b` + `oxlint` pass in `client/`.
 - [ ] Manual browser check folded into T11's live-Mongo verification pass, not skipped.
 
 ## Out of scope
 
-- `useAuth.ts` mutation signatures (T8 already extends the request bodies).
+- `useAuth.ts` mutation signatures (T8 already extends the request bodies). **Known gap found
+  2026-10-14**: `useGoogleLogin`'s mutationFn drops a second arg, so `rememberMe` never reaches
+  `POST /api/auth/google` even though the checkbox is wired for email/password — flagged in
+  `tracker.md`, needs a product decision before it becomes a task.
 - Silent renewal UX (T9).
-- i18n — `LoginPage` is not currently i18n-aware (`useTranslation()` only wired on `LandingPage`,
-  per `.claude/rules/frontend/overview.md`); match the page's existing hardcoded-text convention.
+
+## Correction (2026-10-14)
+
+The "i18n — not currently i18n-aware" note above was stale: `LoginPage.tsx` already uses
+`useTranslation()`/`t()` throughout. The checkbox label uses the same convention (`login.rememberMe`
+key in `client/src/locales/{en,uk}.json`).
