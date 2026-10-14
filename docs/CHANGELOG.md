@@ -6,6 +6,30 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-14
+
+### Added
+
+- "Remember me" checkbox on the login page's sign-in and sign-up forms, unchecked by default,
+  wired through to the already-existing `rememberMe` session option on both auth calls
+- E2E coverage (`client/e2e/remember-me.spec.ts`) for both checkbox branches across a simulated
+  browser restart
+- The public landing page (`/`) now shows a "Dashboard" CTA instead of "Log in" for an already
+  authenticated visitor
+
+### Fixed
+
+- The landing page's auth-aware CTA kept showing "Dashboard" after logout instead of switching
+  back to "Log in" — it read react-query's cached `data`, which keeps the last successful value
+  around after a failed refetch instead of clearing it; now gated on `isSuccess` like the
+  existing `RequireAuth` check
+
+### Known issue
+
+- Signing in with Google does not currently honor "remember me" — `useGoogleLogin` doesn't forward
+  the flag to the server, so a Google session always behaves as if unchecked. Tracked in
+  `docs/features/remember-me/tasks/tracker.md`, pending a product decision.
+
 ## [0.6.0] - 2026-10-12
 
 ### Added
