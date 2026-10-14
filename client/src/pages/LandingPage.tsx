@@ -22,7 +22,7 @@ import { TOPIC_LABEL } from '../lib/topicLabel';
 import styles from './LandingPage.module.css';
 
 const NAV_LINKS: { anchor: string; key: string }[] = [
-	{ anchor: '#features', key: 'nav.features' },
+	{ anchor: '#top', key: 'nav.features' },
 	{ anchor: '#how', key: 'nav.how' },
 	{ anchor: '#review', key: 'nav.review' },
 	{ anchor: '#progress', key: 'nav.progress' },
@@ -227,7 +227,7 @@ export function LandingPage() {
 				<section className={styles.section} id="how">
 					<Reveal className={styles.sectionHead}>
 						<Eyebrow>{t('how.eyebrow')}</Eyebrow>
-						<h2 id="features" className={styles.sectionH2}>
+						<h2 className={styles.sectionH2}>
 							{t('how.h2')}
 						</h2>
 						<p className={styles.sectionP}>{t('how.p')}</p>

@@ -3,6 +3,10 @@
 	color: var(--text-strong);
 }
 
+#top {
+	scroll-margin-top: 100px;
+}
+
 /* ---------- NAV ---------- */
 .nav {
 	position: sticky;
@@ -208,6 +212,7 @@
 	padding-inline: var(--space-4);
 	padding-block: var(--space-7);
 	border-top: 1px solid var(--line-soft);
+	scroll-margin-top: 100px;
 }
 .sectionHead {
 	max-width: 640px;
