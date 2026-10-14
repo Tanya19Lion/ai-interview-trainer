@@ -102,5 +102,8 @@ firewall policy, not for ordinary feature work.
 - The task plan is file-disjoint: every task owns its file set, the sets never overlap.
 - Each package has exactly one owner; commit only the files of your own package.
 - Agree on cross-package contracts (e.g. event formats) directly via SendMessage - never guess.
-- Run `node --test` before closing a task; the TaskCompleted hook re-checks and keeps
-  the task open while any test is red.
+- Run your package's tests before closing a task: `npm test` (server, repo root),
+  `npm --prefix client test` (client), `npm --prefix client run test:e2e` (e2e).
+- Put a `package: server|client|e2e` line in every task description. The TaskCompleted hook
+  (`.claude/hooks/task_completed.py`) re-runs that package's tests and keeps the task open
+  while any test is red; without the line it runs both server and client unit tests.
