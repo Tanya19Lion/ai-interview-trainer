@@ -70,8 +70,12 @@ export function LandingPage() {
 	// Silent, best-effort check — a logged-out visitor's 401 is expected and handled by react-query
 	// (retry: false), not a page-breaking error. Lets an already-authenticated visitor who lands here
 	// (e.g. a fresh tab opening to "/") get a "Dashboard" CTA instead of being offered to log in again.
-	const { data: me } = useMe();
-	const isAuthed = Boolean(me?.user);
+	// Gated on isSuccess (not just `data`): react-query keeps the last successful `data` around
+	// after a failed refetch (e.g. a 401 right after logout) instead of clearing it, so checking
+	// `data` alone would still show "Dashboard" for a session that just ended — see RequireAuth.tsx
+	// for the same isError-over-data pattern.
+	const me = useMe();
+	const isAuthed = me.isSuccess && Boolean(me.data?.user);
 	const [navOpen, setNavOpen] = useState(false);
 	const [demoTopic, setDemoTopic] = useState<Topic>('react');
 	const [demoLevel, setDemoLevel] = useState<Level>('middle');
