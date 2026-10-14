@@ -2,7 +2,7 @@
  * Дизайн-токени — єдине джерело істини для кольорів, типографіки,
  * відступів і радіусів. Зведено з трьох HTML-макетів (landing, login,
  * app-screens), дрейф між ними усунено: повний набір містить усе,
- * що використовувалось хоч в одному макеті (--plum-soft, --space-7).
+ * що використовувалось хоч в одному макеті (--plum-soft, --space-6).
  *
  * Брейкпоінти НЕ винесені сюди як CSS-змінні: @media не може приймати
  * var() як умову. Використовуються рядкові значення (640/700/760/860/960/1100px)
@@ -71,7 +71,6 @@
 	--space-4: 2rem;
 	--space-5: 3rem;
 	--space-6: 4.5rem;
-	--space-7: 6.5rem;
 
 	/* ---------- радіуси ---------- */
 	--radius-s: 4px;
@@ -97,7 +96,7 @@
 	/* Same hue/lightness as the original cream, saturation cut ~55% — a calmer neutral "stone"
 	   paper tone instead of a golden/sandy one (design pass, 2026-10-14). */
 	--canvas: #f8f7f4;
-	--canvas-2: #ebe8e0;
+	--canvas-2: #f3f1eb;
 	--canvas-3: #e1ddd4;
 	--line: rgba(35, 38, 47, 0.1);
 	--nav-bg: rgba(248, 247, 244, 0.88);

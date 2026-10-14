@@ -210,9 +210,14 @@
 	max-width: var(--container);
 	margin-inline: auto;
 	padding-inline: var(--space-4);
-	padding-block: var(--space-7);
+	padding-block: var(--space-6);
 	border-top: 1px solid var(--line-soft);
-	scroll-margin-top: 100px;
+	scroll-margin-top: 50px;
+}
+@media (max-width: 900px) {
+	.section {
+		padding-block: var(--space-5);
+	}
 }
 .sectionHead {
 	max-width: 640px;
@@ -324,6 +329,12 @@
 	border-radius: var(--radius-m);
 	padding: var(--space-4);
 }
+@media (max-width: 700px) {
+	.pickerCard {
+		padding: var(--space-3);
+	}
+}
+
 .pickerH3 {
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
@@ -413,6 +424,13 @@
 	border-radius: var(--radius-m);
 	padding: var(--space-4);
 }
+@media (max-width: 700px) {
+	.heatmapCard,
+	.levelLegendCard {
+		padding: var(--space-3);
+	}
+}
+
 .heatmapHead {
 	display: flex;
 	justify-content: space-between;
@@ -492,6 +510,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	gap: 1rem;
 	padding: 0.85rem 0;
 	border-bottom: 1px solid var(--line);
 	font-family: var(--font-mono);
@@ -509,6 +528,7 @@
 }
 .statNeg {
 	color: var(--rust-text);
+	text-align: right;
 }
 
 .levelRow {
