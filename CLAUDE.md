@@ -104,6 +104,6 @@ firewall policy, not for ordinary feature work.
 - Agree on cross-package contracts (e.g. event formats) directly via SendMessage - never guess.
 - Run your package's tests before closing a task: `npm test` (server, repo root),
   `npm --prefix client test` (client), `npm --prefix client run test:e2e` (e2e).
-- Put a `package: server|client|e2e` line in every task description. The TaskCompleted hook
-  (`.claude/hooks/task_completed.py`) re-runs that package's tests and keeps the task open
-  while any test is red; without the line it runs both server and client unit tests.
+- The TaskCompleted hook (`.claude/hooks/task_completed.py`) always re-runs the server and
+  client unit tests and keeps the task open while any test is red, or when the check itself
+  fails. Put a `package: e2e` line in the task description to add the e2e suite on top.
