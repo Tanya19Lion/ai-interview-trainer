@@ -57,6 +57,9 @@
 	.twoCol {
 		grid-template-columns: 1fr;
 	}
+	.card {
+		padding: var(--space-3);
+	}
 }
 
 .barRow {
