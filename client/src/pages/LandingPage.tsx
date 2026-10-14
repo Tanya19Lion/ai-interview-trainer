@@ -15,6 +15,7 @@ import {
 	ThemeToggle,
 } from '../components';
 import { buttonClassName } from '../components/Button/buttonClassName';
+import { useMe } from '../hooks/useAuth';
 import { LEVELS, TOPICS, type Level, type Topic } from '../types/interview';
 import { LEVEL_LABEL } from '../lib/levelLabel';
 import { TOPIC_LABEL } from '../lib/topicLabel';
@@ -66,6 +67,11 @@ function seededHeatLevels(seed: number, count: number): number[] {
 export function LandingPage() {
 	const { t } = useTranslation();
 	const location = useLocation();
+	// Silent, best-effort check — a logged-out visitor's 401 is expected and handled by react-query
+	// (retry: false), not a page-breaking error. Lets an already-authenticated visitor who lands here
+	// (e.g. a fresh tab opening to "/") get a "Dashboard" CTA instead of being offered to log in again.
+	const { data: me } = useMe();
+	const isAuthed = Boolean(me?.user);
 	const [navOpen, setNavOpen] = useState(false);
 	const [demoTopic, setDemoTopic] = useState<Topic>('react');
 	const [demoLevel, setDemoLevel] = useState<Level>('middle');
@@ -133,8 +139,12 @@ export function LandingPage() {
 						</button>
 						<LangToggle />
 						<ThemeToggle />
-						<Link to="/login" state={location.state} className={buttonClassName({ variant: 'primary' })}>
-							{t('nav.login')}
+						<Link
+							to={isAuthed ? '/home' : '/login'}
+							state={isAuthed ? undefined : location.state}
+							className={buttonClassName({ variant: 'primary' })}
+						>
+							{isAuthed ? t('shell.nav.home') : t('nav.login')}
 						</Link>
 						{/* <a href="#cta" className={buttonClassName({ variant: 'primary' })}>
 							{t('nav.cta')}
@@ -159,11 +169,11 @@ export function LandingPage() {
 							<p className={styles.heroSub}>{t('hero.sub')}</p>
 							<div className={styles.heroCta}>
 								<Link
-									to="/login"
-									state={location.state}
+									to={isAuthed ? '/home' : '/login'}
+									state={isAuthed ? undefined : location.state}
 									className={buttonClassName({ variant: 'primary', size: 'lg' })}
 								>
-									{t('hero.ctaPrimary')}
+									{isAuthed ? t('shell.nav.home') : t('hero.ctaPrimary')}
 								</Link>
 								<a href="#review" className={buttonClassName({ variant: 'ghost', size: 'lg' })}>
 									{t('hero.ctaSecondary')}
