@@ -1,4 +1,4 @@
-import { test, expect, type Browser, type Cookie, type Route } from '@playwright/test';
+import { test, expect, type Browser, type BrowserContext, type Cookie, type Route } from '@playwright/test';
 
 const LANG_CHOSEN_KEY = 'diff-lang-chosen';
 const MOCK_USER = { id: 'u1', email: 'tanya@example.test', name: 'Tanya' };
@@ -38,93 +38,63 @@ async function fulfillMe(route: Route) {
 	}
 }
 
+// Skips the one-time language overlay and wires up the auth mocks shared by every context this
+// spec creates (the initial login context and the post-restart one).
+async function prepareContext(context: BrowserContext) {
+	await Promise.all([
+		context.addInitScript(([key, value]) => localStorage.setItem(key, value), [LANG_CHOSEN_KEY, 'uk']),
+		context.route('**/api/auth/me', fulfillMe),
+		context.route('**/api/auth/refresh', (route) => route.fulfill({ status: 204 })),
+	]);
+}
+
+async function runRememberMeScenario(
+	browser: Browser,
+	{ rememberMe, expectedUrlAfterRestart }: { rememberMe: boolean; expectedUrlAfterRestart: RegExp },
+) {
+	const context = await browser.newContext();
+	await prepareContext(context);
+
+	let postedBody: unknown;
+	await context.route('**/api/auth/login', async (route) => {
+		postedBody = route.request().postDataJSON();
+		await fulfillLogin(route, rememberMe);
+	});
+
+	const page = await context.newPage();
+	await page.goto('/login');
+
+	const checkbox = page.getByRole('checkbox', { name: /запам.ят/i });
+	await expect(checkbox).not.toBeChecked();
+	if (rememberMe) await checkbox.check();
+
+	await page.getByLabel('Email').fill('tanya@example.test');
+	await page.getByLabel('Пароль', { exact: true }).fill('password123');
+	await page.getByRole('button', { name: 'Увійти' }).click();
+
+	await expect(page).toHaveURL(/\/home$/);
+	expect((postedBody as { rememberMe?: boolean }).rememberMe).toBe(rememberMe);
+
+	const cookies = await context.cookies();
+	await context.close();
+
+	const restartedContext = await simulateBrowserRestart(browser, cookies);
+	await prepareContext(restartedContext);
+
+	const restartedPage = await restartedContext.newPage();
+	await restartedPage.goto('/home');
+
+	await expect(restartedPage).toHaveURL(expectedUrlAfterRestart);
+	await restartedContext.close();
+}
+
 test.describe('remember-me persistence across browser restart (AC-01, AC-02)', () => {
 	test('checked: stays authenticated after restart and sends rememberMe=true', async ({ browser }) => {
-		const context = await browser.newContext();
-		await context.addInitScript(
-			([key, value]) => localStorage.setItem(key, value),
-			[LANG_CHOSEN_KEY, 'uk'],
-		);
-
-		let postedBody: unknown;
-		await context.route('**/api/auth/login', async (route) => {
-			postedBody = route.request().postDataJSON();
-			await fulfillLogin(route, true);
-		});
-		await context.route('**/api/auth/me', fulfillMe);
-		await context.route('**/api/auth/refresh', (route) => route.fulfill({ status: 204 }));
-
-		const page = await context.newPage();
-		await page.goto('/login');
-
-		await page.getByRole('checkbox', { name: /запам.ят/i }).check();
-		await page.getByLabel('Email').fill('tanya@example.test');
-		await page.getByLabel('Пароль', { exact: true }).fill('password123');
-		await page.getByRole('button', { name: 'Увійти' }).click();
-
-		await expect(page).toHaveURL(/\/home$/);
-		expect((postedBody as { rememberMe?: boolean }).rememberMe).toBe(true);
-
-		const cookies = await context.cookies();
-		await context.close();
-
-		const restartedContext = await simulateBrowserRestart(browser, cookies);
-		await restartedContext.addInitScript(
-			([key, value]) => localStorage.setItem(key, value),
-			[LANG_CHOSEN_KEY, 'uk'],
-		);
-		await restartedContext.route('**/api/auth/me', fulfillMe);
-		await restartedContext.route('**/api/auth/refresh', (route) => route.fulfill({ status: 204 }));
-
-		const restartedPage = await restartedContext.newPage();
-		await restartedPage.goto('/home');
-
-		await expect(restartedPage).toHaveURL(/\/home$/);
-		await restartedContext.close();
+		await runRememberMeScenario(browser, { rememberMe: true, expectedUrlAfterRestart: /\/home$/ });
 	});
 
 	test('unchecked: must log in again after restart and sends rememberMe=false', async ({ browser }) => {
-		const context = await browser.newContext();
-		await context.addInitScript(
-			([key, value]) => localStorage.setItem(key, value),
-			[LANG_CHOSEN_KEY, 'uk'],
-		);
-
-		let postedBody: unknown;
-		await context.route('**/api/auth/login', async (route) => {
-			postedBody = route.request().postDataJSON();
-			await fulfillLogin(route, false);
-		});
-		await context.route('**/api/auth/me', fulfillMe);
-		await context.route('**/api/auth/refresh', (route) => route.fulfill({ status: 204 }));
-
-		const page = await context.newPage();
-		await page.goto('/login');
-
-		await expect(page.getByRole('checkbox', { name: /запам.ят/i })).not.toBeChecked();
-		await page.getByLabel('Email').fill('tanya@example.test');
-		await page.getByLabel('Пароль', { exact: true }).fill('password123');
-		await page.getByRole('button', { name: 'Увійти' }).click();
-
-		await expect(page).toHaveURL(/\/home$/);
-		expect((postedBody as { rememberMe?: boolean }).rememberMe).toBe(false);
-
-		const cookies = await context.cookies();
-		await context.close();
-
-		const restartedContext = await simulateBrowserRestart(browser, cookies);
-		await restartedContext.addInitScript(
-			([key, value]) => localStorage.setItem(key, value),
-			[LANG_CHOSEN_KEY, 'uk'],
-		);
-		await restartedContext.route('**/api/auth/me', fulfillMe);
-		await restartedContext.route('**/api/auth/refresh', (route) => route.fulfill({ status: 204 }));
-
-		const restartedPage = await restartedContext.newPage();
-		await restartedPage.goto('/home');
-
-		await expect(restartedPage).toHaveURL(/\/login$/);
-		await restartedContext.close();
+		await runRememberMeScenario(browser, { rememberMe: false, expectedUrlAfterRestart: /\/login$/ });
 	});
 });
 
