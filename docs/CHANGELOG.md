@@ -6,6 +6,39 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-14
+
+### Fixed
+
+- Landing page nav links "Можливості" and "Як це працює" pointed at the same section (`#features`
+  was an `id` on a heading inside `#how`, not a real Features section); "Можливості" now anchors
+  to the top of the page instead
+- Every landing-page nav-anchor scroll landed under the sticky nav instead of clearing it, because
+  no anchor target had a `scroll-margin-top` compensating for the nav's height
+- `Heatmap`'s calendar grid filled day-cells into 7 horizontal row-major bands instead of
+  weeks-as-columns — the default CSS Grid auto-flow, not `grid-auto-flow: column`
+- Several light-theme text colors failed WCAG AA contrast (4.5:1): a dark-theme-only patch
+  (`#9ba2b5`) applied unconditionally, raw (explicitly non-text-safe) `--green`/`--amber`/`--rust`
+  accent tokens used directly as text color in ~15 places instead of the dedicated
+  `--green-text`/`--amber-text`/`--rust-text` tokens, and `--text-faint` falling just under
+  threshold on `--canvas-3`
+
+### Changed
+
+- Light theme's canvas desaturated to a calmer neutral "stone" tone (previously read as too
+  "sandy"/golden)
+- Data highlights that read flat at AA-compliant darkness (session scores, the resume-session
+  branch label, "how it works" command tags) now use a tinted pill/chip treatment instead of bare
+  colored text, reusing the existing `ScoreChip` pattern
+- `ProgressPage` card padding now tightens on mobile (`--space-3` below 860px)
+
+### Testing
+
+- New Playwright specs: `client/e2e/landing-nav-scroll.spec.ts`,
+  `client/e2e/heatmap-grid-layout.spec.ts`
+- New `client/src/styles/tokens.contrast.test.ts` computes real WCAG contrast ratios from the live
+  `tokens.css`, so a regression like the unscoped `#9ba2b5` patch is caught automatically
+
 ## [0.7.0] - 2026-10-14
 
 ### Added
