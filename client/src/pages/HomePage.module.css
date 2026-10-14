@@ -127,7 +127,10 @@
 	flex-wrap: wrap;
 }
 .branch {
-	color: var(--green);
+	color: var(--green-text);
+	background: var(--green-soft);
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
 }
 .sep {
 	color: var(--text-faint);
@@ -179,12 +182,16 @@
 	font-family: var(--font-mono);
 	font-size: 0.88rem;
 	font-weight: 600;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
 }
 .recentScore.good {
 	color: var(--green-text);
+	background: var(--green-soft);
 }
 .recentScore.low {
 	color: var(--rust-text);
+	background: var(--rust-soft);
 }
 
 .links {

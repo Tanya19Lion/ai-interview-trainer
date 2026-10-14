@@ -180,7 +180,7 @@
 .focusBranch {
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
-	color: var(--amber);
+	color: var(--amber-text);
 	white-space: nowrap;
 }
 
@@ -211,6 +211,6 @@
 	white-space: nowrap;
 }
 .focusExit:hover {
-	color: var(--rust);
+	color: var(--rust-text);
 	border-color: var(--rust);
 }
