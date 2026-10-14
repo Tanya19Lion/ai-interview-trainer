@@ -144,7 +144,7 @@
 .heroCli {
 	font-family: var(--font-mono);
 	font-size: 0.86rem;
-	color: var(--green);
+	color: var(--green-text);
 	background: var(--canvas-2);
 	border: 1px solid var(--line);
 	display: inline-flex;
@@ -264,8 +264,11 @@
 .logHash {
 	font-family: var(--font-mono);
 	font-size: 0.82rem;
-	color: var(--green);
-	display: block;
+	color: var(--green-text);
+	background: var(--green-soft);
+	display: inline-block;
+	padding: 0.2rem 0.5rem;
+	border-radius: var(--radius-s);
 	margin-bottom: 0.35rem;
 }
 .logH3 {
@@ -424,7 +427,7 @@
 	font-size: 0.95rem;
 }
 .heatCount b {
-	color: var(--green);
+	color: var(--green-text);
 }
 .heatLegend {
 	display: flex;

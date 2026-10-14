@@ -18,10 +18,10 @@
 	border-color: rgba(76, 154, 93, 0.4);
 }
 .good .value {
-	color: var(--green);
+	color: var(--green-text);
 }
 .amber .value {
-	color: var(--amber);
+	color: var(--amber-text);
 }
 
 /* ---------- Chip: простий одиночний тег на темному тлі, напр. "#react" ---------- */

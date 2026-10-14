@@ -102,7 +102,7 @@
 
 .error {
 	margin: 0.6rem 0 0 0;
-	color: var(--rust);
+	color: var(--rust-text);
 	font-size: 0.85rem;
 }
 
@@ -124,7 +124,7 @@
 	text-underline-offset: 3px;
 }
 .switchLink:hover {
-	color: var(--amber);
+	color: var(--amber-text);
 }
 
 .forgotLink {

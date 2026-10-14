@@ -19,7 +19,7 @@
 	font-size: 0.95rem;
 }
 .count b {
-	color: var(--green);
+	color: var(--green-text);
 }
 
 .legend {

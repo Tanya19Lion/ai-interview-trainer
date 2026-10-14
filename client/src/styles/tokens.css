@@ -94,14 +94,17 @@
  * (WCAG AA-аудит, 2026-09-14) — ЦІ перевизначені, бо не торкаються diff-контенту.
  */
 [data-theme='light'] {
-	--canvas: #fbf8f1;
-	--canvas-2: #f1eada;
-	--canvas-3: #e9e0cc;
+	/* Same hue/lightness as the original cream, saturation cut ~55% — a calmer neutral "stone"
+	   paper tone instead of a golden/sandy one (design pass, 2026-10-14). */
+	--canvas: #f8f7f4;
+	--canvas-2: #ebe8e0;
+	--canvas-3: #e1ddd4;
 	--line: rgba(35, 38, 47, 0.1);
-	--nav-bg: rgba(251, 248, 241, 0.88);
+	--nav-bg: rgba(248, 247, 244, 0.88);
 	--text-strong: #23262f;
 	--text-soft: #5b5b52;
-	--text-faint: #6d695e;
+	/* WCAG AA-аудит, 2026-10-14: #6d695e давав лише 4.17:1 на --canvas-3, нижче порогу 4.5:1 */
+	--text-faint: #605d53;
 	--shadow: 0 30px 60px -20px rgba(35, 30, 20, 0.35);
 	--green-text: #32653d;
 	--rust-text: #94402c;

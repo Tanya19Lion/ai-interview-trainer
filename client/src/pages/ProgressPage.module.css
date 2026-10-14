@@ -145,6 +145,9 @@
 	line-height: 1.55;
 }
 .recoAmber .recoDesc {
+	color: var(--text-soft);
+}
+[data-theme='dark'] .recoAmber .recoDesc {
 	/* --text-soft on amber-soft/--canvas-2 is 4.48:1 in dark theme, just under WCAG AA 4.5:1 */
 	color: #9ba2b5;
 }

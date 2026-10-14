@@ -29,7 +29,7 @@
 	font-family: var(--font-mono);
 	font-size: 0.78rem;
 	letter-spacing: 0.02em;
-	color: var(--amber);
+	color: var(--amber-text);
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5em;
