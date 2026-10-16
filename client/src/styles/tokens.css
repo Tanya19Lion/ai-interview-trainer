@@ -108,4 +108,6 @@
 	--green-text: #32653d;
 	--rust-text: #94402c;
 	--amber-text: #76500e;
+	--line: rgba(0, 0, 0, 0.1);
+	--line-soft: rgba(0, 0, 0, 0.06);
 }
