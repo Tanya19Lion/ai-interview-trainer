@@ -6,6 +6,27 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-01
+
+### Changed
+
+- Moved `InterviewFocusContext` from `client/src/lib/` into `client/src/context/interviewFocus/`,
+  alongside the other React context (`context/theme/`)
+
+### Documentation
+
+- Removed `PROGRESS.md` (duplicated git history and per-feature docs), `docs/features/*/tasks/`
+  (fully `Merged`/`Verified` or carried forward into per-feature `STATUS.md` files), one-off
+  `docs/_audit/` SDLC audits, and the already-shipped `docs/superpowers/` i18n plan/spec
+- Removed the now-permanently-dead `SessionStart` hook that read `PROGRESS.md`
+  (`.claude/hooks/session_start_progress.py`) and its registration in `.claude/settings.json`
+- Cleaned up references to the `diff-*.html` mockups, deleted from the repo a while ago: a
+  factually-false "mockups and client/ still coexist" debt bullet in `docs/sad.md`, the dead
+  `diff-*.html` entry in `.prettierignore`, and now-unnecessary mockup-provenance notes in rule
+  files and a few code comments
+- Backfilled the `docs/release-notes/` entries that were missing for 0.6.0, 0.7.0 and 0.7.1, and
+  fixed a dangling reference to the now-removed `remember-me/tasks/tracker.md`
+
 ## [0.7.1] - 2026-10-14
 
 ### Fixed
