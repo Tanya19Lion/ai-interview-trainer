@@ -290,7 +290,7 @@
 	font-size: 0.96rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
 	.logList {
 		flex-direction: column;
 		border-top: none;

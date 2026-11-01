@@ -1,6 +1,5 @@
 /*
- * Базовий reset і глобальні стилі, спільні для всіх трьох макетів
- * (landing/login/app-screens): box-sizing, типографіка body за замовчуванням,
+ * Базовий reset і глобальні стилі: box-sizing, типографіка body за замовчуванням,
  * focus-visible, виділення тексту, повага до prefers-reduced-motion.
  */
 *,
