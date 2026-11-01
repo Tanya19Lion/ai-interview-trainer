@@ -61,7 +61,7 @@ All notable changes to this project are documented in this file. The format foll
 
 - Signing in with Google does not currently honor "remember me" — `useGoogleLogin` doesn't forward
   the flag to the server, so a Google session always behaves as if unchecked. Tracked in
-  `docs/features/remember-me/tasks/tracker.md`, pending a product decision.
+  `docs/features/remember-me/STATUS.md`, pending a product decision.
 
 ## [0.6.0] - 2026-10-12
 
