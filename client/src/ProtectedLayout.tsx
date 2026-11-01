@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { RequireAuth } from './RequireAuth';
 import { AppShell } from './components';
-import { InterviewFocusContext, type InterviewFocusState } from './lib/interviewFocus';
+import { InterviewFocusContext, type InterviewFocusState } from './context/interviewFocus/InterviewFocusContext';
 
 /** Спільний layout для захищених маршрутів: гейт автентифікації + AppShell (nav/focus-bar + Outlet). */
 export function ProtectedLayout() {

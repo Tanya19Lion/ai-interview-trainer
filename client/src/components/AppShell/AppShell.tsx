@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useLogout, useMe } from '../../hooks/useAuth';
-import type { InterviewFocusState } from '../../lib/interviewFocus';
+import type { InterviewFocusState } from '../../context/interviewFocus/InterviewFocusContext';
 import { ProgressSegments } from '../ProgressSegments/ProgressSegments';
 import { LangToggle } from '../LangToggle/LangToggle';
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
