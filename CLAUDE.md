@@ -84,7 +84,14 @@ firewall policy, not for ordinary feature work.
 
 - Commits in Conventional Commits format: `type(scope): description`
   (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`).
-- Branch names: `feat/<short-name>` or `fix/<short-name>`.
+- Branch names: `feat/<short-name>` or `fix/<short-name>`, except a version-bump PR,
+  which must be named `release/vX.Y.Z` exactly — `.github/workflows/release.yml` only
+  tags and publishes the GitHub Release when the merged PR's branch matches that
+  pattern; any other name merges the bump silently with no tag/release and no error.
+- Before naming a branch or opening a PR for anything CI might key off of (a release,
+  a deploy, a required status check), check `.github/workflows/*.yml` for conditions
+  on `head_ref`/branch name/paths/labels — don't assume matching a past commit's
+  *content* means you've matched its *delivery mechanism*.
 - Open a pull request right after the first clean commit.
 - Add a `Co-Authored-By: Claude <noreply@anthropic.com>` trailer to commits you make.
 - Never commit `.env`. Only `.env.example` with placeholder values stays in the repo.
