@@ -181,7 +181,7 @@ resolves OSM pitfall via post-expiry notice (UX).
 ## 11. RICE — Claude proposed
 - **Reach (R)**: 100 — proxy for "100% of returning job-seekers," normalized to a 100-point scale;
   no concrete active-user headcount is available (rationale cites §3 Users and the project's
-  pre-launch/no-live-analytics state per `PROGRESS.md`).
+  pre-launch/no-live-analytics state per `PROGRESS.md`, removed 2026-11-01).
 - **Impact (I)**: 0.5 (Low) — rationale cites §2 Problem (proactive, not incident-driven) and §8
   Executive perspective ("no measured complaints today, S-effort avoids over-investing").
 - **Confidence (C)**: 0.5 — rationale cites §15 Open questions (Reach is an unmeasured proxy, no
@@ -236,8 +236,9 @@ and the §10 token-invalidation-on-password-reset requirement as a hard dependen
   competitive benchmark in §6) — owner: Tanya, due: before write-prd (stage 03) locks the
   number.
 - [ ] Real active-user reach (§11 RICE Reach is a 100-point proxy, not a measured headcount — no
-  live analytics exist yet per `PROGRESS.md`) — owner: Tanya (PM), due: after the live-Mongo
-  verification work referenced in `PROGRESS.md` is complete.
+  live analytics exist yet per `PROGRESS.md`, removed 2026-11-01) — owner: Tanya (PM), due: after
+  the live-Mongo verification work (then referenced in `PROGRESS.md`, now tracked per-feature in
+  `docs/features/*/STATUS.md`) is complete.
 - [ ] Whether logout must actively revoke a remembered-session token server-side, or whether
   client-side-only logout is acceptable given the risk noted in §10 — owner: Eng/Tech Lead, due:
   before write-prd (stage 03) locks the auth design.

@@ -26,12 +26,11 @@ structured feedback — a score, an explanation of mistakes, a correct answer, a
 topics to review. Without a tool like this, a job-seeker either studies from static question
 lists with no personalized feedback, or pays for a live mock-interviewer.
 
-The project started as static HTML mockups (`diff-*.html`) that fixed the visual language (a
-"git diff / code review" feedback style). This PRD is written now that `client/` already matches
-all three mockups functionally and visually (all 10 tasks from the original client plan are
-shipped per `PROGRESS.md`), and the backend (`src/`) is a working full-stack service with real
-authentication, AI integration, and MongoDB persistence. The document records what has been
-built and why, as a contract for future changes — not a pre-build spec.
+This PRD is written now that `client/` already has the "git diff / code review" feedback-style
+visual language fully built out (all 10 tasks from the original client plan are shipped), and the
+backend (`src/`) is a working full-stack service with real authentication, AI integration, and
+MongoDB persistence. The document records what has been built and why, as a contract for future
+changes — not a pre-build spec.
 
 The accepted vector (already implemented, not hypothetical): an Express + TypeScript + Mongoose
 backend, a separate Vite + React 19 SPA client, with answer evaluation fully delegated to an
@@ -192,13 +191,11 @@ the data-access layer, not at the UI layer)
   public release? Default now: not measured. — owner: Tanya19Lion, due: before public release
 - [ ] Is a rate limit needed on `/api/auth/register` against spam? (`/api/auth/login` already
   has one.) — owner: Tanya19Lion, due: before public release
-- [ ] Manual verification against a live MongoDB for tasks 4–9 of the original client plan
-  (`PROGRESS.md`) is still pending — does this block the next release? — owner: Tanya19Lion,
-  due: TBD
+- [ ] Manual verification against a live MongoDB for tasks 4–9 of the original client plan is
+  still pending — does this block the next release? — owner: Tanya19Lion, due: TBD
 - [x] Language toggle (i18n) — done: full UK/EN interface and AI session language
-  (`docs/superpowers/specs/2026-10-04-i18n-completion-design.md`)
 - [ ] Mobile nav-toggle on the landing page — the remaining part of the original plan's task 10
-  (`PROGRESS.md`) — when is this planned? — owner: Tanya19Lion, due: TBD
+  — when is this planned? — owner: Tanya19Lion, due: TBD
 
 ## Related
 

@@ -73,7 +73,9 @@ Vercel; [Secure Compute](https://vercel.com/docs/secure-compute) (виділен
 
 ## Відомі обмеження
 
-- Лічильник `unregisteredEmailAttempts` у `passwordReset.service.ts` живе в пам'яті інстансу, а на
-  serverless кожен інстанс має свій — його варто перенести в Mongo.
 - Цей `vercel.json` не перевірявся на живому Vercel: порядок «build → функція» і збереження
   оригінального шляху після rewrite підтвердьте першим Preview-деплоєм.
+- Preview-домени не працюють з Google-входом (Google не приймає wildcard в Authorized
+  JavaScript origins) — тестувати логін на Production-домені.
+- Не перевірено на живому: що `ipRateLimit` рахує різних відвідувачів окремо (потрібні запити
+  з двох різних IP) і що 429 на `/register` справді повертається.

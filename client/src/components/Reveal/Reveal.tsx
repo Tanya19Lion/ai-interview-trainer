@@ -7,8 +7,8 @@ export interface RevealProps {
 	style?: CSSProperties;
 }
 
-/** Фейд-ін + translateY при появі елемента у в'юпорті (одноразово), як `.reveal`/`.reveal.is-in`
- * у мокапі. Не рендерить нічого, коли reduced-motion — CSS-медіа-запит просто лишає opacity:1. */
+/** Фейд-ін + translateY при появі елемента у в'юпорті (одноразово). Не рендерить нічого, коли
+ * reduced-motion — CSS-медіа-запит просто лишає opacity:1. */
 export function Reveal({ children, className, style }: RevealProps) {
 	const ref = useRef<HTMLDivElement>(null);
 	const [isIn, setIsIn] = useState(false);

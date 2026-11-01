@@ -68,6 +68,20 @@ Mongo + a real `ANTHROPIC_API_KEY` and watch:
 - `ReviewModal` renders `correctAnswer` for a session answered end-to-end through the real API,
   not just from mocked data.
 
+## Other open tails
+
+- No handling for a user with multiple stale `in_progress` sessions beyond "ignore the older
+  ones" (`PRD.md`'s explicit out-of-scope note) — revisit only if this becomes a real support
+  complaint.
+- `openapi.yaml` in this folder is hand-written from the current code, not generated from a
+  schema-validation library — if one gets adopted for this route group, regenerate this file from
+  it instead of maintaining both by hand.
+- The `'system-design'` topic (added 2026-09-25) isn't reflected in this folder's `data-model.md`,
+  `idea-brief.md`, `openapi.yaml`, or `api-sync-report.md` — their topic lists still end at
+  `restapi`. `check_enums.py` only guards `src/models/InterviewSession.ts` ↔
+  `client/src/types/interview.ts`, not these docs, so they need a manual pass if they're meant to
+  stay accurate.
+
 ## Where to look next
 
 - If a review/score looks wrong: the prompt/response-shape contract lives entirely in

@@ -84,7 +84,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Documentation
 
-- `PROGRESS.md` records the findings and fixes from the promptfoo eval suite's first end-to-end run
+- `PROGRESS.md` records the findings and fixes from the promptfoo eval suite's first end-to-end run (`PROGRESS.md` removed 2026-11-01; this tail now lives in `promptfoo/STATUS.md`)
 
 ## [0.5.0] - 2026-10-06
 
@@ -108,7 +108,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Documentation
 
 - The Schema-change log in `docs/data-model.md` has an entry for `ResetRequestAttempt`; the forgot-password task tracker is closed: T11 (a change-password screen in the profile) and T16 (an automated e2e test) were dropped on purpose, `POST /api/auth/change-password` stays as an API
-- `PROGRESS.md` records what was checked on the live site (the reset flow, `maxDuration`, the production branch, `trust proxy`) and what was not: that other sessions are logged out after a reset, and the response-time difference between a known and an unknown email (an open note on `waitUntil`)
+- `PROGRESS.md` records what was checked on the live site (the reset flow, `maxDuration`, the production branch, `trust proxy`) and what was not: that other sessions are logged out after a reset, and the response-time difference between a known and an unknown email (an open note on `waitUntil`) (`PROGRESS.md` removed 2026-11-01)
 
 ## [0.4.0] - 2026-10-06
 
@@ -143,8 +143,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Documentation
 
-- ADR-0004 (login limit per email+IP), the Schema-change log in `docs/data-model.md` (`tokenVersion`, `LoginAttempt`, `PasswordReset`, `IpAttempt`, `currentQuestion`, the changed keys and limits), the interview-flow and auth rules, and the open follow-ups in `PROGRESS.md`
-- Removed the one-off `CODE_REVIEW_RESULTS.md`, `SECURITY_REVIEW_RESULTS.md` and `SIMPLIFY_RESULTS.md`; every finding in them is fixed or tracked in `PROGRESS.md`
+- ADR-0004 (login limit per email+IP), the Schema-change log in `docs/data-model.md` (`tokenVersion`, `LoginAttempt`, `PasswordReset`, `IpAttempt`, `currentQuestion`, the changed keys and limits), the interview-flow and auth rules, and the open follow-ups in `PROGRESS.md` (`PROGRESS.md` removed 2026-11-01)
+- Removed the one-off `CODE_REVIEW_RESULTS.md`, `SECURITY_REVIEW_RESULTS.md` and `SIMPLIFY_RESULTS.md`; every finding in them is fixed or tracked in `PROGRESS.md` (removed 2026-11-01)
 - The unknown-email limit in `passwordReset.service.ts` stays an in-memory `Map` until T6 (`POST /password-reset/request`) calls it; the move to Mongo is now part of T6's definition of done
 
 ## [0.3.0] - 2026-10-05
@@ -170,7 +170,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Documentation
 
-- Added the i18n design spec and implementation plan under `docs/superpowers/`
+- Added the i18n design spec and implementation plan under `docs/superpowers/` (removed 2026-11-01, feature shipped)
 - Recorded the optional `lang` field in the `docs/data-model.md` schema-change log (no backfill needed; a missing value reads as `uk`) and in the interview-flow OpenAPI contract
 - Added "Session language" to the `docs/CONTEXT.md` glossary and refreshed the frontend and backend rules, `docs/sad.md` and `docs/PRD.md` (the language toggle is done; the mobile nav-toggle on the landing page remains open)
 
@@ -183,7 +183,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Documentation
 
-- Closed the "no tests for the skip flow" open item in `PROGRESS.md` and added the 0.2.1 release notes
+- Closed the "no tests for the skip flow" open item in `PROGRESS.md` (removed 2026-11-01) and added the 0.2.1 release notes
 
 ## [0.2.0] - 2026-10-04
 
@@ -204,7 +204,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Documentation
 
-- Recorded the `answer` / `feedback` schema change in the `docs/data-model.md` Schema-change log (with rollback), and brought the interview-flow feature docs, the `.claude/rules` notes and `PROGRESS.md` in line with the skip behaviour and the new components; added the 0.2.0 release notes
+- Recorded the `answer` / `feedback` schema change in the `docs/data-model.md` Schema-change log (with rollback), and brought the interview-flow feature docs, the `.claude/rules` notes and `PROGRESS.md` (removed 2026-11-01) in line with the skip behaviour and the new components; added the 0.2.0 release notes
 
 ## [0.1.2] - 2026-09-29
 
@@ -222,7 +222,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Documentation
 
 - Updated the remember-me data model, sequence diagram, OpenAPI description and ADR-0003 (new amendment), and the root PRD's rate-limit notes, to match the shipped limiter
-- Recorded the fix in `SECURITY_REVIEW_RESULTS.md` and `PROGRESS.md`, and added the 0.1.2 release notes
+- Recorded the fix in `SECURITY_REVIEW_RESULTS.md` and `PROGRESS.md` (removed 2026-11-01), and added the 0.1.2 release notes
 
 ## [0.1.1] - 2026-09-28
 

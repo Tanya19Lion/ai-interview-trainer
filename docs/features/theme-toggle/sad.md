@@ -21,7 +21,7 @@ ticket: "<TBD>"
 <!-- 📋 Що писати: 1 абзац intent + 3 рядки топ-3 якості + таблиця stakeholders.        -->
 <!-- 📌 Приклад: «QG-1: швидкість редагування блоку p95 ≤500 мс»                         -->
 
-**Intent.** Job-seekers practicing interviews in ai-interview-trainer get a manual light/dark theme toggle with no page reload; a new visitor's first render already matches their OS-level theme preference (one-time read, no ongoing sync); the chosen theme persists per-device across sessions. This is the last polish item before the v1 release (~2026-10-05) — all 10 client-plan tasks are already shipped per PROGRESS.md (PRD §1).
+**Intent.** Job-seekers practicing interviews in ai-interview-trainer get a manual light/dark theme toggle with no page reload; a new visitor's first render already matches their OS-level theme preference (one-time read, no ongoing sync); the chosen theme persists per-device across sessions. This is the last polish item before the v1 release (~2026-10-05) — all 10 client-plan tasks are already shipped per PROGRESS.md (PRD §1; `PROGRESS.md` removed 2026-11-01).
 
 **Top-4 quality goals (1-liners; full scenarios in §10):**
 
@@ -55,8 +55,8 @@ ticket: "<TBD>"
 
 **Organisational.**
 - Feature size S (PRD frontmatter)
-- Soft deadline: next natural polish item before v1 release (~2026-10-05, per PROGRESS.md — all 10 client-plan tasks already shipped)
-- Team: implicitly 1 frontend engineer (client work to date has been single-owner per PROGRESS.md)
+- Soft deadline: next natural polish item before v1 release (~2026-10-05, per PROGRESS.md, removed 2026-11-01 — all 10 client-plan tasks already shipped)
+- Team: implicitly 1 frontend engineer (client work to date has been single-owner per PROGRESS.md, removed 2026-11-01)
 
 **Conventions.**
 - `.claude/rules/frontend/styles.md` — `client/src/styles/tokens.css` is the single source of truth for color/typography/spacing/radii; components read `var(--token-name)`, never hardcode values

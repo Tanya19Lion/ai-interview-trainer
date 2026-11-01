@@ -6,7 +6,7 @@ import type { SessionResult } from '../components';
 import { useActiveSession } from '../hooks/useActiveSession';
 import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useSubmitAnswer } from '../hooks/useSubmitAnswer';
-import { useInterviewFocus } from '../lib/interviewFocus';
+import { useInterviewFocus } from '../context/interviewFocus/InterviewFocusContext';
 import type { Level, Topic } from '../types/interview';
 
 interface SessionBootstrap {

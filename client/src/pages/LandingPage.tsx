@@ -46,8 +46,8 @@ const DEMO_HISTORY: { topic: Topic; level: Level; date: string; score: string; p
 const HEAT_WEEKS = 26;
 const HEAT_CELLS = HEAT_WEEKS * 7;
 
-/** Той самий детермінований лінійний конгруентний генератор, що й у мокапі — щоб демо-heatmap
- * виглядав однаково між рендерами, а не тасувався щоразу як справжній Math.random(). */
+/** Детермінований лінійний конгруентний генератор — щоб демо-heatmap виглядав однаково між
+ * рендерами, а не тасувався щоразу як справжній Math.random(). */
 function seededHeatLevels(seed: number, count: number): number[] {
 	let s = seed;
 	const rand = () => {

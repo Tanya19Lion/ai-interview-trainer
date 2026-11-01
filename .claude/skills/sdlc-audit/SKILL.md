@@ -16,7 +16,7 @@ and `src/models/InterviewSession.ts` type the interview domain independently, by
 hand, with no shared package (see `docs/sad.md`, `CLAUDE.md`, `docs/adr/0001-initial-setup.md`).
 That gap already caused a real bug — `correctAnswer` was computed in
 `ai.service.ts` but never persisted through `submitAnswer`, silently breaking
-`ReviewModal`'s diff rendering (recorded in `PROGRESS.md`). Nothing in the repo
+`ReviewModal`'s diff rendering. Nothing in the repo
 checks this systematically for a whole feature; `plugins/sync-domain-enums-guard/`
 only guards specific enums. This skill is the systemic check.
 
@@ -48,7 +48,7 @@ names a different documentation root.
 | 6 | openapi.yaml | `openapi.yaml` | Architect | Contract between `src/routes/*.routes.ts` + `src/controllers/*` and `client/src/api/*.ts` — the exact layer where the `correctAnswer` mismatch happened; this is the handoff artifact Architect gives to TL+devs before implementation starts |
 | 7 | api-sync-report | `api-sync-report.md` | Review | Explicit check that client types (`client/src/types/*.ts`) and server types (`src/models/*.ts`) are still in sync — the gate a PR reviewer should consult before approving, since this is exactly the check that would have caught the `correctAnswer` bug pre-merge |
 | 8 | tasks/ | `tasks/` | TL+devs | Traces PRD line items to actual code changes; produced when the tech lead breaks the PRD/SAD down into work devs pick up |
-| 9 | CONTEXT | `CONTEXT.md` | Docs+Deploy | Feature-level analogue of the repo-root `PROGRESS.md` — "how to pick this back up" |
+| 9 | CONTEXT | `CONTEXT.md` | Docs+Deploy | Feature-level "how to pick this back up" doc (e.g. `docs/features/interview-flow/STATUS.md`) |
 
 ## exists / missing / stale criteria
 

@@ -46,8 +46,8 @@ paths:
   `LandingPage` deliberately did **not** reuse them and has its own local markup instead (see
   `.claude/rules/frontend/overview.md`'s i18n note).
 - `Reveal` (`components/Reveal/Reveal.tsx`) wraps children in a `div` that fades/translates in via
-  IntersectionObserver the first time it enters the viewport (ports the mockup's
-  `.reveal`/`.reveal.is-in` pattern; a no-op under `prefers-reduced-motion: reduce`). Used
+  IntersectionObserver the first time it enters the viewport (a no-op under
+  `prefers-reduced-motion: reduce`). Used
   throughout `LandingPage` for section-heads/cards/tables — not used anywhere in the authenticated
   app, where content should just be there, not animate in on scroll.
 - `LangOverlay` (`components/LangOverlay/LangOverlay.tsx`) is the once-only language picker for
