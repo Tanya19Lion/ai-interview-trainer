@@ -285,7 +285,7 @@ no existence outside its parent session. Documented under Entities below.
   unknown email reach the limit (3 per hour, `RATE_LIMIT_MAX` in code, not the schema) after the
   same number of requests (AC-02). It replaces the in-memory `unregisteredEmailAttempts` `Map` and
   `checkUnregisteredEmailRateLimit`, which were per serverless instance and never pruned
-  (PROGRESS.md, open item 4); nothing called them.
+  (PROGRESS.md, open item 4; `PROGRESS.md` removed 2026-11-01); nothing called them.
 - **Backfill:** none needed — the collection starts empty and fills as requests arrive.
 - **Rollback:** remove the route and `reserveResetRequest`, delete the model, redeploy, then
   `db.resetrequestattempts.drop()`. The documents are hour-long counters, so nothing needs

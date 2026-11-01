@@ -415,8 +415,6 @@ ADR files live under `docs/adr/NNNN-<title>.md` (project-level; feature-scoped A
 | No APM/metrics — NFRs in `docs/PRD.md` §6 are marked TBD | Low | Measurement plan before public release — `docs/PRD.md` §8 | Tanya19Lion |
 
 **Accepted debt (acceptable now, may need revisiting later):**
-- The mockups (`diff-*.html`) and `client/` still coexist temporarily — easy to confuse which
-  file to edit; called out explicitly in `CLAUDE.md` to avoid accidental edits to dead code.
 - No single error-handling/error-mapping layer on the server — each controller handles errors
   locally; acceptable at the current codebase size.
 

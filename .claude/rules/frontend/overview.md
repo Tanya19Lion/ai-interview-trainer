@@ -32,14 +32,15 @@ from inside `client/`): `npm run dev` (Vite dev server), `npm run build` (`tsc -
   (`/`, public) are real, data-backed/bilingual screens now (not redirects/placeholders)
   — see `.claude/rules/frontend/routing-and-auth.md`. `InterviewSessionPage` also survives a hard
   reload / direct link now (reload fallback re-derives state from the server — see
-  `.claude/rules/frontend/routing-and-auth.md`). All 10 tasks in `PROGRESS.md`'s plan are done;
-  what's left is manual verification against a live Mongo/backend, not new screens.
+  `.claude/rules/frontend/routing-and-auth.md`). All 10 tasks of the original client plan are
+  done; what's left is manual verification against a live Mongo/backend, not new screens.
 - `client/src/lib/topicLabel.ts` (`TOPIC_LABEL`) is the shared display-text map for `Topic`
   values (`nodejs` → `"node.js"`, `nextjs` → `"next.js"`, everything else identity) — reach for
   it instead of printing a raw `Topic` enum value in new UI; it's already used by `HomePage`,
   `HistoryTable`, `HistoryPage`'s filter chips, `ReviewModal`, and `ProgressPage`.
 - Nothing **behind auth** has been visually verified against a live backend since the
-  auth/AppShell work in `PROGRESS.md` task 4 — every protected page/behavior built after that
+  auth/AppShell work (the original client plan's task 4) — every protected page/behavior built
+  after that
   (`HomePage`, `HistoryPage`, `ReviewModal`, `ProgressPage`, `Heatmap`,
   `InterviewSessionPage`'s reload fallback) has only been confirmed via `tsc`/`oxlint`/`build`
   plus observing that `RequireAuth` correctly redirects to `/login` with no Mongo/`.env` running.

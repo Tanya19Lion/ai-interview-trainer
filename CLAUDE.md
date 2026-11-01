@@ -31,8 +31,6 @@ firewall policy, not for ordinary feature work.
 - Auth is real end-to-end: `POST /api/auth/google` (Google OAuth), `POST /api/auth/register` /
   `POST /api/auth/login` (email+password, `bcryptjs`-hashed). The old client-side `devLogin` /
   `/api/auth/dev-login` stub described in earlier docs has been removed — don't reintroduce it.
-- **`PROGRESS.md`** (repo root) tracks in-flight work on the repo — check it before starting new
-  work so you don't duplicate or skip a step.
 - **Project-level docs**: `docs/PRD.md` (goals/non-goals/user stories/acceptance criteria —
   supersedes the old root `SPEC.md`), `docs/sad.md` (arc42-style SAD: layered-backend
   pattern, the `routes → controllers → services → models` dependency rule, C4 diagrams —
